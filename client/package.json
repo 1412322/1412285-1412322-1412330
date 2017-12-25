@@ -1,0 +1,11 @@
+{
+  "name": "1412285-1412322-1412330",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "1412285-1412322-1412330",
+  "license": "ISC"
+}
