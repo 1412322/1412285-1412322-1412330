@@ -74,7 +74,7 @@ export default class Main extends React.Component {
 					</Sidebar>
 					<Sidebar.Pusher>
 						<Segment basic>
-							abc
+							def
 						</Segment>
 					</Sidebar.Pusher>
 				</Sidebar.Pushable>

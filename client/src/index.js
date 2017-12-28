@@ -13,16 +13,20 @@ import { Provider } from 'react-redux'
 import { createStore } from 'redux'
 import walletManagementApp from './app/reducers'
 import Main from './app/components/layouts/main.js'
+import { AppContainer } from 'react-hot-loader'
 // import App from './App'
 import { BrowserRouter, Route } from 'react-router-dom'
 import registerServiceWorker from './registerServiceWorker'
+// import '../semantic/dist/semantic.min.css'
 const store = createStore(walletManagementApp)
 
 ReactDOM.render((
     <Provider store={store}>
-        <BrowserRouter>
-            <Route path="/" component={Main} />
-        </BrowserRouter>
+        <AppContainer>
+            <BrowserRouter>
+                <Route path="/" component={Main} />
+            </BrowserRouter>
+        </AppContainer>
     </Provider>)
     , document.getElementById("root"))
 registerServiceWorker()
