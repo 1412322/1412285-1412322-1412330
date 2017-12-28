@@ -1,11 +1,9 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import Content from 'Content'
+// import Content from 'Content'
 import { Link } from 'react-router-dom'
-import { Sidebar, Segment, Button, Menu, Image, Icon } from 'semantic-ui-react'
-import { Switch, Route } from 'react-router-dom'
+import { Sidebar, Segment, Button, Menu, Icon } from 'semantic-ui-react'
 
-class Main extends React.Component {
+export default class Main extends React.Component {
 	constructor() {
 		super()
 		this.state = {
@@ -22,7 +20,7 @@ class Main extends React.Component {
 	signOut() {
 		sessionStorage.removeItem('email')
 		sessionStorage.removeItem('token')
-		location.href = '/signin'
+		// location.href = '/signin'
 	}
 
 	render() {
@@ -76,7 +74,7 @@ class Main extends React.Component {
 					</Sidebar>
 					<Sidebar.Pusher>
 						<Segment basic>
-							<Content />
+							abc
 						</Segment>
 					</Sidebar.Pusher>
 				</Sidebar.Pushable>
@@ -84,5 +82,3 @@ class Main extends React.Component {
 		)
 	}
 }
-
-module.exports = Main
