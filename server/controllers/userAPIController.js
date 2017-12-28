@@ -3,6 +3,8 @@ var jwt  = require('jwt-simple');
 var config  = require('../config/database');
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
+var bcrypt = require('bcrypt-nodejs');
+
 var transport = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
     secureConnection: false,
@@ -35,7 +37,7 @@ exports.signup = function (req,res,next) {
           });*/
 
           SendVerificationMail(req,user);
-          res.json({success: true, token: token, email: user.email, msg: 'A verification email has been sent to ' + user.email + '.'});
+          res.json({success: true, msg: 'A verification email has been sent to ' + user.email + '.'});
 
             /*var mailOptions = {
               to: user.email,
@@ -135,11 +137,82 @@ exports.verify_email = function (req,res,next) {
         }
         else{
             var noti = "Your email "+user.email+" is verified";
-            res.json({success: false, msg: noti});
+            res.json({success: true, msg: noti});
         }
     });
 }
 
+exports.forget_password = function (req,res,next) {
+  var email = req.body.email;
+    User.findOne({'email': email}).exec(function(err, user)
+    {
+        if(err){
+           res.json({success: false, msg: err});
+        }
+        if (user != null && user != undefined)
+        {
+
+            var noti = "Request has send to " + email;
+            SendResetPasswordMail(req,user, res);                        //Send email reset password
+            //res.json({success: true, msg: noti});
+
+        }
+        else
+        {
+          res.json({success: false, msg: "User not found!"});
+
+        }
+    });
+}
+
+exports.reset_password = function (req,res,next) {
+  var reset_qr = req.body.reset;
+    var id = req.params.id;
+    console.log("id: "+id);
+    console.log("Reset: "+reset_qr);
+
+    var messages = [];
+    if (reset_qr != null && reset_qr!=undefined && reset_qr != '' )             //check reset toke param
+    {
+        User.findById(id).exec(function (err, user) {                           //find user
+            if (err) {
+                console.log(err);
+                res.json({success: false, msg: err});
+            }
+            else {
+                if (user != null && user != undefined) {
+                    console.log("Reset token: " + user.passwordResetToken);
+                    if (user.passwordResetToken == reset_qr) {
+
+                            var user_instance = new User();
+                            user_instance._id = id;
+                            user_instance.password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(5), null);
+                            user_instance.passwordResetToken='';
+                            user_instance.isVerified = true;
+                            User.findByIdAndUpdate(id, user_instance, {}).exec(function (err, user) {
+                                console.log(user);
+                                if (user != null && user != undefined) {
+                                  res.json({success: true, msg: 'Reset password successed!'});
+                                }
+                                else {
+                                    res.json({success: false, msg: 'Reset password failed!'});
+                                }
+                            });
+
+                    }
+                    else {
+                      res.json({success: false, msg: 'Link is expired!'});
+                    }
+                }
+            }
+
+        });
+    }
+    else
+    {
+      res.json({success: false, msg: "Reset token does not exists!"});
+    }
+}
 getToken = function (headers) {
   if (headers && headers.authorization) {
     var parted = headers.authorization;
@@ -173,6 +246,37 @@ SendVerificationMail = function (req,user) {
             console.log("success");
             //res.end("sent");
             //return true;
+        }
+    });
+};
+
+SendResetPasswordMail = function (req,user, res) {
+    var token = bcrypt.hashSync(user["_id"], bcrypt.genSaltSync(5), null);
+    User.findByIdAndUpdate(user["_id"],{_id: user["_id"], passwordResetToken: token}).exec(function (err,user) {
+        if(err)
+        {
+            res.json({success: false, msg: err});
+        }
+        console.log("USER: " + user);
+    });
+
+
+    var host=req.get('host');
+    //link này sẽ được thay thế bằng link tới form nhập password mới
+    var link="http://"+req.get('host')+"/api/users/resetpassword/"+user["_id"]+"?reset="+token;              //link to reset password
+    var mailOptions={
+        to : user["email"],
+        subject : "Reset your password",
+        html : "Hello,<br> Please Click on the link to reset your password.<br><a href="+link+">Click here to reset your password</a>"
+    }
+    console.log(mailOptions);
+    transport.sendMail(mailOptions, function(error, response){
+        if(error){
+            res.json({success: false, msg: "Reset token does not exists!"});
+        }
+        else{
+            console.log("Message sent: " + response.message);
+            res.json({success: true, resetToken: token, userID: user["_id"]});
         }
     });
 };
