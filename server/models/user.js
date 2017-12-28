@@ -11,7 +11,13 @@ var UserSchema = new Schema({
   password: {
         type: String,
         required: true
-    }
+    },
+  isVerified: {
+        type: Boolean,
+        default: false 
+    },
+  passwordResetToken: String,
+  passwordResetExpires: Date
 });
 
 UserSchema.methods.encryptPassword = function(password){
