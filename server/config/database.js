@@ -1,4 +1,4 @@
 module.exports = {
   'secret': 'devdacticIsAwesome',
-  'database': 'mongodb://admin:admin@ds113826.mlab.com:13826/exchangeapp'
+  'database': 'mongodb://admin:admin@ds133627.mlab.com:33627/kcoin_db'
 };
