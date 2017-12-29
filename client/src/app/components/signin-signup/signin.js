@@ -123,8 +123,8 @@ class LoginContainer extends React.Component {
                                             label={{ children: 'Remember me' }}
                                             onChange={(e) => this.onHandleChange(e, 'isRememberMe')} />
                                     </Grid.Column> */}
-                                    <Grid.Column textAlign='right' className='right-message'>
-                                        Forgot password?
+                                    <Grid.Column textAlign='right'>
+                                        <Link to='/retrievepassword' className='right-message'>Forgot password?</Link>
                                     </Grid.Column>
                                 </Grid.Row>
                             </Grid>

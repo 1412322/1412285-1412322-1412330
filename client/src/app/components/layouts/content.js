@@ -1,6 +1,7 @@
 import React from 'react'
-import LoginForm from '../signin-signup/signin.js'
-import RegisterForm from '../signin-signup/signup.js'
+import LoginContainer from '../signin-signup/signin.js'
+import RegisterContainer from '../signin-signup/signup.js'
+import RetrievePasswordContainer from '../signin-signup/retrievepassword.js'
 // import Transfers from '../transfers/transfersmoney.js'
 // import TransfersHistory from '../transfers/transfershistory.js'
 // import Home from '../home'
@@ -15,8 +16,9 @@ export default class Content extends React.Component {
 				<Route path='/instagramlocationmedialist/:id' component={InstagramLocationMediaList} />
 				<Route path='/addstudent' component={AddStudent} />
 				<Route path='/studentinfo/:id' component={EditStudent} /> */}
-				<Route exact path='/' component={LoginForm} />
-				<Route path='/signup' component={RegisterForm} />
+				<Route exact path='/' component={LoginContainer} />
+				<Route path='/signup' component={RegisterContainer} />
+				<Route path='/retrievepassword' component={RetrievePasswordContainer} />
 				{/* <Route path='/transfers' component={Transfers} />
 				<Route path='/transfershistory' component={TransfersHistory} /> */}
 				{/* <Route path='/' component={Home} /> */}
