@@ -13,6 +13,7 @@ import { Provider } from 'react-redux'
 import { createStore } from 'redux'
 import walletManagementApp from './app/reducers'
 import Main from './app/components/layouts/main.js'
+import Account from './app/components/signin-signup/signin.js'
 import { AppContainer } from 'react-hot-loader'
 // import App from './App'
 import { BrowserRouter, Route } from 'react-router-dom'
@@ -24,7 +25,7 @@ ReactDOM.render((
     <Provider store={store}>
         <AppContainer>
             <BrowserRouter>
-                <Route path="/" component={Main} />
+                <Route path="/" component={Account} />
             </BrowserRouter>
         </AppContainer>
     </Provider>)

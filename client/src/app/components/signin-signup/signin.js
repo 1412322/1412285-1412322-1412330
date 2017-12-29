@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Form, Grid, Header, Image, Message, Segment } from 'semantic-ui-react'
+import { Button, Form, Grid, Header, Message } from 'semantic-ui-react'
 import { connect } from 'react-redux'
 import * as walletManagementActions from '../../actions'
 import { bindActionCreators } from 'redux'
@@ -15,39 +15,39 @@ class LoginForm extends React.Component {
         }
     }
     signIn = () => {
-        const { walletManagementActions } = this.props
-        // Set the headers
-        const headers = {
-            'Content-Type': 'application/json'
-        }
-        const body = {
-            "email": $("#email").val(),
-            "password": $("#password").val()
-        };
-        fetch('api/signin', {
-            method: 'post',
-            body: JSON.stringify(body),
-            headers: headers,
-        })
-            .then(res => res.json())
-            .then((data) => {
-                console.log(data);
-                if (data.success === true) {
-                    sessionStorage.setItem('token', data.token);
-                    sessionStorage.setItem('email', data.email);
-                    walletManagementActions.getAuthenErrorMessage(null, true)
-                    // this.setState({
-                    //     redirect: true
-                    // });
-                }
-                else {
-                    walletManagementActions.getAuthenErrorMessage(data.errorCode, false)
-                    // this.setState({
-                    //     error: data.msg,
-                    //     redirect: false
-                    // });
-                }
-            })
+        // const { walletManagementActions } = this.props
+        // // Set the headers
+        // const headers = {
+        //     'Content-Type': 'application/json'
+        // }
+        // const body = {
+        //     "email": $("#email").val(),
+        //     "password": $("#password").val()
+        // };
+        // fetch('api/signin', {
+        //     method: 'post',
+        //     body: JSON.stringify(body),
+        //     headers: headers,
+        // })
+        //     .then(res => res.json())
+        //     .then((data) => {
+        //         console.log(data);
+        //         if (data.success === true) {
+        //             sessionStorage.setItem('token', data.token);
+        //             sessionStorage.setItem('email', data.email);
+        //             walletManagementActions.getAuthenErrorMessage(null, true)
+        //             // this.setState({
+        //             //     redirect: true
+        //             // });
+        //         }
+        //         else {
+        //             walletManagementActions.getAuthenErrorMessage(data.errorCode, false)
+        //             // this.setState({
+        //             //     error: data.msg,
+        //             //     redirect: false
+        //             // });
+        //         }
+        //     })
 
     }
     render() {
