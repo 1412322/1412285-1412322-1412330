@@ -84,7 +84,7 @@ class RetrievePasswordContainer extends React.Component {
                                 {errorCode === '14' && 'Invalid email address'}
                             </span> */}
                             <Button type='submit' className='submit-btn' onClick={() => this.onSubmitForm()} >SUBMIT</Button>
-                            <div className='center-message'>Remember it now, <Link to='/'>try to sign in.</Link></div>
+                            <div className='center-message'>Remember now? <Link to='/'>Try to sign in</Link> or <Link to='/signup'>create a new one.</Link></div>
                         </div>
                     </Form>
                 </div>
