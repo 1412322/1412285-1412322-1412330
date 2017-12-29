@@ -1,137 +1,187 @@
 import React from 'react'
-import { Button, Form, Grid, Header, Image, Message, Segment } from 'semantic-ui-react'
+import { Button, Form, Header, Input, Popup } from 'semantic-ui-react'
 import { connect } from 'react-redux'
 import * as walletManagementActions from '../../actions'
 import { bindActionCreators } from 'redux'
-import isEmail from 'validator/lib/isEmail'
-import isLength from 'validator/lib/isEmail'
-import isEmpty from 'validator/lib/isEmpty'
-import { Link, Redirect } from 'react-router-dom'
+import * as _ from 'lodash'
+import './styles.scss'
+import { Link } from 'react-router-dom'
+import validator from 'validator'
+import RequirementIcon from 'react-icons/lib/md/info-outline'
+import RightIcon from 'react-icons/lib/md/check'
 
 class RegisterForm extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            email: null,
-            token: null,
-            // redirect: false,
-            // error: null,
+            fullname: '',
+            email: '',
+            password: '',
+            isShowPassword: false,
+            errors: [{
+                field: '',
+                message: 0,
+            }],
         }
     }
 
-    signUp = () => {
-        const { walletManagementActions } = this.props
-        if (isEmpty($("#email").val()) || isEmpty($("#password").val()) || isEmpty($("#confirmpassword").val())) {
-            walletManagementActions.getAuthenErrorMessage(9, false)
-        }
-        else if (!isEmail($("#email").val())) {
-            walletManagementActions.getAuthenErrorMessage(10, false)
-            // this.setState({
-            //     error: 'Email is invalid',
-            //     redirect: false
-            // })
-        }
-        else if ($("#password").val() != $("#confirmpassword").val()) {
-            walletManagementActions.getAuthenErrorMessage(11, false)
-            // this.setState({
-            //     error: 'Confirm Password is not match',
-            //     redirect: false
-            // })
-        }
-        else {
-            var headers = {
-                'Content-Type': 'application/json'
-            }
-            var body = {
-                "email": $("#email").val(),
-                "password": $("#password").val()
-            }
+    onHandleChange(event, fieldName) {
+        const target = event.target
+        const value = target.value
+        this.setState({
+            [fieldName]: value,
+        })
+    }
 
-            fetch('api/signup', {
-                method: 'post',
-                body: JSON.stringify(body),
-                headers: headers,
-            })
-                .then(res => res.json())
-                .then((data) => {
-                    if (data.success === true) {
-                        sessionStorage.setItem('token', data.token)
-                        sessionStorage.setItem('email', data.email)
-                        var wallet = {
-                            "email": $("#email").val(),
-                            "money": 1000
-                        }
-                        fetch('api/wallet/create', {
-                            method: 'post',
-                            body: JSON.stringify(wallet),
-                            headers: headers,
-                        })
-                            .then(res2 => res2.json())
-                        walletManagementActions.getAuthenErrorMessage(null, true)
-                        // this.setState({
-                        //     redirect: true
-                        // })
-                    }
-                    else {
-                        walletManagementActions.getAuthenErrorMessage(data.errorCode, false)
-                        // this.setState({
-                        //     error: data.msg,
-                        //     redirect: false
-                        // })
-                    }
-                })
+    onShowPassword() {
+        this.setState({
+            isShowPassword: true,
+        })
+    }
+
+    onHidePassword() {
+        this.setState({
+            isShowPassword: false,
+        })
+    }
+
+    onSubmitForm() {
+        if (_.isEmpty(this.onValidateForm())) {
+            console.log('Register successfully')
         }
+    }
+
+    onValidateForm() {
+        const { email, password } = this.state
+        const errors = []
+        // if (!noEmptyInput(fullname, 1, 255)) {
+        //     errors.push({ field: 'fullname', message: 1 })
+        // }
+
+        if (_.isEmpty(email)) {
+            errors.push({ field: 'email', message: 1 })
+        } else if (!validator.isEmail(email, { allow_utf8_local_part: false })) {
+            errors.push({ field: 'email', message: 2 })
+        }
+
+        if (_.isEmpty(password)) {
+            errors.push({ field: 'password', message: 1 })
+        } else if (password.length < 8) {
+            errors.push({ field: 'password', message: 3 })
+        }
+
+        this.setState({
+            errors: errors,
+        })
+
+        return errors
     }
 
     render() {
-        const { error, isRedirect } = this.props
+        const { fullname, email, password, errors, isShowPassword } = this.state
         return (
-            sessionStorage.getItem('token')
-                ? <Redirect to='/' />
-                : (<Grid
-                    textAlign='center'
-                    style={{ height: '100%' }}
-                    verticalAlign='middle'>
-                    <Grid.Column style={{ maxWidth: 450 }}>
-                        <Header as='h2' textAlign='center'>
-                            Register an account
-                    </Header>
-                        <Form size='large'>
-                            <Form.Input
-                                fluid
-                                icon='user'
-                                iconPosition='left'
-                                placeholder='Enter Email'
-                                id="email"
-                            />
-                            <Form.Input
-                                fluid
-                                icon='lock'
-                                iconPosition='left'
-                                placeholder='Enter Password'
-                                type='password'
-                                id="password"
-                            />
-                            <Form.Input
-                                fluid
-                                icon='lock'
-                                iconPosition='left'
-                                placeholder='Confirm Password'
-                                type='password'
-                                id="confirmpassword"
-                            />
-                            {(error !== null && error !== 1 && error !== 2) &&
-                                <Message negative>
-                                    {error === 9 && 'Email and Password must not be empty.'}
-                                    {error === 10 && 'Email is invalid.'}
-                                    {error === 11 && 'Confirm password does not match.'}
-                                    {error === 12 && 'Email is already exist.'}
-                                </Message>}
-                            <Button fluid size='large' onClick={this.signUp}>Register</Button>
-                        </Form>
-                        Already have account? <Link to='/signin'>Log-in</Link>
-                    </Grid.Column>
-                </Grid>)
+            <div className='container'>
+                <div className='dialog'>
+                    <Form className='form' onSubmit={() => this.onSubmitForm()}>
+                        <div className='form-header'>
+                            <Header as='h2' textAlign='center'>Create an account</Header>
+                        </div>
+                        <div className='form-body'>
+                            <Input
+                                fluid={true}
+                                type='text'
+                                label={<label>Full name</label>}
+                                className={
+                                    _.find(errors, { field: 'fullname' })
+                                        ? 'normal-field error-field'
+                                        : 'normal-field'
+                                }
+                                value={fullname}
+                                onChange={(e) => this.onHandleChange(e, 'fullname')} />
+                            <Input
+                                fluid={true}
+                                type='email'
+                                label={
+                                    <label>
+                                        Email address
+                                        <Popup
+                                            className='tooltip'
+                                            content={
+                                                <p>
+                                                    <RightIcon size={10} color='#7ed321' /> At least one letter
+                                                    <br /><RightIcon size={10} color='#7ed321' /> Valid email address
+                                                </p>
+                                            }
+                                            hideOnScroll={true}
+                                            hoverable={true}
+                                            offset={18}
+                                            position='top center'
+                                            trigger={
+                                                <RequirementIcon size={15} color='#ff6868' />
+                                            } />
+                                    </label>
+                                }
+                                className={_.find(errors, { field: 'email' }) ? 'normal-field error-field' : 'normal-field'}
+                                value={email}
+                                onChange={(e) => this.onHandleChange(e, 'email')} />
+                            <Input
+                                action={
+                                    <Button
+                                        className='show-password-btn'
+                                        onMouseDown={this.onShowPassword.bind(this)}
+                                        onMouseUp={this.onHidePassword.bind(this)}
+                                        type='button'>
+                                        SHOW
+                                    </Button>
+                                }
+                                className={
+                                    _.find(errors, { field: 'password' })
+                                        ? 'normal-field error-field'
+                                        : 'normal-field'
+                                }
+                                id='password'
+                                fluid={true}
+                                label={
+                                    <label>
+                                        Password
+                                        <Popup
+                                            className='tooltip'
+                                            content={
+                                                <p>
+                                                    <RightIcon size={10} color='#7ed321' /> At least 8 characters
+                                                </p>
+                                            }
+                                            hideOnScroll={true}
+                                            hoverable={true}
+                                            offset={18}
+                                            position='top center'
+                                            trigger={
+                                                <RequirementIcon size={15} color='#ff6868' />
+                                            }
+                                        />
+                                    </label>
+                                }
+                                onChange={(e) => this.onHandleChange(e, 'password')}
+                                type={isShowPassword ? 'text' : 'password'}
+                                value={password} />
+                        </div>
+                        <div className='form-footer'>
+                            {/* <span
+                                className='errorMessage'
+                                style={
+                                    (errorCode !== 1 && errorCode !== null)
+                                        ? { display: 'block' }
+                                        : { display: 'none' }
+                                }>
+                                {errorCode === '12' && 'Email address already in use'}
+                                {errorCode === '14' && 'Invalid email address'}
+                            </span> */}
+                            <Button type='submit' className='submit-btn' onClick={() => this.onSubmitForm()} >REGISTER</Button>
+                            <div className='center-message' >Already have an account, <Link to='/'>sign in now.</Link></div>
+                        </div>
+                    </Form>
+                </div>
+            </div>
         )
     }
 }

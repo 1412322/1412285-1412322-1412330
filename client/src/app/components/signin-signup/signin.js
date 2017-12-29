@@ -7,7 +7,7 @@ import * as _ from 'lodash'
 import './styles.scss'
 import { Link } from 'react-router-dom'
 import validator from 'validator'
-class LoginForm extends React.Component {
+class LoginContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -72,7 +72,7 @@ class LoginForm extends React.Component {
     render() {
         const { email, password, errors, isShowPassword } = this.state
         return (
-            <div className='containter'>
+            <div className='container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={() => this.onSubmitForm()}>
                         <div className='form-header'>
@@ -165,6 +165,6 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(LoginForm)
+)(LoginContainer)
 
-// module.exports = LoginForm
+// module.exports = LoginContainer

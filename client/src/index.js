@@ -13,21 +13,27 @@ import { Provider } from 'react-redux'
 import { createStore } from 'redux'
 import walletManagementApp from './app/reducers'
 // import Main from './app/components/layouts/main.js'
-import Account from './app/components/signin-signup/signin.js'
+// import Account from './app/components/signin-signup/signin.js'
 import { AppContainer } from 'react-hot-loader'
 // import App from './App'
 import { BrowserRouter, Route } from 'react-router-dom'
 import registerServiceWorker from './registerServiceWorker'
 // import '../semantic/dist/semantic.min.css'
+import App from './app/components/index.js'
+// import admin from '@modules/admin'
+// import home from '@modules/home'
+
 const store = createStore(walletManagementApp)
 
 ReactDOM.render((
-    <Provider store={store}>
-        <AppContainer>
+    <AppContainer>
+        <Provider store={store}>
+
             <BrowserRouter>
-                <Route path="/" component={Account} />
+                <Route path="/" component={App} />
             </BrowserRouter>
-        </AppContainer>
-    </Provider>)
+
+        </Provider>
+    </AppContainer>)
     , document.getElementById("root"))
 registerServiceWorker()
