@@ -1,94 +1,151 @@
 import React from 'react'
-import { Button, Form, Grid, Header, Message } from 'semantic-ui-react'
+import { Button, Form, Input, Header, Grid } from 'semantic-ui-react'
 import { connect } from 'react-redux'
 import * as walletManagementActions from '../../actions'
 import { bindActionCreators } from 'redux'
-import { Link, Redirect } from 'react-router-dom'
+import * as _ from 'lodash'
+import './styles.scss'
+import { Link } from 'react-router-dom'
+import validator from 'validator'
 class LoginForm extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            email: null,
-            token: null,
-            // redirect: false,
-            // error: null,
+            email: '',
+            password: '',
+            // isRememberMe: isRememberMe,
+            isShowPassword: false,
+            errors: [{
+                field: '',
+            }],
         }
     }
-    signIn = () => {
-        // const { walletManagementActions } = this.props
-        // // Set the headers
-        // const headers = {
-        //     'Content-Type': 'application/json'
-        // }
-        // const body = {
-        //     "email": $("#email").val(),
-        //     "password": $("#password").val()
-        // };
-        // fetch('api/signin', {
-        //     method: 'post',
-        //     body: JSON.stringify(body),
-        //     headers: headers,
-        // })
-        //     .then(res => res.json())
-        //     .then((data) => {
-        //         console.log(data);
-        //         if (data.success === true) {
-        //             sessionStorage.setItem('token', data.token);
-        //             sessionStorage.setItem('email', data.email);
-        //             walletManagementActions.getAuthenErrorMessage(null, true)
-        //             // this.setState({
-        //             //     redirect: true
-        //             // });
-        //         }
-        //         else {
-        //             walletManagementActions.getAuthenErrorMessage(data.errorCode, false)
-        //             // this.setState({
-        //             //     error: data.msg,
-        //             //     redirect: false
-        //             // });
-        //         }
-        //     })
 
+    onSubmitForm() {
+        // const { actions } = this.props
+        // const { fullname, email, password, isRememberMe } = this.state
+        if (_.isEmpty(this.onValidateForm())) {
+            console.log('Login successfully')
+        }
     }
+
+    onValidateForm() {
+        const { email, password } = this.state
+        const errors = []
+        if (_.isEmpty(email)) {
+            errors.push({ field: 'email' })
+        } else if (!validator.isEmail(email, { allow_utf8_local_part: false })) {
+            errors.push({ field: 'email' })
+        }
+
+        if (_.isEmpty(password)) {
+            errors.push({ field: 'password' })
+        }
+
+        this.setState({
+            errors: errors,
+        })
+
+        return errors
+    }
+
+    onHandleChange(event, fieldName) {
+        const target = event.target
+        const value = fieldName === 'isRememberMe' ? !this.state.isRememberMe : target.value
+        this.setState({
+            [fieldName]: value,
+        })
+    }
+
+    onShowPassword() {
+        this.setState({
+            isShowPassword: true,
+        })
+    }
+
+    onHidePassword() {
+        this.setState({
+            isShowPassword: false,
+        })
+    }
+
     render() {
-        const { error, isRedirect } = this.props
+        const { email, password, errors, isShowPassword } = this.state
         return (
-            sessionStorage.getItem('token')
-                ? <Redirect to='/' />
-                : (<Grid
-                    textAlign='center'
-                    style={{ height: '100%' }}
-                    verticalAlign='middle'>
-                    <Grid.Column style={{ maxWidth: 450 }}>
-                        <Header as='h2' textAlign='center'>
-                            Log-in to your account
-                    </Header>
-                        <Form size='large'>
-                            <Form.Input
-                                fluid
-                                icon='user'
-                                iconPosition='left'
-                                placeholder='Enter Email'
-                                id='email'
-                            />
-                            <Form.Input
-                                fluid
-                                icon='lock'
-                                iconPosition='left'
-                                placeholder='Enter Password'
-                                type='password'
+            <div className='containter'>
+                <div className='dialog'>
+                    <Form className='form' onSubmit={() => this.onSubmitForm()}>
+                        <div className='form-header'>
+                            <Header as='h2' textAlign='center' >Sign in</Header>
+                        </div>
+                        <div className='form-body'>
+                            <Input
+                                className={
+                                    _.find(errors, { field: 'email' })
+                                        ? 'normal-field error-field'
+                                        : 'normal-field'
+                                }
+                                fluid={true}
+                                label={<label>Email address</label>}
+                                onChange={(e) => this.onHandleChange(e, 'email')}
+                                type='email'
+                                value={email} />
+                            <Input
+                                action={
+                                    <Button
+                                        className='show-password-btn'
+                                        onMouseUp={this.onHidePassword.bind(this)}
+                                        onMouseDown={this.onShowPassword.bind(this)}
+                                        type='button'>
+                                        SHOW
+                                    </Button>
+                                }
+                                className={
+                                    _.find(errors, { field: 'password' })
+                                        ? 'normal-field error-field'
+                                        : 'normal-field'}
                                 id='password'
-                            />
-                            {(error === 1 || error === 2) &&
-                                <Message negative>
-                                    {error === 1 && 'User not found'}
-                                    {error === 2 && 'Wrong password'}
-                                </Message>}
-                            <Button fluid size='large' onClick={this.signIn}>Login</Button>
-                        </Form>
-                        New to us? <Link to='/signup'>Register</Link>
-                    </Grid.Column>
-                </Grid>)
+                                fluid={true}
+                                label={<label>Password</label>}
+                                onChange={(e) => this.onHandleChange(e, 'password')}
+                                type={isShowPassword ? 'text' : 'password'}
+                                value={password} />
+                            <Grid columns='equal'>
+                                <Grid.Row>
+                                    {/* <Grid.Column className='left-message'>
+                                        <Checkbox
+                                            checked={isRememberMe}
+                                            className={
+                                                isRememberMe
+                                                    ? 'checkBox checked'
+                                                    : 'checkBox'
+                                            }
+                                            label={{ children: 'Remember me' }}
+                                            onChange={(e) => this.onHandleChange(e, 'isRememberMe')} />
+                                    </Grid.Column> */}
+                                    <Grid.Column textAlign='right' className='right-message'>
+                                        Forgot password?
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
+                        </div>
+                        <div className='form-footer'>
+                            {/* <span
+                                className='error-message}
+                                style={
+                                    (errorCode !== 1 && errorCode !== null)
+                                        ? { display: 'block' }
+                                        : { display: 'none' }
+                                }>
+                                {errorCode === '11' && 'Email address or password is incorrect'}
+                                {errorCode === '14' && 'Invalid email address'}
+                            </span> */}
+                            <Button type='submit' className='submit-btn' onClick={() => this.onSubmitForm()} >LOGIN</Button>
+                            <div className='center-message'>Not a user, <Link to='/account/register'>sign up now.</Link></div>
+                        </div>
+                    </Form>
+                </div>
+            </div>
         )
     }
 }
@@ -96,7 +153,6 @@ class LoginForm extends React.Component {
 const mapStateToProps = (state) => {
     return {
         error: state.authen.error,
-        isRedirect: state.authen.isRedirect,
     }
 }
 

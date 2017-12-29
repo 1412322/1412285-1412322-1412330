@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,600,700');
+$primary-color: #0076ff;
+$secondary-color: #f6f9ff;
+$border-color: #edf0ff;
+$text-color1: #000;
+$text-color2: #fff;
+$text-color3: #242951;
+$text-color4: #022145;
+$placeholder-text-color: #d8ddff;
+$failure-color: #e05d5d;
+$disable-label-color: #000;
+$success-color: #7ed321;
+$primary-background-color: #0068e2;
+$navbar-background-color: #006FEF;
+$navbarlogo-background-color: #1557BB;
+$inactive-background-color: #fdfdff;
+$label-background-color: rgba(216, 221, 255, 0.21);
+$background-color1: #fff;
+
+$navbar-height: 77px;
+$sidebar-width: 164px;
+$logo-sidebar-width: 60px;
+$font-bold: 700;
+$font-semibold: 600;
+$font-regular: 400;
+
+@mixin button($background-color, $text-color) {
+    background-color: $background-color;
+    color: $text-color;
+    border: 0 !important;
+    transition: 0.5s;
+    margin: 0 !important;
+    font-weight: $font-bold !important;
+    border-radius: 2px;
+    text-transform: uppercase;
+    padding: 0;
+    &:hover, &:active, &:focus {
+      background-color: lighten($background-color, 8);
+      color: $text-color;
+    }
+}
+
+@mixin input($background-color, $text-color) {
+    background-color: $background-color !important;
+    border: solid 1px rgba(216, 221, 255, 0.5) !important;
+    border-radius: 2px !important;
+    color: $text-color !important;
+    outline: none !important;
+    border-radius: 2px !important;
+    height: 50px;
+    padding: 0 15px !important;
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover, 
+    &:-webkit-autofill:focus {
+      border: solid 1px rgba(216, 221, 255, 0.5) !important;
+      -webkit-text-fill-color: $text-color !important;
+      box-shadow: 0 0 0px 1000px $background-color inset !important;
+    }   
+    &::placeholder {
+      color: $placeholder-text-color;
+    }
+    &::-moz-placeholder {
+      opacity: 1;
+    }
+}
+
+@mixin title {
+  font-size: 22px !important;
+  color: $primary-color;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+}
+
+@mixin tooltip($position) {
+  border-radius: 3px !important;
+  box-shadow: 0 5px 14px 0 rgba(173, 181, 232, 0.5) !important;
+  border: solid 1px rgba(216, 221, 255, 0.5) !important;
+  &:before {
+    @if $position == 'top' {
+    box-shadow: 1px 1px 0 0 rgba(216, 221, 255, 0.5) !important;
+    z-index: -1 !important;
+    }
+    @if $position == 'bottom' {
+      box-shadow: -1px -1px 0 0 rgba(216, 221, 255, 0.5) !important;
+      z-index: -1 !important;
+    }
+  }
+  @include animated(0.3s);
+  @include fadeInAndScale;
+}
+
+@mixin customScrollbar {
+  & > div {
+    & > div:nth-child(3) {
+      width: 3px !important;
+      z-index: 2;
+      & > div {
+        opacity: 0.22 !important;
+        border: solid 5px #0076ff !important;
+        border-radius: 0 !important;
+      }
+    }
+  }
+}
+
+@mixin animated($duration) {
+  animation-duration: $duration;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeInAndScale {
+  from {
+    opacity: 0;
+    transform: scale(.8, .8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1, 1);
+  }
+}
+
+@mixin fadeInAndScale {
+  animation-name: fadeInAndScale;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translate3d(-100%, 0, 0);
+    visibility: visible;
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@mixin slideInLeft {
+  animation-name: slideInLeft;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translate3d(100%, 0, 0);
+    visibility: visible;
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@mixin slideInRight {
+  animation-name: slideInRight;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10%, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@mixin fadeInUp {
+  animation-name: fadeInUp;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Nunito', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: $font-regular !important;
+  -webkit-font-smoothing: antialiased;
+}
