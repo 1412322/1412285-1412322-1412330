@@ -141,7 +141,7 @@ class LoginForm extends React.Component {
                                 {errorCode === '14' && 'Invalid email address'}
                             </span> */}
                             <Button type='submit' className='submit-btn' onClick={() => this.onSubmitForm()} >LOGIN</Button>
-                            <div className='center-message'>Not a user, <Link to='/account/register'>sign up now.</Link></div>
+                            <div className='center-message'>Not a user, <Link to='/signup'>sign up now.</Link></div>
                         </div>
                     </Form>
                 </div>
