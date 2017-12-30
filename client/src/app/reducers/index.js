@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux'
 import transfer from './transfer'
-import authen from './authen'
+import account from './account'
 
 const walletManagementApp = combineReducers({
   transfer,
-  authen
+  account
 })
 
 export default walletManagementApp

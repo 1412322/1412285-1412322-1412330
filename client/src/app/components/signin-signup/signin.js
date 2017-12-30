@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Form, Input, Header, Grid } from 'semantic-ui-react'
 import { connect } from 'react-redux'
-import * as walletManagementActions from '../../actions'
+import * as accountActions from '../../actions'
 import { bindActionCreators } from 'redux'
 import * as _ from 'lodash'
 import './styles.scss'
@@ -21,11 +21,27 @@ class LoginContainer extends React.Component {
         }
     }
 
-    onSubmitForm() {
+    componentWillMount() {
+        const { actions } = this.props
+        actions.resetErrorMessage()
+    }
+
+    onSubmitForm(e) {
+        e.preventDefault()
         // const { actions } = this.props
         // const { fullname, email, password, isRememberMe } = this.state
         if (_.isEmpty(this.onValidateForm())) {
-            console.log('Login successfully')
+            const { email, password } = this.state
+            const { actions } = this.props
+            console.log(actions)
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            const body = {
+                "email": email,
+                "password": password
+            };
+            actions.signIn(body, headers)
         }
     }
 
@@ -71,10 +87,11 @@ class LoginContainer extends React.Component {
 
     render() {
         const { email, password, errors, isShowPassword } = this.state
+        const { errorMessage } = this.props
         return (
             <div className='container'>
                 <div className='dialog'>
-                    <Form className='form' onSubmit={() => this.onSubmitForm()}>
+                    <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
                         <div className='form-header'>
                             <Header as='h2' textAlign='center' >Sign in</Header>
                         </div>
@@ -130,17 +147,16 @@ class LoginContainer extends React.Component {
                             </Grid>
                         </div>
                         <div className='form-footer'>
-                            {/* <span
-                                className='error-message}
+                            <span
+                                className='error-message'
                                 style={
-                                    (errorCode !== 1 && errorCode !== null)
+                                    (errorMessage !== null)
                                         ? { display: 'block' }
                                         : { display: 'none' }
                                 }>
-                                {errorCode === '11' && 'Email address or password is incorrect'}
-                                {errorCode === '14' && 'Invalid email address'}
-                            </span> */}
-                            <Button type='submit' className='submit-btn' onClick={() => this.onSubmitForm()} >LOGIN</Button>
+                                {errorMessage}
+                            </span>
+                            <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >LOGIN</Button>
                             <div className='center-message'>Not a user, <Link to='/signup'>sign up now.</Link></div>
                         </div>
                     </Form>
@@ -152,13 +168,16 @@ class LoginContainer extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        error: state.authen.error,
+        errorMessage: state.account.errorMessage,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        walletManagementActions: bindActionCreators(walletManagementActions, dispatch)
+        actions: bindActionCreators({
+            signIn: accountActions.signIn,
+            resetErrorMessage: accountActions.resetErrorMessage
+        }, dispatch),
     }
 }
 

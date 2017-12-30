@@ -1,6 +1,6 @@
-var User = require ('../models/user');
-var jwt  = require('jwt-simple');
-var config  = require('../config/database');
+var User = require('../models/user');
+var jwt = require('jwt-simple');
+var config = require('../config/database');
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var bcrypt = require('bcrypt-nodejs');
@@ -14,18 +14,16 @@ var transport = nodemailer.createTransport(smtpTransport({
     }
 }));
 
-exports.signup = function (req,res,next) {
-  if (!req.body.email || !req.body.password) {
-      res.json({success: false, msg: 'Please pass email and password.'});
-    } else {
-      var newUser = new User();
-	    newUser.email = req.body.email;
-      newUser.password = newUser.encryptPassword(req.body.password);
+exports.signup = function (req, res, next) {
 
-      // save the user
-      newUser.save(function(err, user) {
+    var newUser = new User();
+    newUser.email = req.body.email;
+    newUser.password = newUser.encryptPassword(req.body.password);
+
+    // save the user
+    newUser.save(function (err, user) {
         if (err) {
-          return res.json({success: false, msg: 'Email already exists.'});
+            return res.json({ success: false, msg: 'Email address already exists.' });
         }
         var token = jwt.encode(user, config.secret);
         /*var transporter = nodemailer.createTransport({
@@ -36,212 +34,203 @@ exports.signup = function (req,res,next) {
             }
           });*/
 
-          SendVerificationMail(req,user);
-          res.json({success: true, msg: 'A verification email has been sent to ' + user.email + '.'});
+        SendVerificationMail(req, user);
+        res.json({ success: true, msg: 'A verification email has been sent to ' + user.email + '.' });
 
-            /*var mailOptions = {
-              to: user.email,
-              subject: 'Account Verification Token',
-              text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + token + '.\n'
-            };
-            transporter.sendMail(mailOptions, function (errSendMail) {
-                if (err) {
-                  res.json({success: false, msg: errSendMail.message});
-                }
-                res.json({success: true, token: token, email: user.email, msg: 'A verification email has been sent to ' + user.email + '.'});
-            });*/
+        /*var mailOptions = {
+          to: user.email,
+          subject: 'Account Verification Token',
+          text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + token + '.\n'
+        };
+        transporter.sendMail(mailOptions, function (errSendMail) {
+            if (err) {
+              res.json({success: false, msg: errSendMail.message});
+            }
+            res.json({success: true, token: token, email: user.email, msg: 'A verification email has been sent to ' + user.email + '.'});
+        });*/
         /*var token = jwt.encode(user, config.secret);
         res.json({success: true, token: token, email: user.email});*/
-      });
-    }
+    });
+
 }
 
-exports.signin = function (req,res,next) {
-  console.log("req:", req.body.email);
-  User.findOne({
-    email: req.body.email
-  }, function(err, user) {
-    console.log('email signin: ', req.body.email);
-    if (err) throw err;
-
-    if (!user) {
-        console.log('User not found', req.body.email);
-      res.send({success: false, msg: 'Authentication failed. User not found.'});
-    } else {
-      // check if password matches
-      if (!user.validPassword(req.body.password)){
-			     res.send({success: false, msg: 'Authentication failed. Wrong password.'});
-		  }
-      else{
-        if (!user.isVerified)
-         return res.json({ success: false, type: 'not-verified', msg: 'Your account has not been verified.' });
-
-        // if user is found and password is right create a token
-        var token = jwt.encode(user, config.secret);
-        // return the information including token as JSON
-        res.json({success: true, token: token, email: user.email});
-      }
-
-    }
-  });
-}
-
-exports.profile = function (req,res,next) {
-  var token = getToken(req.headers);
-  if (token) {
-    var decoded = jwt.decode(token, config.secret);
+exports.signin = function (req, res, next) {
+    console.log("req:", req.body.email);
     User.findOne({
-      email: decoded.email
-    }, function(err, user) {
+        email: req.body.email
+    }, function (err, user) {
+        console.log('email signin: ', req.body.email);
         if (err) throw err;
 
         if (!user) {
-          return res.status(403).send({success: false, msg: 'Authentication failed. User not found.'});
+            console.log('User not found', req.body.email);
+            res.send({ success: false, msg: 'User not found.' });
         } else {
-          res.json({success: true, msg: 'Welcome in the member area ' + user.email + '!', email:  user.email, token: token});
+            // check if password matches
+            if (!user.validPassword(req.body.password)) {
+                res.send({ success: false, msg: 'Wrong password.' });
+            }
+            else {
+                if (!user.isVerified)
+                    return res.json({ success: false, type: 'not-verified', msg: 'Your account has not been verified.' });
+
+                // if user is found and password is right create a token
+                var token = jwt.encode(user, config.secret);
+                // return the information including token as JSON
+                res.json({ success: true, token: token, email: user.email });
+            }
+
         }
     });
-  } else {
-    return res.status(403).send({success: false, msg: 'No token provided.'});
-  }
 }
 
-exports.verify_email = function (req,res,next) {
-  console.log(req.protocol+":/"+req.get('host'));
-    User.findById(req.params.id).exec(function (err,user) {
-        if(err){
+exports.profile = function (req, res, next) {
+    var token = getToken(req.headers);
+    if (token) {
+        var decoded = jwt.decode(token, config.secret);
+        User.findOne({
+            email: decoded.email
+        }, function (err, user) {
+            if (err) throw err;
+
+            if (!user) {
+                return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.' });
+            } else {
+                res.json({ success: true, msg: 'Welcome in the member area ' + user.email + '!', email: user.email, token: token });
+            }
+        });
+    } else {
+        return res.status(403).send({ success: false, msg: 'No token provided.' });
+    }
+}
+
+exports.verify_email = function (req, res, next) {
+    console.log(req.protocol + ":/" + req.get('host'));
+    User.findById(req.params.id).exec(function (err, user) {
+        if (err) {
             console.log(err);
-            res.json({success: false, msg: err});
+            res.json({ success: false, msg: err });
 
         }
-        else
-        {
-            if (user != null && user !=undefined)
-            {
-                if (user.isVerified == true){
-                    res.json({success: false, msg: 'Email ' + user.email + 'was verified!'});
+        else {
+            if (user != null && user != undefined) {
+                if (user.isVerified == true) {
+                    res.json({ success: false, msg: 'Email ' + user.email + 'was verified!' });
                 }
             }
-            else
-            {
-                res.json({success: false, msg: 'User not found!'});
+            else {
+                res.json({ success: false, msg: 'User not found!' });
             }
         }
     });
     var user_instance = new User();
     user_instance._id = req.params.id;
     user_instance.isVerified = true;
-    User.findByIdAndUpdate(req.params.id,user_instance,{}).exec(function (err,user) {
-        if (err){
-            res.json({success: false, msg: 'User not found!'});
+    User.findByIdAndUpdate(req.params.id, user_instance, {}).exec(function (err, user) {
+        if (err) {
+            res.json({ success: false, msg: 'User not found!' });
         }
-        else{
-            var noti = "Your email "+user.email+" is verified";
-            res.json({success: true, msg: noti});
-        }
-    });
-}
-
-exports.forget_password = function (req,res,next) {
-  var email = req.body.email;
-    User.findOne({'email': email}).exec(function(err, user)
-    {
-        if(err){
-           res.json({success: false, msg: err});
-        }
-        if (user != null && user != undefined)
-        {
-
-            var noti = "Request has send to " + email;
-            SendResetPasswordMail(req,user, res);                        //Send email reset password
-            //res.json({success: true, msg: noti});
-
-        }
-        else
-        {
-          res.json({success: false, msg: "User not found!"});
-
+        else {
+            var noti = "Your email " + user.email + " is verified";
+            res.json({ success: true, msg: noti });
         }
     });
 }
 
-exports.reset_password = function (req,res,next) {
-  var reset_qr = req.body.reset;
+exports.forget_password = function (req, res, next) {
+    var email = req.body.email;
+    User.findOne({ 'email': email }).exec(function (err, user) {
+        if (err) {
+            res.json({ success: false, msg: err });
+        }
+        if (user != null && user != undefined) {
+
+            SendResetPasswordMail(req, user, res);                        //Send email reset password
+            // res.json({success: true, msg: noti});
+
+        }
+        else {
+            res.json({ success: false, msg: "User not found." });
+        }
+    });
+}
+
+exports.reset_password = function (req, res, next) {
+    var reset_qr = req.body.reset;
     var id = req.params.id;
-    console.log("id: "+id);
-    console.log("Reset: "+reset_qr);
+    console.log("id: " + id);
+    console.log("Reset: " + reset_qr);
 
     var messages = [];
-    if (reset_qr != null && reset_qr!=undefined && reset_qr != '' )             //check reset toke param
+    if (reset_qr != null && reset_qr != undefined && reset_qr != '')             //check reset toke param
     {
         User.findById(id).exec(function (err, user) {                           //find user
             if (err) {
                 console.log(err);
-                res.json({success: false, msg: err});
+                res.json({ success: false, msg: err });
             }
             else {
                 if (user != null && user != undefined) {
                     console.log("Reset token: " + user.passwordResetToken);
                     if (user.passwordResetToken == reset_qr) {
 
-                            var user_instance = new User();
-                            user_instance._id = id;
-                            user_instance.password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(5), null);
-                            user_instance.passwordResetToken='';
-                            user_instance.isVerified = true;
-                            User.findByIdAndUpdate(id, user_instance, {}).exec(function (err, user) {
-                                console.log(user);
-                                if (user != null && user != undefined) {
-                                  res.json({success: true, msg: 'Reset password successed!'});
-                                }
-                                else {
-                                    res.json({success: false, msg: 'Reset password failed!'});
-                                }
-                            });
+                        var user_instance = new User();
+                        user_instance._id = id;
+                        user_instance.password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(5), null);
+                        user_instance.passwordResetToken = '';
+                        user_instance.isVerified = true;
+                        User.findByIdAndUpdate(id, user_instance, {}).exec(function (err, user) {
+                            console.log(user);
+                            if (user != null && user != undefined) {
+                                res.json({ success: true, msg: 'Reset password successed!' });
+                            }
+                            else {
+                                res.json({ success: false, msg: 'Reset password failed!' });
+                            }
+                        });
 
                     }
                     else {
-                      res.json({success: false, msg: 'Link is expired!'});
+                        res.json({ success: false, msg: 'Link is expired!' });
                     }
                 }
             }
 
         });
     }
-    else
-    {
-      res.json({success: false, msg: "Reset token does not exists!"});
+    else {
+        res.json({ success: false, msg: "Reset token does not exists!" });
     }
 }
 getToken = function (headers) {
-  if (headers && headers.authorization) {
-    var parted = headers.authorization;
-    if (parted) {
-      return parted;
+    if (headers && headers.authorization) {
+        var parted = headers.authorization;
+        if (parted) {
+            return parted;
+        } else {
+            return null;
+        }
     } else {
-      return null;
+        return null;
     }
-  } else {
-    return null;
-  }
 };
 
-SendVerificationMail = function (req,user) {
-    var host=req.get('host');
-    var link="http://"+req.get('host')+"/api/users/verify/"+user["_id"];
-    var mailOptions={
-        to : user["email"],
-        subject : "Please confirm your account",
-        html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"
+SendVerificationMail = function (req, user) {
+    var host = req.get('host');
+    var link = "http://" + req.get('host') + "/api/users/verify/" + user["_id"];
+    var mailOptions = {
+        to: user["email"],
+        subject: "Please confirm your account",
+        html: "Hello,<br> Please Click on the link to verify your email.<br><a href=" + link + ">Click here to verify</a>"
     }
     console.log(mailOptions);
-    transport.sendMail((mailOptions),function(error, response){
-        if(error){
+    transport.sendMail((mailOptions), function (error, response) {
+        if (error) {
             console.log(error);
             //res.end("error");
-           // return false;
+            // return false;
         }
-        else{
+        else {
             console.log("Message sent: " + response.message);
             console.log("success");
             //res.end("sent");
@@ -250,33 +239,33 @@ SendVerificationMail = function (req,user) {
     });
 };
 
-SendResetPasswordMail = function (req,user, res) {
+SendResetPasswordMail = function (req, user, res) {
     var token = bcrypt.hashSync(user["_id"], bcrypt.genSaltSync(5), null);
-    User.findByIdAndUpdate(user["_id"],{_id: user["_id"], passwordResetToken: token}).exec(function (err,user) {
-        if(err)
-        {
-            res.json({success: false, msg: err});
+    User.findByIdAndUpdate(user["_id"], { _id: user["_id"], passwordResetToken: token }).exec(function (err, user) {
+        if (err) {
+            res.json({ success: false, msg: err });
         }
-        console.log("USER: " + user);
+        // var noti = "Request has been sent to " + user.email + '.';
+        // res.json({ success: true, msg: noti });
     });
 
 
-    var host=req.get('host');
+    var host = req.get('host');
     //link này sẽ được thay thế bằng link tới form nhập password mới
-    var link="http://"+req.get('host')+"/api/users/resetpassword/"+user["_id"]+"?reset="+token;              //link to reset password
-    var mailOptions={
-        to : user["email"],
-        subject : "Reset your password",
-        html : "Hello,<br> Please Click on the link to reset your password.<br><a href="+link+">Click here to reset your password</a>"
+    var link = "http://" + req.get('host') + "/api/users/resetpassword/" + user["_id"] + "?reset=" + token;              //link to reset password
+    var mailOptions = {
+        to: user["email"],
+        subject: "Reset your password",
+        html: "Hello,<br> Please Click on the link to reset your password.<br><a href=" + link + ">Click here to reset your password</a>"
     }
     console.log(mailOptions);
-    transport.sendMail(mailOptions, function(error, response){
-        if(error){
-            res.json({success: false, msg: "Reset token does not exists!"});
+    transport.sendMail(mailOptions, function (error, response) {
+        if (error) {
+            res.json({ success: false, msg: "Reset token does not exists!" });
         }
-        else{
+        else {
             console.log("Message sent: " + response.message);
-            res.json({success: true, resetToken: token, userID: user["_id"]});
+            res.json({ success: true, resetToken: token, userID: user["_id"] });
         }
     });
 };

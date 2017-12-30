@@ -55,6 +55,7 @@
       }
       .form-body {
         width: 100%;
+        text-align: center;
         .normal-field {
           box-shadow: 0 2.5px 7px 0 rgba(232, 173, 173, 0.18);
           margin: 20px 0;
@@ -142,6 +143,8 @@
           display: block;
           position: absolute;
           top: -40px;
+          width: 100%;
+          text-align: center;
         }
         .submit-btn {
           @include button($primary-color, $text-color2);
