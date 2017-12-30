@@ -139,7 +139,7 @@ exports.forget_password = function (req, res, next) {
             res.json({ success: false, msg: err });
         }
         if (user != null && user != undefined) {
-
+            var noti = "Request has been sent to " + email + '.';
             SendResetPasswordMail(req, user, res);                        //Send email reset password
             // res.json({success: true, msg: noti});
 
