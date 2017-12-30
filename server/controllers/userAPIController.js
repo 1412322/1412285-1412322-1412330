@@ -5,6 +5,7 @@ var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var bcrypt = require('bcrypt-nodejs');
 var request = require('request');
+const rp = require('request-promise');
 
 var transport = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
@@ -265,9 +266,10 @@ SendResetPasswordMail = function (req, user, res) {
     });
 };
 
+var isLimit = false;
 createAddress =  function (res, user)
 {
-
+isLimit = false;
   var headers, options;
   headers = {
     'User-Agent':       'Super Agent/0.0.1',
@@ -291,42 +293,144 @@ createAddress =  function (res, user)
     user.privateKey = JSON.parse(body).privateKey;
     var user_instance = new User();
     user_instance._id = user._id;
-    user_instance.address = JSON.parse(body).address;
+    //user_instance.address = JSON.parse(body).address;
+    user_instance.address = '77d231e59c95d3c4bad46c4896964427649f77321c38b59642d2ad4c022e3cb5';
     user_instance.publicKey = JSON.parse(body).publicKey;
     user_instance.privateKey = JSON.parse(body).privateKey;
-    User.findByIdAndUpdate(user._id,user_instance,{}).exec(function (err,user) {
+    User.findByIdAndUpdate(user._id,user_instance,{}).exec(function (err, newUser) {
         if (err){
             res.json({success: false, msg: 'Create address error!'});
         }
+        //getRealMoney(res, newUser, -1);
+        var URLs = [];
+        var options = [];
+        console.log('user.address createAddress: ', newUser);
+        getTotalBlock(res, user_instance);
+        //let i = 0;
+        /*for (let i = 1050; i < 1070; i++)
+        {
+          console.log('isLimit: ', isLimit);
+          URLs.push('https://api.kcoin.club/blocks/' + i);
+          var option = {
+            url: 'https://api.kcoin.club/blocks/' + i,
+            method: 'GET',
+            headers: headers,
+            json: true
+          };
+          options.push(option);
+          i++;
+          apicall(option, newUser);
+        }*/
+
     });
     } else {
-      console.log(error);
     }
   });
 }
+ getRealMoney =  function (option, user){
+    return rp(option)
+    .then(function(data){
+      console.log('apicall-promise: ', data);
+      if (data.code)
+      {
+        if (data.code == 'MethodNotAllowed')
+        {
+          isLimit = true;
+        }
+      }
+      else
+      {
+        var transactions = data.transactions;
+        for (let j = 0; j < transactions.length; j ++)
+        {
+          var outputs = transactions[j].outputs;
+          //console.log('outputs: ',outputs );
+          for (let k = 0; k < outputs.length; k++)
+          {
+            var lockScript = outputs[k].lockScript.split(" ")[1];
+            console.log('lockScript: ',lockScript );
+            console.log('user.address: ',user.address );
+            if (lockScript == user.address)
+            {
+              console.log('user.address: ',user.address );
+              User.findById(user._id, function(err, userFindById) {
+                if (err) throw err;
 
-getRealMoney =  function (res, user)
+                if (!userFindById) {
+                    console.log('User not found');
+                } else {
+
+                  var user_instance = new User();
+                  user_instance._id = userFindById._id;
+                  user_instance.realMoney = userFindById.realMoney + outputs[k].value;
+                  User.findByIdAndUpdate(userFindById._id,user_instance,{}).exec(function (err,userUpdate) {
+                      if (err){
+                          //res.json({success: false, msg: 'Update RealMoney error!'});
+                      }
+                  });
+                }
+              });
+
+
+            }
+            else{
+            }
+
+          }
+        }
+      }
+    })
+    .catch(function (err) {
+        isLimit = true;
+    });
+}
+
+
+getTotalBlock =  function (res, user)
 {
 
-  var headers, options;
-  headers = {
+console.log('getTotalBlock - user.address', user.address);
+  var headersTotal, optionsTotal;
+  headersTotal = {
     'User-Agent':       'Super Agent/0.0.1',
     'Content-Type':     'application/x-www-form-urlencoded'
   }
 
-  // Configure the request
-  options = {
-    url: 'https://api.instagram.com/v1/media/'+ req.params.id + '?access_token=3119388937.e029fea.9b82067145684be6a2f47acf50086e8a',
+  optionsTotal = {
+    url: 'https://api.kcoin.club/blocks',
     method: 'GET',
-    headers: headers
+    headers: headersTotal
   }
-
+console.log('options', optionsTotal);
   // Start the request
-  request(options, function (error, response, body) {
+  request(optionsTotal, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      res.json(JSON.parse(body));
+      console.log('response header 1: ', response.headers);
+      var headerRes = response.headers;
+      var totalBlock = headerRes['x-total-count'];
+      console.log('totalBlock: ', totalBlock);
+      var options = [];
+      for (let i = 0; i < totalBlock; i++)
+      {
+        var headers = {
+          'User-Agent':       'Super Agent/0.0.1',
+          'Content-Type':     'application/x-www-form-urlencoded'
+        }
+        var option = {
+          url: 'https://api.kcoin.club/blocks/' + i,
+          method: 'GET',
+          headers: headers,
+          json: true
+        };
+        options.push(option);
+        getRealMoney(option, user);
+      }
+
     } else {
       console.log(error);
+      callback(error);
     }
   });
+  // Configure the request
+
 }
