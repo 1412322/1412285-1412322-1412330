@@ -31,7 +31,7 @@ const account = (state = initialState, action) => {
             return Object.assign({}, state, {
                 isFetching: false,
                 redirect: true,
-                errorMessage: null,
+                errorMessage: action.errorMessage,
                 data: action.data,
             })
         case 'SIGN_UP_FAILED':
