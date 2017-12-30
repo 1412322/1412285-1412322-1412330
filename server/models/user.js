@@ -14,10 +14,21 @@ var UserSchema = new Schema({
     },
   isVerified: {
         type: Boolean,
-        default: false 
+        default: false
     },
   passwordResetToken: String,
-  passwordResetExpires: Date
+  passwordResetExpires: Date,
+  address: String,
+  privateKey: String,
+  publicKey: String,
+  realMoney: {
+        type: Number,
+        default: 0
+    },
+  availableMoney: {
+        type: Number,
+        default: 0
+    }
 });
 
 UserSchema.methods.encryptPassword = function(password){

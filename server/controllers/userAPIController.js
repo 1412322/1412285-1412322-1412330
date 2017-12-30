@@ -4,6 +4,7 @@ var config  = require('../config/database');
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var bcrypt = require('bcrypt-nodejs');
+var request = require('request');
 
 var transport = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
@@ -22,36 +23,18 @@ exports.signup = function (req,res,next) {
 	    newUser.email = req.body.email;
       newUser.password = newUser.encryptPassword(req.body.password);
 
+      //getRealMoney(res, newUser);
       // save the user
       newUser.save(function(err, user) {
         if (err) {
           return res.json({success: false, msg: 'Email already exists.'});
         }
         var token = jwt.encode(user, config.secret);
-        /*var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-              user: '1412285.1412322.1412330.group@gmail.com',
-              pass: 'kcoin1234'
-            }
-          });*/
+        createAddress(res, user);
 
           SendVerificationMail(req,user);
           res.json({success: true, msg: 'A verification email has been sent to ' + user.email + '.'});
 
-            /*var mailOptions = {
-              to: user.email,
-              subject: 'Account Verification Token',
-              text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + token + '.\n'
-            };
-            transporter.sendMail(mailOptions, function (errSendMail) {
-                if (err) {
-                  res.json({success: false, msg: errSendMail.message});
-                }
-                res.json({success: true, token: token, email: user.email, msg: 'A verification email has been sent to ' + user.email + '.'});
-            });*/
-        /*var token = jwt.encode(user, config.secret);
-        res.json({success: true, token: token, email: user.email});*/
       });
     }
 }
@@ -280,3 +263,69 @@ SendResetPasswordMail = function (req,user, res) {
         }
     });
 };
+
+createAddress =  function (res, user)
+{
+
+  var headers, options;
+  headers = {
+    'User-Agent':       'Super Agent/0.0.1',
+    'Content-Type':     'application/x-www-form-urlencoded'
+  }
+
+  // Configure the request
+  options = {
+    url: 'https://api.kcoin.club/generate-address',
+    method: 'GET',
+    headers: headers
+  }
+
+  // Start the request
+  request(options, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+    //  res.json(JSON.parse(body));
+    console.log('address - createAddress - JSON: ', JSON.parse(body).address);
+    user.address = JSON.parse(body).address;
+    user.publicKey = JSON.parse(body).publicKey;
+    user.privateKey = JSON.parse(body).privateKey;
+    var user_instance = new User();
+    user_instance._id = user._id;
+    user_instance.address = JSON.parse(body).address;
+    user_instance.publicKey = JSON.parse(body).publicKey;
+    user_instance.privateKey = JSON.parse(body).privateKey;
+    User.findByIdAndUpdate(user._id,user_instance,{}).exec(function (err,user) {
+        if (err){
+            res.json({success: false, msg: 'Create address error!'});
+        }
+    });
+    } else {
+      console.log(error);
+    }
+  });
+}
+
+getRealMoney =  function (res, user)
+{
+
+  var headers, options;
+  headers = {
+    'User-Agent':       'Super Agent/0.0.1',
+    'Content-Type':     'application/x-www-form-urlencoded'
+  }
+
+  // Configure the request
+  options = {
+    url: 'https://api.instagram.com/v1/media/'+ req.params.id + '?access_token=3119388937.e029fea.9b82067145684be6a2f47acf50086e8a',
+    method: 'GET',
+    headers: headers
+  }
+
+  // Start the request
+  request(options, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      res.json(JSON.parse(body));
+    } else {
+      console.log(error);
+    }
+  });
+}
