@@ -10,7 +10,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { createStore } from 'redux'
+import { createStore, applyMiddleware } from 'redux'
 import walletManagementApp from './app/reducers'
 // import Main from './app/components/layouts/main.js'
 // import Account from './app/components/signin-signup/signin.js'
@@ -22,8 +22,14 @@ import registerServiceWorker from './registerServiceWorker'
 import App from './app/components/index.js'
 // import admin from '@modules/admin'
 // import home from '@modules/home'
+import ReduxThunkMiddleware from 'redux-thunk'
 
-const store = createStore(walletManagementApp)
+const store = createStore(
+    walletManagementApp,
+    applyMiddleware(
+        ReduxThunkMiddleware
+    )
+)
 
 ReactDOM.render((
     <AppContainer>

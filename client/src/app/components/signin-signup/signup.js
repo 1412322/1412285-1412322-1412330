@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Form, Header, Input, Popup } from 'semantic-ui-react'
 import { connect } from 'react-redux'
-import * as walletManagementActions from '../../actions'
+import * as accountActions from '../../actions'
 import { bindActionCreators } from 'redux'
 import * as _ from 'lodash'
 import './styles.scss'
@@ -25,6 +25,11 @@ class RegisterForm extends React.Component {
         }
     }
 
+    componentWillMount() {
+        const { actions } = this.props
+        actions.resetErrorMessage()
+    }
+
     onHandleChange(event, fieldName) {
         const target = event.target
         const value = target.value
@@ -45,9 +50,20 @@ class RegisterForm extends React.Component {
         })
     }
 
-    onSubmitForm() {
+    onSubmitForm(e) {
+        e.preventDefault()
         if (_.isEmpty(this.onValidateForm())) {
-            console.log('Register successfully')
+            const { email, password } = this.state
+            const { actions } = this.props
+            console.log(actions)
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            const body = {
+                "email": email,
+                "password": password
+            };
+            actions.signUp(body, headers)
         }
     }
 
@@ -78,16 +94,17 @@ class RegisterForm extends React.Component {
     }
 
     render() {
-        const { fullname, email, password, errors, isShowPassword } = this.state
+        const { email, password, errors, isShowPassword } = this.state
+        const { errorMessage } = this.props
         return (
             <div className='container'>
                 <div className='dialog'>
-                    <Form className='form' onSubmit={() => this.onSubmitForm()}>
+                    <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
                         <div className='form-header'>
                             <Header as='h2' textAlign='center'>Create an account</Header>
                         </div>
                         <div className='form-body'>
-                            <Input
+                            {/* <Input
                                 fluid={true}
                                 type='text'
                                 label={<label>Full name</label>}
@@ -97,7 +114,7 @@ class RegisterForm extends React.Component {
                                         : 'normal-field'
                                 }
                                 value={fullname}
-                                onChange={(e) => this.onHandleChange(e, 'fullname')} />
+                                onChange={(e) => this.onHandleChange(e, 'fullname')} /> */}
                             <Input
                                 fluid={true}
                                 type='email'
@@ -166,17 +183,16 @@ class RegisterForm extends React.Component {
                                 value={password} />
                         </div>
                         <div className='form-footer'>
-                            {/* <span
-                                className='errorMessage'
+                            <span
+                                className='error-message'
                                 style={
-                                    (errorCode !== 1 && errorCode !== null)
+                                    (errorMessage !== null)
                                         ? { display: 'block' }
                                         : { display: 'none' }
                                 }>
-                                {errorCode === '12' && 'Email address already in use'}
-                                {errorCode === '14' && 'Invalid email address'}
-                            </span> */}
-                            <Button type='submit' className='submit-btn' onClick={() => this.onSubmitForm()} >REGISTER</Button>
+                                {errorMessage}
+                            </span>
+                            <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >REGISTER</Button>
                             <div className='center-message' >Already have an account, <Link to='/'>sign in now.</Link></div>
                         </div>
                     </Form>
@@ -187,21 +203,23 @@ class RegisterForm extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    console.log(state)
     return {
-        error: state.authen.error,
-        isRedirect: state.authen.isRedirect,
+        errorMessage: state.account.errorMessage,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        walletManagementActions: bindActionCreators(walletManagementActions, dispatch)
+        actions: bindActionCreators({
+            signUp: accountActions.signUp,
+            resetErrorMessage: accountActions.resetErrorMessage
+        }, dispatch),
     }
 }
+
 
 export default connect(
     mapStateToProps,
     mapDispatchToProps
 )(RegisterForm)
-
-// module.exports = RegisterForm
