@@ -92,7 +92,13 @@ exports.profile = function (req, res, next) {
             if (!user) {
                 return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.' });
             } else {
-                res.json({ success: true, msg: 'Welcome in the member area ' + user.email + '!', email: user.email, token: token });
+                res.json({ success: true, msg: 'Welcome in the member area ' + user.email + '!',
+                email: user.email,
+                token: token,
+                address: user.address,
+                realMoney: user.realMoney,
+                availableMoney: user.availableMoney
+              });
             }
         });
     } else {
