@@ -1,7 +1,8 @@
 import React from 'react'
-import LoginContainer from '../signin-signup/signin.js'
-import RegisterContainer from '../signin-signup/signup.js'
-import RetrievePasswordContainer from '../signin-signup/retrievepassword.js'
+import LoginContainer from '../account/signin.js'
+import RegisterContainer from '../account/signup.js'
+import RetrievePasswordContainer from '../account/retrievepassword.js'
+import ResetPasswordContainer from '../account/resetpassword.js'
 // import Transfers from '../transfers/transfersmoney.js'
 // import TransfersHistory from '../transfers/transfershistory.js'
 // import Home from '../home'
@@ -19,6 +20,7 @@ export default class Content extends React.Component {
 				<Route exact path='/' component={LoginContainer} />
 				<Route path='/signup' component={RegisterContainer} />
 				<Route path='/retrievepassword' component={RetrievePasswordContainer} />
+				<Route path='/resetpassword' component={ResetPasswordContainer} />
 				{/* <Route path='/transfers' component={Transfers} />
 				<Route path='/transfershistory' component={TransfersHistory} /> */}
 				{/* <Route path='/' component={Home} /> */}

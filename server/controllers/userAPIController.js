@@ -247,7 +247,7 @@ SendResetPasswordMail = function (req, user, res) {
 
     var host = req.get('host');
     //link này sẽ được thay thế bằng link tới form nhập password mới
-    var link = "http://" + req.get('host') + "/api/users/resetpassword/" + user["_id"] + "?reset=" + token;              //link to reset password
+    var link = "http://" + req.get('host') + "/resetpassword/" + user["_id"] + "?reset=" + token;              //link to reset password
     var mailOptions = {
         to: user["email"],
         subject: "Reset your password",

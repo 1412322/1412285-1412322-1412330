@@ -17,6 +17,7 @@ class RegisterForm extends React.Component {
             fullname: '',
             email: '',
             password: '',
+            confirmPassword: '',
             isShowPassword: false,
             errors: [{
                 field: '',
@@ -38,13 +39,13 @@ class RegisterForm extends React.Component {
         })
     }
 
-    onShowPassword() {
+    onShowPassword = () => {
         this.setState({
             isShowPassword: true,
         })
     }
 
-    onHidePassword() {
+    onHidePassword = () => {
         this.setState({
             isShowPassword: false,
         })
@@ -68,22 +69,29 @@ class RegisterForm extends React.Component {
     }
 
     onValidateForm() {
-        const { email, password } = this.state
+        const { email, password, confirmPassword } = this.state
         const errors = []
         // if (!noEmptyInput(fullname, 1, 255)) {
         //     errors.push({ field: 'fullname', message: 1 })
         // }
 
         if (_.isEmpty(email)) {
-            errors.push({ field: 'email', message: 1 })
+            errors.push({ field: 'email' })
         } else if (!validator.isEmail(email, { allow_utf8_local_part: false })) {
-            errors.push({ field: 'email', message: 2 })
+            errors.push({ field: 'email' })
         }
 
         if (_.isEmpty(password)) {
-            errors.push({ field: 'password', message: 1 })
+            errors.push({ field: 'password' })
         } else if (password.length < 8) {
-            errors.push({ field: 'password', message: 3 })
+            errors.push({ field: 'password' })
+        }
+
+        if (_.isEmpty(confirmPassword)) {
+            errors.push({ field: 'confirmPassword' })
+        } else if (!validator.equals(confirmPassword, password)) {
+            errors.push({ field: 'confirmPassword' })
+            errors.push({ field: 'password' })
         }
 
         this.setState({
@@ -94,7 +102,7 @@ class RegisterForm extends React.Component {
     }
 
     render() {
-        const { email, password, errors, isShowPassword } = this.state
+        const { email, password, confirmPassword, errors, isShowPassword } = this.state
         const { errorMessage } = this.props
         return (
             <div className='container'>
@@ -145,8 +153,8 @@ class RegisterForm extends React.Component {
                                 action={
                                     <Button
                                         className='show-password-btn'
-                                        onMouseDown={this.onShowPassword.bind(this)}
-                                        onMouseUp={this.onHidePassword.bind(this)}
+                                        onMouseDown={this.onShowPassword}
+                                        onMouseUp={this.onHidePassword}
                                         type='button'>
                                         SHOW
                                     </Button>
@@ -181,6 +189,36 @@ class RegisterForm extends React.Component {
                                 onChange={(e) => this.onHandleChange(e, 'password')}
                                 type={isShowPassword ? 'text' : 'password'}
                                 value={password} />
+                            <Input
+                                className={
+                                    _.find(errors, { field: 'confirmPassword' })
+                                        ? 'normal-field error-field'
+                                        : 'normal-field'
+                                }
+                                fluid={true}
+                                label={
+                                    <label>
+                                        Confirm password
+                                        <Popup
+                                            className='tooltip'
+                                            content={
+                                                <p>
+                                                    <RightIcon size={10} color='#7ed321' /> At least 8 characters
+                                                </p>
+                                            }
+                                            hideOnScroll={true}
+                                            hoverable={true}
+                                            offset={18}
+                                            position='top center'
+                                            trigger={
+                                                <RequirementIcon size={15} color='#ff6868' />
+                                            }
+                                        />
+                                    </label>
+                                }
+                                onChange={(e) => this.onHandleChange(e, 'confirmPassword')}
+                                type='password'
+                                value={confirmPassword} />
                         </div>
                         <div className='form-footer'>
                             <span
