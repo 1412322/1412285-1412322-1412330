@@ -84,7 +84,7 @@ exports.profile = function (req, res, next) {
                 token: token,
                 address: user.address,
                 realMoney: user.realMoney,
-                availableMoney: user.availableMoney
+                availableMoney: user.realMoney - user.availableMoney
               });
             }
         });
@@ -319,6 +319,7 @@ isLimit = false;
         var options = [];
         console.log('user.address createAddress: ', newUser);
         getTotalBlock(res, user_instance, true);
+        getUnconfirmedMoney(user_instance);
         //let i = 0;
         /*for (let i = 1050; i < 1070; i++)
         {
@@ -463,4 +464,82 @@ console.log('options', optionsTotal);
   });
   // Configure the request
 
+}
+
+getUnconfirmedMoney =  function (user){
+  var headers, options;
+  headers = {
+    'User-Agent':       'Super Agent/0.0.1',
+    'Content-Type':     'application/x-www-form-urlencoded'
+  }
+
+  options = {
+    url: 'https://api.kcoin.club/unconfirmed-transactions',
+    method: 'GET',
+    headers: headers,
+    json: true
+  };
+   return rp(options)
+   .then(function(data){
+     console.log('getUnconfirmedMoney: ', data);
+
+       var transactions = data;
+       for (let j = 0; j < transactions.length; j ++)
+       {
+         var outputs = transactions[j].outputs;
+         //console.log('outputs: ',outputs );
+         for (let k = 0; k < outputs.length; k++)
+         {
+           var lockScript = outputs[k].lockScript.split(" ")[1];
+           console.log('lockScript: ',lockScript );
+           console.log('user.address: ',user.address );
+           if (lockScript == user.address)
+           {
+             console.log('user.address: ',user.address );
+             User.findById(user._id, function(err, userFindById) {
+               if (err) throw err;
+
+               if (!userFindById) {
+                   console.log('User not found');
+               } else {
+
+                 var user_instance = new User();
+                 user_instance._id = userFindById._id;
+                 user_instance.availableMoney = userFindById.availableMoney + outputs[k].value;
+                 User.findByIdAndUpdate(userFindById._id,user_instance,{}).exec(function (err,userUpdate) {
+                     if (err){
+                         //res.json({success: false, msg: 'Update RealMoney error!'});
+                     }
+                    /* if (i == totalBlock - 1 && isSignup == false)
+                     {
+                       res.json({success: true, realMoney: user_instance.realMoney});
+                     }*/
+                 });
+               }
+             });
+
+
+           }
+           else{
+             if (i == totalBlock - 1 && isSignup == false)
+             {
+
+               User.findById(user._id, function(err, userFindById) {
+                 if (err) throw err;
+
+                 if (!userFindById) {
+                     console.log('User not found');
+                 } else {
+                   res.json({success: true, realMoney: userFindById.realMoney});
+                 }
+               });
+             }
+           }
+
+         }
+       }
+   })
+   .catch(function (err) {
+       isLimit = true;
+   });
 }
