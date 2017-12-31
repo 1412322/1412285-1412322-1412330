@@ -16,7 +16,7 @@ var jwt         = require('jwt-simple');
 var userAPI = require('./routes/userAPI');
 var walletAPI = require('./routes/walletAPI');
 var exchangeAPI = require('./routes/exchangeAPI');
-
+var socketAPI = require('./routes/socketAPI');
 var app = express();
 app.use(cors());
 mongoose.connect(config.database);
@@ -38,6 +38,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/users',userAPI);
 app.use('/api/wallets',walletAPI);
 app.use('/api/exchanges',exchangeAPI);
+app.use('/api/sockets',socketAPI);
 
 
 // catch 404 and forward to error handler
