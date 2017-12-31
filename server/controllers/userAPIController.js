@@ -33,19 +33,6 @@ exports.signup = function (req, res, next) {
         SendVerificationMail(req, user);
         res.json({ success: true, msg: 'A verification email has been sent to ' + user.email + '.' });
 
-        /*var mailOptions = {
-          to: user.email,
-          subject: 'Account Verification Token',
-          text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/confirmation\/' + token + '.\n'
-        };
-        transporter.sendMail(mailOptions, function (errSendMail) {
-            if (err) {
-              res.json({success: false, msg: errSendMail.message});
-            }
-            res.json({success: true, token: token, email: user.email, msg: 'A verification email has been sent to ' + user.email + '.'});
-        });*/
-        /*var token = jwt.encode(user, config.secret);
-        res.json({success: true, token: token, email: user.email});*/
     });
 
 }
@@ -99,6 +86,26 @@ exports.profile = function (req, res, next) {
                 realMoney: user.realMoney,
                 availableMoney: user.availableMoney
               });
+            }
+        });
+    } else {
+        return res.status(403).send({ success: false, msg: 'No token provided.' });
+    }
+}
+
+exports.get_real_money = function (req, res, next) {
+    var token = getToken(req.headers);
+    if (token) {
+        var decoded = jwt.decode(token, config.secret);
+        User.findOne({
+            email: decoded.email
+        }, function (err, user) {
+            if (err) throw err;
+
+            if (!user) {
+                return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.' });
+            } else {
+                getTotalBlock(res, user, false);
             }
         });
     } else {
@@ -311,7 +318,7 @@ isLimit = false;
         var URLs = [];
         var options = [];
         console.log('user.address createAddress: ', newUser);
-        getTotalBlock(res, user_instance);
+        getTotalBlock(res, user_instance, true);
         //let i = 0;
         /*for (let i = 1050; i < 1070; i++)
         {
@@ -333,7 +340,7 @@ isLimit = false;
     }
   });
 }
- getRealMoney =  function (option, user){
+ getRealMoney =  function (option, user, isSignup, res, i, totalBlock){
     return rp(option)
     .then(function(data){
       console.log('apicall-promise: ', data);
@@ -373,6 +380,10 @@ isLimit = false;
                       if (err){
                           //res.json({success: false, msg: 'Update RealMoney error!'});
                       }
+                      if (i == totalBlock - 1 && isSignup == false)
+                      {
+                        res.json({success: true, realMoney: user_instance.realMoney});
+                      }
                   });
                 }
               });
@@ -380,6 +391,19 @@ isLimit = false;
 
             }
             else{
+              if (i == totalBlock - 1 && isSignup == false)
+              {
+
+                User.findById(user._id, function(err, userFindById) {
+                  if (err) throw err;
+
+                  if (!userFindById) {
+                      console.log('User not found');
+                  } else {
+                    res.json({success: true, realMoney: userFindById.realMoney});
+                  }
+                });
+              }
             }
 
           }
@@ -392,7 +416,7 @@ isLimit = false;
 }
 
 
-getTotalBlock =  function (res, user)
+getTotalBlock =  function (res, user, isSignup)
 {
 
 console.log('getTotalBlock - user.address', user.address);
@@ -429,7 +453,7 @@ console.log('options', optionsTotal);
           json: true
         };
         options.push(option);
-        getRealMoney(option, user);
+        getRealMoney(option, user, isSignup, res, i, totalBlock);
       }
 
     } else {

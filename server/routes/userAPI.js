@@ -7,6 +7,7 @@ var User = require ('../models/user');
 router.post('/signup',  userAPIController.signup);
 router.post('/signin',  userAPIController.signin);
 router.get('/profile',  userAPIController.profile);
+router.get('/realmoney',  userAPIController.get_real_money);
 router.get('/verify/:id',userAPIController.verify_email);
 router.post('/forgetpassword',userAPIController.forget_password);
 router.post('/resetpassword/:id',userAPIController.reset_password);
