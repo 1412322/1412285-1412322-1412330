@@ -13,6 +13,7 @@ var config      = require('./config/database'); // get db config file
 var jwt         = require('jwt-simple');
 
 
+
 var userAPI = require('./routes/userAPI');
 var walletAPI = require('./routes/walletAPI');
 var exchangeAPI = require('./routes/exchangeAPI');
@@ -55,6 +56,20 @@ app.use(function(req, res, next) {
   next();
 });
 
+var WebSocket = require('ws');
+const ws = new WebSocket('wss://api.kcoin.club/');
+
+ws.onopen = function () {
+  console.log('connected');
+};
+setInterval(
+  () => ws.send(`${new Date()}`),
+  30000
+)
+ws.onmessage = function (data) {
+  console.log('incoming data', data);
+
+};
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development

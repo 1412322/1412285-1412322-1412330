@@ -23,10 +23,15 @@ exports.get_socket = function (req, res, next) {
               ws.onopen = function () {
                 console.log('connected');
               };
-
+              setTimeout(function() {
+                ws.send('message');
+              },
+              30000 );
               ws.onmessage = function (data) {
-                console.log('incoming data', data)
+                console.log('incoming data', data);
+
               };
+
             }
         });
     } else {
