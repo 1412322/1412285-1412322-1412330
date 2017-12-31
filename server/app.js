@@ -63,12 +63,12 @@ ws.onopen = function () {
   console.log('connected');
 };
 setInterval(
-  () => ws.send(`${new Date()}`),
+  () => ws.send(`${new Date()}`),//send message each 30s to connect not be expired
   30000
 )
 ws.onmessage = function (data) {
-  console.log('incoming data', data);
-
+  console.log('data', data);
+  console.log('data of KCoin', data.data);//từ data thu được này, chỉnh sửa và đồng bộ bên api
 };
 // error handler
 app.use(function(err, req, res, next) {

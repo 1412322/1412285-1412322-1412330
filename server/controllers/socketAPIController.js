@@ -18,19 +18,7 @@ exports.get_socket = function (req, res, next) {
             if (!user) {
                 return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.' });
             } else {
-              const ws = new WebSocket('wss://api.kcoin.club/');
-
-              ws.onopen = function () {
-                console.log('connected');
-              };
-              setTimeout(function() {
-                ws.send('message');
-              },
-              30000 );
-              ws.onmessage = function (data) {
-                console.log('incoming data', data);
-
-              };
+            
 
             }
         });
