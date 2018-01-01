@@ -16,13 +16,20 @@ import walletManagementApp from './app/reducers'
 // import Account from './app/components/signin-signup/signin.js'
 import { AppContainer } from 'react-hot-loader'
 // import App from './App'
-import { BrowserRouter, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom'
 import registerServiceWorker from './registerServiceWorker'
 // import '../semantic/dist/semantic.min.css'
-import App from './app/components/index.js'
+// import App from './app/components/index.js'
 // import admin from '@modules/admin'
 // import home from '@modules/home'
 import ReduxThunkMiddleware from 'redux-thunk'
+import LoginContainer from './app/components/account/signin.js'
+import RegisterContainer from './app/components/account/signup.js'
+import RetrievePasswordContainer from './app/components/account/retrievepassword.js'
+import ResetPasswordContainer from './app/components/account/resetpassword.js'
+import ProfileContainer from './app/components/home/profile.js'
+import NewsfeedContainer from './app/components/home/newsfeed.js'
+import MainLayout from './app/components/layouts/main.js'
 
 const store = createStore(
     walletManagementApp,
@@ -36,7 +43,17 @@ ReactDOM.render((
         <Provider store={store}>
 
             <BrowserRouter>
-                <Route path="/" component={App} />
+                <Switch>
+                    {/* <MainLayout exact={true} path="/" component={NewsfeedContainer} /> */}
+                    <MainLayout exact={true} path="/" component={ProfileContainer} />
+                    {/* <MainLayout path="/"><NewsfeedContainer /></MainLayout>
+                    <MainLayout path="/profile"><ProfileContainer /></MainLayout> */}
+                    <Route path='/signin' component={LoginContainer} />
+                    <Route path='/signup' component={RegisterContainer} />
+                    <Route path='/retrievepassword' component={RetrievePasswordContainer} />
+                    <Route path='/resetpassword/:id/:reset' component={ResetPasswordContainer} />
+                    <Redirect to='/' />
+                </Switch>
             </BrowserRouter>
 
         </Provider>

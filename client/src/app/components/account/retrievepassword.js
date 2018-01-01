@@ -68,7 +68,7 @@ class RetrievePasswordContainer extends React.Component {
         const { email, errors } = this.state
         const { errorMessage } = this.props
         return (
-            <div className='container'>
+            <div className='account-container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
                         <div className='form-header'>
@@ -99,7 +99,7 @@ class RetrievePasswordContainer extends React.Component {
                                 {errorMessage}
                             </span>
                             <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >SUBMIT</Button>
-                            <div className='center-message'>Remember now? <Link to='/'>Try to sign in</Link> or <Link to='/signup'>create a new one.</Link></div>
+                            <div className='center-message'>Remember now? <Link to='/signin'>Try to sign in</Link> or <Link to='/signup'>create a new one.</Link></div>
                         </div>
                     </Form>
                 </div>

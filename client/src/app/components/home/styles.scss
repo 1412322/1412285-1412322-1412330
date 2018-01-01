@@ -1,0 +1,211 @@
+@import '../../../index';
+%inputField {
+    input {
+      @include input($background-color1, $text-color3);
+      border: 0 !important;
+      border-radius: 0 !important;
+      border-bottom: 1px solid #ececec !important;
+      height: 25px;
+      padding: 0 10px !important;
+      text-align: center;
+      &[readonly] {
+        border-bottom: 1px solid transparent !important;
+      }
+    }
+  }
+  
+  .appearanceSettingContainer {
+    align-content: center;
+    align-items: center;
+    background-color: $background-color1;
+    display: inline-flex !important;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-start;
+    padding: 50px 50px 0px;
+    width: 100% !important;
+    .appearanceSettingContainerHeader {
+      margin: 0 0 30px 0;
+      h2 {
+        @include title;
+      }
+    }
+    .appearanceSettingContainerBody {
+      align-content: center;
+      background-color: $background-color1;
+      border-radius: 3px;
+      box-shadow: 0 10px 25px 0 rgba(173, 181, 232, 0.32);
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 50px;
+      min-height: 481px;
+      justify-content: space-between;
+      padding: 25px;
+      text-align: center;
+      width: 368px;
+      .containerHeader {
+        .titleField {
+          margin-bottom: 40px;
+          right: -5%;
+          @extend %inputField;
+        }
+      }
+      .containerBody {
+        .botAvatarWrapper {
+          position: relative;
+          .botAvatar {
+            cursor: pointer;
+            border: 2px dashed #e3e6f7;
+            border-radius: 50%;
+            height: 115px;
+            padding: 5px;
+            width: 115px;
+          }
+          .changeAvatarButton {
+            background-color: transparent !important;
+            border-radius: 100% !important;
+            height: 40px;
+            left: 66%;
+            padding: 0 !important;
+            position: absolute;
+            top: 65%;
+            transition: 0.3s;
+            width: 40px;
+            img {
+              cursor: pointer;
+              margin-top: -7px;
+              margin-left: -5px;
+              min-width: 50px;
+            }
+            &:hover {
+              background-color: $secondary-color !important;
+            }
+          }
+        }
+        .nameField {
+          margin-top: 25px;
+          width: 120px;
+          @extend %inputField;
+          input {
+            font-size: 22px !important;
+            height: 35px;
+          }
+        }
+      }
+      .containerFooter {
+        margin: 0 !important;
+        span {
+          opacity: 0.36;
+          color: #193651;
+        }
+        .messageWrapperLeft {
+          align-items: center;
+          border-radius: 0 0 10px 0;
+          display: flex;
+          font-size: 16px !important;
+          justify-content: flex-start;
+          padding: 10px;
+          text-align: left;
+          &:after {
+            border: 4px solid;
+            border-top-color: inherit;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+            border-left-color: inherit;
+            content: "";
+            height: 0;
+            left: 0;
+            position: absolute;
+            right: 26px;
+            top: 100%;
+            width: 0;
+          }
+  
+          span {
+            opacity: 1 !important;
+          }
+  
+        }
+        .messageWrapperRight {
+          align-items: center;      
+          border-radius: 0 0 0 10px;
+          display: flex; 
+          font-size: 16px !important;
+          justify-content: flex-end;
+          padding: 10px;
+          opacity: 1 !important;
+          &:after {
+            border: 4px solid;
+            border-top-color: inherit;
+            border-right-color: inherit;
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+            content: "";
+            height: 0;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            width: 0;
+          }
+  
+          span {
+            opacity: 1 !important;
+          }
+        }
+        .colorPattern {
+          align-items: center;
+          border: 2px dashed #d9ddff;
+          border-radius: 4px;
+          display: flex;
+          flex-direction: row;
+          justify-content: space-evenly;
+          padding: 0 !important;
+          .pattern {
+            border: 1px solid #d9ddff;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 31px;
+            margin: 5px 0;
+            width: 31px;
+          }
+        }
+      }
+    }
+    .inputClass {
+      position: fixed;
+      z-index: 1;
+      display: none;
+    }
+  }
+  
+  .colorPicker {
+    @include tooltip(bottom);
+    padding: 0 !important;
+    &:before {
+      box-shadow: 1px 1px 0 0 rgba(216, 221, 255, 0.5) !important;
+    }
+    & > div {
+      background: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  .editButton {
+    background-color: transparent !important;
+    border-radius: 100% !important;
+    height: 25px;
+    margin: auto !important;
+    padding: 0 !important;
+    transition: 0.3s;
+    width: 25px;
+    img {
+      cursor: pointer;
+      margin-top: -11px;
+      margin-left: -12px;
+      min-width: 50px;
+    }
+    &:hover {
+      background-color: $secondary-color !important;
+    }
+  }

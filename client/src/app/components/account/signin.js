@@ -7,6 +7,7 @@ import * as _ from 'lodash'
 import './styles.scss'
 import { Link } from 'react-router-dom'
 import validator from 'validator'
+import { Redirect } from 'react-router-dom'
 class LoginContainer extends React.Component {
     constructor(props) {
         super(props)
@@ -87,9 +88,10 @@ class LoginContainer extends React.Component {
 
     render() {
         const { email, password, errors, isShowPassword } = this.state
-        const { errorMessage } = this.props
+        const { errorMessage, isRedirect } = this.props
         return (
-            <div className='container'>
+            isRedirect ? <Redirect to="/profile" />
+            : (<div className='account-container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
                         <div className='form-header'>
@@ -161,7 +163,7 @@ class LoginContainer extends React.Component {
                         </div>
                     </Form>
                 </div>
-            </div>
+            </div>)
         )
     }
 }
@@ -169,6 +171,7 @@ class LoginContainer extends React.Component {
 const mapStateToProps = (state) => {
     return {
         errorMessage: state.account.errorMessage,
+        isRedirect: state.account.isRedirect,
     }
 }
 

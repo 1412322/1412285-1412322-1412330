@@ -45,13 +45,16 @@ class ResetPasswordContainer extends React.Component {
         if (_.isEmpty(this.onValidateForm())) {
             const { email } = this.state
             const { actions } = this.props
+            const userId = this.props.match.params.id
+            const reset = this.props.match.params.reset
             const headers = {
                 'Content-Type': 'application/json'
             };
             const body = {
+                "reset": reset,
                 "email": email,
             };
-            actions.retrievePassword(body, headers)
+            actions.resetPassword(body, headers, userId)
         }
     }
 
@@ -89,7 +92,7 @@ class ResetPasswordContainer extends React.Component {
         const { password, confirmPassword, isShowPassword, errors } = this.state
         const { errorMessage } = this.props
         return (
-            <div className='container'>
+            <div className='account-container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
                         <div className='form-header'>
@@ -197,7 +200,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
     return {
         actions: bindActionCreators({
-            retrievePassword: accountActions.retrievePassword,
+            resetPassword: accountActions.resetPassword,
             resetErrorMessage: accountActions.resetErrorMessage
         }, dispatch),
     }
