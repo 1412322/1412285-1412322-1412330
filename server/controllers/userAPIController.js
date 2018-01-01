@@ -46,7 +46,7 @@ exports.signin = function (req, res, next) {
         if (err) throw err;
 
         if (!user) {
-            console.log('User not found', req.body.email);
+            console.log('User not found.', req.body.email);
             res.send({ success: false, msg: 'User not found.' });
         } else {
             // check if password matches
@@ -77,7 +77,7 @@ exports.profile = function (req, res, next) {
             if (err) throw err;
 
             if (!user) {
-                return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.' });
+                return res.status(403).send({ success: false, msg: 'User not found.' });
             } else {
                 res.json({ success: true, msg: 'Welcome in the member area ' + user.email + '!',
                 email: user.email,
@@ -103,7 +103,7 @@ exports.get_real_money = function (req, res, next) {
             if (err) throw err;
 
             if (!user) {
-                return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.' });
+                return res.status(403).send({ success: false, msg: 'User not found.' });
             } else {
                 getTotalBlock(res, user, false);
             }
@@ -128,7 +128,7 @@ exports.verify_email = function (req, res, next) {
                 }
             }
             else {
-                res.json({ success: false, msg: 'User not found!' });
+                res.json({ success: false, msg: 'User not found.' });
             }
         }
     });
@@ -137,7 +137,7 @@ exports.verify_email = function (req, res, next) {
     user_instance.isVerified = true;
     User.findByIdAndUpdate(req.params.id, user_instance, {}).exec(function (err, user) {
         if (err) {
-            res.json({ success: false, msg: 'User not found!' });
+            res.json({ success: false, msg: 'User not found.' });
         }
         else {
             var noti = "Your email " + user.email + " is verified";
@@ -371,7 +371,7 @@ isLimit = false;
                 if (err) throw err;
 
                 if (!userFindById) {
-                    console.log('User not found');
+                    console.log('User not found.');
                 } else {
 
                   var user_instance = new User();
@@ -399,7 +399,7 @@ isLimit = false;
                   if (err) throw err;
 
                   if (!userFindById) {
-                      console.log('User not found');
+                      console.log('User not found.');
                   } else {
                     res.json({success: true, realMoney: userFindById.realMoney});
                   }
@@ -500,7 +500,7 @@ getUnconfirmedMoney =  function (user){
                if (err) throw err;
 
                if (!userFindById) {
-                   console.log('User not found');
+                   console.log('User not found.');
                } else {
 
                  var user_instance = new User();
@@ -528,7 +528,7 @@ getUnconfirmedMoney =  function (user){
                  if (err) throw err;
 
                  if (!userFindById) {
-                     console.log('User not found');
+                     console.log('User not found.');
                  } else {
                    res.json({success: true, realMoney: userFindById.realMoney});
                  }
