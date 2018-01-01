@@ -24,9 +24,23 @@
   <title>React App</title>
 </head>
 <style>
-  #root {
-    height: 100%;
-  }
+    #root {
+      height: 100%;
+    }
+
+    /* #root>div {
+      height: 100vh;
+    } */
+
+    /* @media all and (max-width: 768px) and (max-height: 1024px) and (orientation:landscape) {
+      body>#root>div {
+        height: 100%;
+      }
+    } */
+    
+    body ::-webkit-scrollbar-track {
+        background: none !important;
+    }    
 </style>
 
 <body>

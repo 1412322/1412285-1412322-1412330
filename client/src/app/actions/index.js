@@ -58,6 +58,22 @@ export const retrievePasswordFailed = (errorMessage) => ({
   errorMessage,
 })
 
+export const resetPasswordSubmit = (body, headers) => ({
+  type: 'RESET_PASSWORD',
+  body,
+  headers,
+})
+
+export const resetPasswordSuccessed = (errorMessage) => ({
+  type: 'RESET_PASSWORD_SUCCESS',
+  errorMessage,
+})
+
+export const resetPasswordFailed = (errorMessage) => ({
+  type: 'RESET_PASSWORD_FAILED',
+  errorMessage,
+})
+
 export function signIn(body, headers) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -111,6 +127,26 @@ export function retrievePassword(body, headers) {
   return function (dispatch) {
     dispatch(retrievePasswordSubmit(body, headers))
     return fetch(Server.server() + 'api/users/forgetpassword', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          dispatch(retrievePasswordSuccessed(data.msg))
+        }
+        else {
+          dispatch(retrievePasswordFailed(data.msg))
+        }
+      })
+  }
+}
+
+export function resetPassword(body, headers, id) {
+  return function (dispatch) {
+    dispatch(retrievePasswordSubmit(body, headers))
+    return fetch(Server.server() + 'api/users/resetpassword/' + id, {
       method: 'post',
       body: JSON.stringify(body),
       headers: headers,

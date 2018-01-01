@@ -9,8 +9,9 @@ import { Link } from 'react-router-dom'
 import validator from 'validator'
 import RequirementIcon from 'react-icons/lib/md/info-outline'
 import RightIcon from 'react-icons/lib/md/check'
+import { Redirect } from 'react-router-dom'
 
-class RegisterForm extends React.Component {
+class RegisterContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -103,9 +104,11 @@ class RegisterForm extends React.Component {
 
     render() {
         const { email, password, confirmPassword, errors, isShowPassword } = this.state
-        const { errorMessage } = this.props
+        const { errorMessage, isRedirect } = this.props
+        console.log(this.props)
         return (
-            <div className='container'>
+            isRedirect ? <Redirect to="/profile" />
+            : (<div className='account-container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
                         <div className='form-header'>
@@ -231,11 +234,11 @@ class RegisterForm extends React.Component {
                                 {errorMessage}
                             </span>
                             <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >REGISTER</Button>
-                            <div className='center-message' >Already have an account, <Link to='/'>sign in now.</Link></div>
+                            <div className='center-message' >Already have an account, <Link to='/signin'>sign in now.</Link></div>
                         </div>
                     </Form>
                 </div>
-            </div>
+            </div>)
         )
     }
 }
@@ -244,6 +247,7 @@ const mapStateToProps = (state) => {
     console.log(state)
     return {
         errorMessage: state.account.errorMessage,
+        isRedirect: state.account.isRedirect,
     }
 }
 
@@ -260,4 +264,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(RegisterForm)
+)(RegisterContainer)

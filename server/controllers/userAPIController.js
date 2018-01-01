@@ -177,16 +177,16 @@ exports.reset_password = function (req, res, next) {
                         User.findByIdAndUpdate(id, user_instance, {}).exec(function (err, user) {
                             console.log(user);
                             if (user != null && user != undefined) {
-                                res.json({ success: true, msg: 'Reset password successed!' });
+                                res.json({ success: true, msg: 'Reset password successed.' });
                             }
                             else {
-                                res.json({ success: false, msg: 'Reset password failed!' });
+                                res.json({ success: false, msg: 'Reset password failed.' });
                             }
                         });
 
                     }
                     else {
-                        res.json({ success: false, msg: 'Link is expired!' });
+                        res.json({ success: false, msg: 'Link is expired.' });
                     }
                 }
             }
@@ -194,7 +194,7 @@ exports.reset_password = function (req, res, next) {
         });
     }
     else {
-        res.json({ success: false, msg: "Reset token does not exists!" });
+        res.json({ success: false, msg: "Reset token does not exists." });
     }
 }
 getToken = function (headers) {
@@ -247,7 +247,7 @@ SendResetPasswordMail = function (req, user, res) {
 
     var host = req.get('host');
     //link này sẽ được thay thế bằng link tới form nhập password mới
-    var link = "http://" + req.get('host') + "/resetpassword/" + user["_id"] + "?reset=" + token;              //link to reset password
+    var link = "http://localhost:3000/resetpassword/" + user["_id"] + "/" + token;              //link to reset password
     var mailOptions = {
         to: user["email"],
         subject: "Reset your password",
