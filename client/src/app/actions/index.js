@@ -6,15 +6,15 @@ export const signInSubmit = (body, headers) => ({
   headers,
 })
 
-export const signInSuccessed = (redirect, errorMessage) => ({
+export const signInSuccessed = (isRedirect, errorMessage) => ({
   type: 'SIGN_IN_SUCCESS',
-  redirect,
+  isRedirect,
   errorMessage,
 })
 
-export const signInFailed = (redirect, errorMessage) => ({
+export const signInFailed = (isRedirect, errorMessage) => ({
   type: 'SIGN_IN_FAILED',
-  redirect,
+  isRedirect,
   errorMessage,
 })
 
@@ -24,22 +24,21 @@ export const signUpSubmit = (body, headers) => ({
   headers,
 })
 
-export const signUpSuccessed = (redirect, errorMessage, data) => ({
+export const signUpSuccessed = (isRedirect, errorMessage, data) => ({
   type: 'SIGN_UP_SUCCESS',
-  redirect,
+  isRedirect,
   errorMessage,
   data,
 })
 
-export const signUpFailed = (redirect, errorMessage) => ({
+export const signUpFailed = (isRedirect, errorMessage) => ({
   type: 'SIGN_UP_FAILED',
-  redirect,
+  isRedirect,
   errorMessage,
 })
 
 export const resetErrorMessage = () => ({
   type: 'RESET_ERROR_MESSAGE',
-  errorMessage: null,
 })
 
 export const retrievePasswordSubmit = (body, headers) => ({
@@ -71,6 +70,30 @@ export const resetPasswordSuccessed = (errorMessage) => ({
 
 export const resetPasswordFailed = (errorMessage) => ({
   type: 'RESET_PASSWORD_FAILED',
+  errorMessage,
+})
+
+export const signOut = () => ({
+  type: 'SIGN_OUT',
+})
+
+export const getProfile = (headers) => ({
+  type: 'GET_PROFILE',
+  headers,
+})
+
+export const getProfileSuccessed = (welcomeMessage, email, address, realMoney, availableMoney, token) => ({
+  type: 'GET_PROFILE_SUCCESS',
+  welcomeMessage,
+  email,
+  address,
+  realMoney,
+  availableMoney,
+  token
+})
+
+export const getProfileFailed = (errorMessage) => ({
+  type: 'GET_PROFILE_FAILED',
   errorMessage,
 })
 
@@ -145,7 +168,7 @@ export function retrievePassword(body, headers) {
 
 export function resetPassword(body, headers, id) {
   return function (dispatch) {
-    dispatch(retrievePasswordSubmit(body, headers))
+    dispatch(resetPasswordSubmit(body, headers))
     return fetch(Server.server() + 'api/users/resetpassword/' + id, {
       method: 'post',
       body: JSON.stringify(body),
@@ -154,10 +177,30 @@ export function resetPassword(body, headers, id) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          dispatch(retrievePasswordSuccessed(data.msg))
+          dispatch(resetPasswordSuccessed(data.msg))
         }
         else {
-          dispatch(retrievePasswordFailed(data.msg))
+          dispatch(resetPasswordFailed(data.msg))
+        }
+      })
+  }
+}
+
+export function getUserProfile(headers) {
+  return function (dispatch) {
+    dispatch(getProfile(headers))
+    return fetch(Server.server() + 'api/users/profile', {
+      method: 'get',
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          console.log(data.msg)
+          dispatch(getProfileSuccessed(data.msg, data.email, data.address, data.realMoney, data.availableMoney, data.token))
+        }
+        else {
+          dispatch(getProfileFailed(data.msg))
         }
       })
   }

@@ -1,14 +1,15 @@
 import React from 'react'
 // import { MainLayout } from '../../commons/Layout'
-import ReactDOM from 'react-dom'
-import styles from './styles.scss'
-import Proptypes from 'prop-types'
+// import ReactDOM from 'react-dom'
+import './styles.scss'
+// import Proptypes from 'prop-types'
 // import { actions as MainLayoutActions } from '@components/main_layout'
 // import * as AppearanceActions from './appearance.actions'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Button, Grid, Container, Image, Header, Input, Label, Popup } from 'semantic-ui-react'
-import MainLayout from '../layouts/main.js'
+import { Container, Header, Input } from 'semantic-ui-react'
+import * as actions from '../../actions'
+// import MainLayout from '../layouts/main.js'
 // import EditIcon from '@images/ic_edit@1x.png'
 // import BotAvatar from '@images/laura_default_avatar.png'
 // import AppearanceAvatar from '@images/ic_appearance_avatar@1x.png'
@@ -22,30 +23,69 @@ class ProfileContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
+            token: sessionStorage.getItem('token'),
         }
     }
 
+    componentWillMount() {
+        const { token } = this.state
+        const { actions } = this.props
+        const headers = {
+            authorization: token,
+            'Content-Type': 'application/json'
+        }
+        actions.getUserProfile(headers)
+    }
 
     render() {
-        const { isTitleEditable, isNameEditable } = this.state
+        const { userInfo } = this.props
         return (
-            <MainLayout>
-                <Container className='appearanceSettingContainer'>
-                    <div className='appearanceSettingContainerHeader'>
-                        <Header as='h2' textAlign='center' >User's Profile</Header>
+            <Container className='appearanceSettingContainer'>
+                <div className='appearanceSettingContainerHeader'>
+                    <Header as='h2' textAlign='center' >User's Profile</Header>
+                </div>
+                <div className='appearanceSettingContainerBody'>
+                    <div className='containerHeader'>
+                        {userInfo.welcomeMessage}
                     </div>
-                    <div className='appearanceSettingContainerBody'>
-                        <div className='containerHeader'>
-                        </div>
-                        <div className='containerBody'>
-                        </div>
-
-                        <div className='containerFooter'>
-                        </div>
-
+                    <div className='containerBody'>
+                        <Input
+                            className='normal-field'
+                            fluid={true}
+                            label={<label>Email address</label>}
+                            readOnly={true}
+                            value={userInfo.email} />
+                        <Input
+                            className='normal-field'
+                            fluid={true}
+                            label={<label>Token</label>}
+                            readOnly={true}
+                            value={userInfo.token} />
+                        <Input
+                            className='normal-field'
+                            fluid={true}
+                            label={<label>Real money</label>}
+                            readOnly={true}
+                            value={userInfo.realMoney} />
+                        <Input
+                            className='normal-field'
+                            fluid={true}
+                            label={<label>Availabel money</label>}
+                            readOnly={true}
+                            value={userInfo.availableMoney} />
+                        <Input
+                            className='normal-field'
+                            fluid={true}
+                            label={<label>Address</label>}
+                            readOnly={true}
+                            value={userInfo.address} />
                     </div>
-                </Container>
-            </MainLayout>
+
+                    <div className='containerFooter'>
+                    </div>
+
+                </div>
+            </Container>
         )
     }
 }
@@ -54,11 +94,13 @@ ProfileContainer.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
+    userInfo: state.user.userInfo,
 })
 
 const mapDispatchToProps = (dispatch) => {
     return {
         actions: bindActionCreators({
+            getUserProfile: actions.getUserProfile,
         }, dispatch),
     }
 }

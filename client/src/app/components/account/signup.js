@@ -104,7 +104,7 @@ class RegisterContainer extends React.Component {
 
     render() {
         const { email, password, confirmPassword, errors, isShowPassword } = this.state
-        const { errorMessage, isRedirect } = this.props
+        const { successMessage, errorMessage, isRedirect } = this.props
         console.log(this.props)
         return (
             isRedirect ? <Redirect to="/profile" />
@@ -233,6 +233,15 @@ class RegisterContainer extends React.Component {
                                 }>
                                 {errorMessage}
                             </span>
+                            <span
+                                className='success-message'
+                                style={
+                                    (successMessage !== null)
+                                        ? { display: 'block' }
+                                        : { display: 'none' }
+                                }>
+                                {successMessage}
+                            </span>
                             <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >REGISTER</Button>
                             <div className='center-message' >Already have an account, <Link to='/signin'>sign in now.</Link></div>
                         </div>
@@ -247,6 +256,7 @@ const mapStateToProps = (state) => {
     console.log(state)
     return {
         errorMessage: state.account.errorMessage,
+        successMessage: state.account.successMessage,
         isRedirect: state.account.isRedirect,
     }
 }

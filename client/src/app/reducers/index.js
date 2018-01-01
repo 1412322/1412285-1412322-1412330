@@ -1,9 +1,9 @@
 import { combineReducers } from 'redux'
-import transfer from './transfer'
+import user from './user'
 import account from './account'
 
 const walletManagementApp = combineReducers({
-  transfer,
+  user,
   account
 })
 

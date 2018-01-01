@@ -28,8 +28,8 @@ import RegisterContainer from './app/components/account/signup.js'
 import RetrievePasswordContainer from './app/components/account/retrievepassword.js'
 import ResetPasswordContainer from './app/components/account/resetpassword.js'
 import ProfileContainer from './app/components/home/profile.js'
-import NewsfeedContainer from './app/components/home/newsfeed.js'
 import MainLayout from './app/components/layouts/main.js'
+import AppRoute from './app/index.js'
 
 const store = createStore(
     walletManagementApp,
@@ -45,7 +45,7 @@ ReactDOM.render((
             <BrowserRouter>
                 <Switch>
                     {/* <MainLayout exact={true} path="/" component={NewsfeedContainer} /> */}
-                    <MainLayout exact={true} path="/" component={ProfileContainer} />
+                    <AppRoute exact={true} path="/" layout={MainLayout} component={ProfileContainer} />
                     {/* <MainLayout path="/"><NewsfeedContainer /></MainLayout>
                     <MainLayout path="/profile"><ProfileContainer /></MainLayout> */}
                     <Route path='/signin' component={LoginContainer} />

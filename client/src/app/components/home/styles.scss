@@ -38,11 +38,11 @@
       display: flex;
       flex-direction: column;
       margin-bottom: 50px;
-      min-height: 481px;
+      min-height: 400px;
       justify-content: space-between;
       padding: 25px;
       text-align: center;
-      width: 368px;
+      width: 550px;
       .containerHeader {
         .titleField {
           margin-bottom: 40px;
@@ -51,6 +51,81 @@
         }
       }
       .containerBody {
+        .normal-field {
+          box-shadow: 0 2.5px 7px 0 rgba(232, 173, 173, 0.18);
+          margin: 20px 0;
+          label {
+            align-items: center;
+            background-color: $label-background-color;
+            border: solid 1px $input-border-color !important;
+            border-radius: 2px 0 0 2px;
+            border-right: 0 !important;
+            color: $text-color1;
+            display: flex;
+            height: 50px;
+            padding: 0 8px;
+            width: 150px;
+            justify-content: space-between;
+          }
+          input {
+            @include input($background-color1, $text-color3);
+            border-left: 0 !important;
+            border-radius: 0 2px 2px 0 !important;
+            &:-webkit-autofill,
+            &:-webkit-autofill:hover,
+            &:-webkit-autofill:focus {
+              border-left: 0 !important;
+            }
+            &[id='password'] {
+              border-radius: 0 !important;
+              border-right: 0 !important;
+              &:focus {
+                border-right: 0 !important;
+              }
+              &:-webkit-autofill,
+              &:-webkit-autofill:hover,
+              &:-webkit-autofill:focus {
+                border-right: 0 !important;
+              }
+            }
+          }
+          .show-password-btn {
+            background-color: $background-color1 !important;
+            border: solid 1px $input-border-color !important;
+            border-left: 0 !important;
+            border-radius: 0 2px 2px 0 !important;
+            color: $success-color;
+            cursor: pointer;
+            height: 50px;
+            &:hover,
+            &:active,
+            &:focus {
+              background-color: $background-color1;
+              border-left: 0 !important;
+              color: $success-color;
+            }
+          }
+        }
+        .error-field {
+          label {
+            border: 2px solid $failure-color !important;
+            border-right: 0 !important;
+          }
+          input {
+            border: 2px solid $failure-color !important;
+            border-left: 0 !important;
+            &:-webkit-autofill,
+            &:-webkit-autofill:hover,
+            &:-webkit-autofill:focus {
+              border: 2px solid $failure-color !important;
+              border-left: 0 !important;
+            }
+          }
+          .show-password-btn {
+            border: 2px solid $failure-color !important;
+            border-left: none !important;
+          }
+        }
         .botAvatarWrapper {
           position: relative;
           .botAvatar {

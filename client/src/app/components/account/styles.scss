@@ -146,6 +146,14 @@
           width: 100%;
           text-align: center;
         }
+        .success-message {
+          color: $success-color;
+          display: block;
+          position: absolute;
+          top: -40px;
+          width: 100%;
+          text-align: center;
+        }
         .submit-btn {
           @include button($primary-color, $text-color2);
           font-size: 16px !important;

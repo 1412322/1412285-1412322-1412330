@@ -79,7 +79,7 @@ exports.profile = function (req, res, next) {
             if (!user) {
                 return res.status(403).send({ success: false, msg: 'User not found.' });
             } else {
-                res.json({ success: true, msg: 'Welcome in the member area ' + user.email + '!',
+                res.json({ success: true, msg: 'Welcome to KCoin Application, ' + user.email + '!',
                 email: user.email,
                 token: token,
                 address: user.address,
@@ -229,8 +229,8 @@ SendVerificationMail = function (req, user) {
     var link = "http://" + req.get('host') + "/api/users/verify/" + user["_id"];
     var mailOptions = {
         to: user["email"],
-        subject: "Please confirm your account",
-        html: "Hello,<br> Please Click on the link to verify your email.<br><a href=" + link + ">Click here to verify</a>"
+        subject: "Kcoin Account Email Verification",
+        html: "Hi from 1412285-1412322-1412330 Team,<br>Email verification is required in order to effectively use your KCoin Account.<br><a href=" + link + ">Click here</a> to complete your email verification.<br>If you did not create a KCoin Account and received this email, please DO NOT click the link."
     }
     console.log(mailOptions);
     transport.sendMail((mailOptions), function (error, response) {
