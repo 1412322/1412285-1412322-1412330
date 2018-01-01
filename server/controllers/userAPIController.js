@@ -5,10 +5,7 @@ var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var bcrypt = require('bcrypt-nodejs');
 var request = require('request');
-<<<<<<< 902a9fff854b40a26fbd972f3167f2433b4e7748
 const rp = require('request-promise');
-=======
->>>>>>> generate address - API
 
 var transport = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
