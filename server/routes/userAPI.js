@@ -11,6 +11,6 @@ router.get('/realmoney',  userAPIController.get_real_money);
 router.get('/verify/:id',userAPIController.verify_email);
 router.post('/forgetpassword',userAPIController.forget_password);
 router.post('/resetpassword/:id',userAPIController.reset_password);
-router.post('/transaction',userAPIController.create_transaction);
+//router.post('/transaction',userAPIController.create_transaction);
 
 module.exports = router;

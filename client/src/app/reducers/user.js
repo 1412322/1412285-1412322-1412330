@@ -4,7 +4,7 @@ const initialState = {
         email: null,
         address: null,
         realMoney: null,
-        availabelMoney: null,
+        availableMoney: null,
         token: null
     },
     isFetching: false,
@@ -23,7 +23,7 @@ const user = (state = initialState, action) => {
                     email: action.email,
                     address: action.address,
                     realMoney: action.realMoney,
-                    availabelMoney: action.availabelMoney,
+                    availableMoney: action.availableMoney,
                     welcomeMessage: action.welcomeMessage,
                     token: action.token
                 },
