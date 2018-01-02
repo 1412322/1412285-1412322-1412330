@@ -51,7 +51,7 @@ ReactDOM.render((
                     <Route path='/signin' component={LoginContainer} />
                     <Route path='/signup' component={RegisterContainer} />
                     <Route path='/retrievepassword' component={RetrievePasswordContainer} />
-                    <Route path='/resetpassword/:id/:reset' component={ResetPasswordContainer} />
+                    <Route path='/resetpassword/:id' component={ResetPasswordContainer} />
                     <Redirect to='/' />
                 </Switch>
             </BrowserRouter>

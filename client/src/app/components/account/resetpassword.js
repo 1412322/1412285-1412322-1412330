@@ -43,16 +43,18 @@ class ResetPasswordContainer extends React.Component {
         // const { actions } = this.props
         // const { fullname, email, password, isRememberMe } = this.state
         if (_.isEmpty(this.onValidateForm())) {
-            const { email } = this.state
+            const { password } = this.state
             const { actions } = this.props
             const userId = this.props.match.params.id
-            const reset = this.props.match.params.reset
+            const queryString = require('query-string');
+            var parsed = queryString.parse(this.props.location.search);
+            const reset = parsed.reset
             const headers = {
                 'Content-Type': 'application/json'
             };
             const body = {
                 "reset": reset,
-                "email": email,
+                "password": password,
             };
             actions.resetPassword(body, headers, userId)
         }
