@@ -18,6 +18,8 @@ var userAPI = require('./routes/userAPI');
 var walletAPI = require('./routes/walletAPI');
 var exchangeAPI = require('./routes/exchangeAPI');
 var socketAPI = require('./routes/socketAPI');
+var transactionAPI = require('./routes/transactionAPI');
+
 var app = express();
 app.use(cors());
 mongoose.connect(config.database);
@@ -40,6 +42,7 @@ app.use('/api/users',userAPI);
 app.use('/api/wallets',walletAPI);
 app.use('/api/exchanges',exchangeAPI);
 app.use('/api/sockets',socketAPI);
+app.use('/api/transactions',transactionAPI);
 
 
 // catch 404 and forward to error handler
