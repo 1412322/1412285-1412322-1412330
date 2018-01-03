@@ -21,6 +21,7 @@
     "jwt-simple": "^0.5.1",
     "mongoose": "^4.9.8",
     "morgan": "~1.8.1",
+    "nexmo": "^2.1.1",
     "nodemailer": "^4.4.1",
     "nodemailer-smtp-transport": "^2.7.4",
     "passport": "^0.4.0",

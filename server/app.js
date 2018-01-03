@@ -19,6 +19,7 @@ var walletAPI = require('./routes/walletAPI');
 var exchangeAPI = require('./routes/exchangeAPI');
 var socketAPI = require('./routes/socketAPI');
 var transactionAPI = require('./routes/transactionAPI');
+var twoFaAPI = require('./routes/twoFaAPI');
 
 var app = express();
 app.use(cors());
@@ -43,6 +44,7 @@ app.use('/api/wallets',walletAPI);
 app.use('/api/exchanges',exchangeAPI);
 app.use('/api/sockets',socketAPI);
 app.use('/api/transactions',transactionAPI);
+app.use('/api/twoFa', twoFaAPI);
 
 
 // catch 404 and forward to error handler
