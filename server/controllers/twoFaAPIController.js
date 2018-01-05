@@ -1,5 +1,6 @@
 const Nexmo = require('nexmo');
 var TMClient = require('textmagic-rest-client');
+var authenticator = require('authenticator');
 var User = require('../models/user');
 var jwt = require('jwt-simple');
 var config = require('../config/database');
@@ -66,4 +67,44 @@ exports.send_message_tmc = function (req, res, next) {
       res.json({ success: true, msg: 'Account verified!', result: result });
     }
   });
+}
+
+exports.send_message_first_time = function (req, res, next) {
+  var key = authenticator.generateKey();
+// "acqo ua72 d3yf a4e5 uorx ztkh j2xl 3wiz"
+var formattedKeyArrays = key.split(' ');
+var formattedKey = '';
+for (let i = 0; i < formattedKeyArrays.length; i++)
+{
+  formattedKey += formattedKeyArrays[i].toUpperCase();
+}
+  var formattedToken = authenticator.generateToken(key);
+  // "957 124"
+
+  authenticator.verifyToken(key, formattedToken);
+  // { delta: 0 }
+
+  authenticator.verifyToken(key, '000 000');
+  // null
+
+//  authenticator.generateTotpUri(formattedKey, "john.doe@email.com", "ACME Co", 'SHA1', 6, 30);
+  res.json({ success: true, msg: 'Account verified!',
+  key: key,
+  formattedKey: formattedKey,
+  formattedToken: formattedToken,
+  result1: authenticator.verifyToken(key, formattedToken),
+  result2: authenticator.verifyToken(key, '000 000'),
+  OTPUri: authenticator.generateTotpUri(formattedKey, "mymy010196@gmail.com", "KCoin", 'SHA1', 6, 30)});
+}
+
+exports.verify_first_time = function (req, res, next) {
+  var key = req.body.key;
+
+  var formattedToken = req.body.formattedToken;
+
+//  authenticator.generateTotpUri(formattedKey, "john.doe@email.com", "ACME Co", 'SHA1', 6, 30);
+  res.json({ success: true, msg: 'Account verified!',
+  key: key,
+  formattedToken: formattedToken,
+  result: authenticator.verifyToken(key, formattedToken) });
 }

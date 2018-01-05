@@ -8,6 +8,7 @@
   "author": "1412285-1412322-1412330",
   "license": "ISC",
   "dependencies": {
+    "authenticator": "^1.1.3",
     "bcrypt-nodejs": "0.0.3",
     "big-integer": "^1.6.26",
     "body-parser": "~1.17.1",

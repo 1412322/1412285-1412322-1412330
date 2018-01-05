@@ -7,6 +7,8 @@ var User = require ('../models/user');
 router.post('/sendMessage', twoFaAPIController.send_message);
 router.post('/verifyCode', twoFaAPIController.verify_code);
 router.post('/sendMessageTMC', twoFaAPIController.send_message_tmc);
+router.post('/sendMessageFirstTime', twoFaAPIController.send_message_first_time);
+router.post('/verifyFirstTime', twoFaAPIController.verify_first_time);
 
 
 module.exports = router;
