@@ -17,6 +17,7 @@ var UserSchema = new Schema({
         default: false
     },
   passwordResetToken: String,
+  keyGoogleAuthenticator: String,
   passwordResetExpires: Date,
   address: String,
   privateKey: String,

@@ -6,6 +6,8 @@ var smtpTransport = require('nodemailer-smtp-transport');
 var bcrypt = require('bcrypt-nodejs');
 var request = require('request');
 const rp = require('request-promise');
+var authenticator = require('authenticator');
+
 //const ursa = require('ursa');
 const HASH_ALGORITHM = 'sha256';
 
@@ -32,10 +34,68 @@ exports.signup = function (req, res, next) {
         var token = jwt.encode(user, config.secret);
         createAddress(res, user);
 
-        SendVerificationMail(req, user);
-        res.json({ success: true, msg: 'A verification email has been sent to ' + user.email + '.' });
+        //SendVerificationMail(req, user);
+        //res.json({ success: true, msg: 'A verification email has been sent to ' + user.email + '.' });
+        SendMessageGoogleAuthenticatorFirstTime(user, res);
 
     });
+
+}
+
+exports.verify_google_authenticator = function (req, res, next) {
+ var keyGoogleAuthenticatorFormatted = req.params.key;
+ var verifyToken = req.body.verifyToken;
+ var keyGoogleAuthenticator = '';
+ for (let i = 0; i < keyGoogleAuthenticatorFormatted.length; i++)
+ {
+   if (i % 4 == 0 && i > 0 && i < keyGoogleAuthenticatorFormatted.length)
+    keyGoogleAuthenticator += ' ' + keyGoogleAuthenticatorFormatted[i].toLowerCase();
+  else
+    keyGoogleAuthenticator += keyGoogleAuthenticatorFormatted[i].toLowerCase();;
+ }
+ User.findOne({
+     keyGoogleAuthenticator: keyGoogleAuthenticator
+ }, function (err, user) {
+     if (err)
+     {
+       res.json({ success: false, msg: err });
+     }
+
+     if (!user) {
+         console.log('User not found.', req.body.email);
+         res.json({ success: false, msg: 'User not found.' });
+     } else {
+         var result = authenticator.verifyToken(keyGoogleAuthenticator, verifyToken);
+         if (result != null)
+         {
+           if (result.delta == 0)
+           {
+             var user_instance = new User();
+             user_instance._id = user._id;
+             user_instance.isVerified = true;
+             User.findByIdAndUpdate(user._id, {isVerified: true}).exec(function (err, user) {
+                 if (err) {
+                     res.json({ success: false, msg: 'User not found.' });
+                 }
+                 else {
+                      res.json({ success: true, msg: 'Account is verified!', email: user.email });
+                 }
+             });
+             //res.json({ success: true, msg: 'Account is verified!', email: user.email });
+           }
+           else
+           {
+             res.json({ success: false, msg: 'Code is expired!' });
+           }
+         }
+         else
+         {
+           res.json({ success: false, msg: 'Wrong Code!' });
+         }
+
+
+     }
+ });
 
 }
 
@@ -148,24 +208,54 @@ exports.verify_email = function (req, res, next) {
     });
 }
 
-exports.forget_password = function (req, res, next) {
+exports.reset_password = function (req, res, next) {
     var email = req.body.email;
-    User.findOne({ 'email': email }).exec(function (err, user) {
-        if (err) {
-            res.json({ success: false, msg: err });
+    var verifyToken = req.body.verifyToken;
+    var newPassword = req.body.password;
+    User.findOne({
+        email: email
+    }, function (err, user) {
+        if (err)
+        {
+          res.json({ success: false, msg: err });
         }
-        if (user != null && user != undefined) {
-            var noti = "Request has been sent to " + email + '.';
-            SendResetPasswordMail(req, user, res);                        //Send email reset password
-            // res.json({success: true, msg: noti});
 
-        }
-        else {
-            res.json({ success: false, msg: "User not found." });
+        if (!user) {
+            res.json({ success: false, msg: 'User not found.' });
+        } else {
+            var result = authenticator.verifyToken(user.keyGoogleAuthenticator, verifyToken);
+            if (result != null)
+            {
+              if (result.delta == 0)
+              {
+
+                User.findByIdAndUpdate(user._id,
+                  {password: bcrypt.hashSync(newPassword, bcrypt.genSaltSync(5), null)})
+                  .exec(function (err, user) {
+                    if (err) {
+                        res.json({ success: false, msg: 'Reset password failed!' });
+                    }
+                    else {
+                         res.json({ success: true, msg: 'Reset password successed!' });
+                    }
+                });
+                //res.json({ success: true, msg: 'Account is verified!', email: user.email });
+              }
+              else
+              {
+                res.json({ success: false, msg: 'Code is expired!' });
+              }
+            }
+            else
+            {
+              res.json({ success: false, msg: 'Wrong Code!' });
+            }
+
+
         }
     });
 }
-
+/*
 exports.reset_password = function (req, res, next) {
     var reset_qr = req.body.reset;
     var id = req.params.id;
@@ -212,7 +302,7 @@ exports.reset_password = function (req, res, next) {
     else {
         res.json({ success: false, msg: "Reset token does not exists." });
     }
-}
+}*/
 getToken = function (headers) {
     if (headers && headers.authorization) {
         var parted = headers.authorization;
@@ -226,60 +316,6 @@ getToken = function (headers) {
     }
 };
 
-SendVerificationMail = function (req, user) {
-    var host = req.get('host');
-    var link = "http://" + req.get('host') + "/api/users/verify/" + user["_id"];
-    var mailOptions = {
-        to: user["email"],
-        subject: "Kcoin Account Email Verification",
-        html: "Hi from 1412285-1412322-1412330 Team,<br>Email verification is required in order to effectively use your KCoin Account.<br><a href=" + link + ">Click here</a> to complete your email verification.<br>If you did not create a KCoin Account and received this email, please DO NOT click the link."
-    }
-    console.log(mailOptions);
-    transport.sendMail((mailOptions), function (error, response) {
-        if (error) {
-            console.log(error);
-            //res.end("error");
-            // return false;
-        }
-        else {
-            console.log("Message sent: " + response.message);
-            console.log("success");
-            //res.end("sent");
-            //return true;
-        }
-    });
-};
-
-SendResetPasswordMail = function (req, user, res) {
-    var token = bcrypt.hashSync(user["_id"], bcrypt.genSaltSync(5), null);
-    User.findByIdAndUpdate(user["_id"], { _id: user["_id"], passwordResetToken: token }).exec(function (err, user) {
-        if (err) {
-            res.json({ success: false, msg: err });
-        }
-        // var noti = "Request has been sent to " + user.email + '.';
-        // res.json({ success: true, msg: noti });
-    });
-
-
-    var host = req.get('host');
-    //link này sẽ được thay thế bằng link tới form nhập password mới
-    var link = "http://localhost:3000/resetpassword/" + user["_id"] + "?reset=" + token;              //link to reset password
-    var mailOptions = {
-        to: user["email"],
-        subject: "Reset your password",
-        html: "Hello,<br> Please Click on the link to reset your password.<br><a href=" + link + ">Click here to reset your password</a>"
-    }
-    console.log(mailOptions);
-    transport.sendMail(mailOptions, function (error, response) {
-        if (error) {
-            res.json({ success: false, msg: "Reset token does not exists!" });
-        }
-        else {
-            console.log("Message sent: " + response.message);
-            res.json({ success: true, resetToken: token, userID: user["_id"] });
-        }
-    });
-};
 
 var isLimit = false;
 createAddress =  function (res, user)
@@ -544,4 +580,29 @@ getUnconfirmedMoney =  function (user){
    .catch(function (err) {
        isLimit = true;
    });
+}
+
+SendMessageGoogleAuthenticatorFirstTime = function(user, res)
+{
+  var key = authenticator.generateKey();
+  var formattedKeyArrays = key.split(' ');
+  var formattedKey = '';
+  for (let i = 0; i < formattedKeyArrays.length; i++)
+  {
+    formattedKey += formattedKeyArrays[i].toUpperCase();
+  }
+  authenticator.generateTotpUri(formattedKey, user.email, "KCoin", 'SHA1', 6, 30);
+  var user_instance = new User();
+  user_instance._id = user._id;
+  user_instance.keyGoogleAuthenticator = key;
+  User.findByIdAndUpdate(user._id, user_instance, {}).exec(function (err, user) {
+      if (err) {
+          res.json({ success: false, msg: 'User not found.' });
+      }
+      else {
+          res.json({ success: true,
+            msg: 'A verify key has been sent to Your Google Authenticator',
+            keyGoogleAuthenticator: formattedKey});
+      }
+  });
 }
