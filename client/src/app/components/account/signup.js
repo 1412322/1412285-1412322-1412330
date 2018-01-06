@@ -7,14 +7,15 @@ import * as _ from 'lodash'
 import './styles.scss'
 import { Link } from 'react-router-dom'
 import validator from 'validator'
+import { Redirect } from 'react-router-dom'
 import RequirementIcon from 'react-icons/lib/md/info-outline'
 import RightIcon from 'react-icons/lib/md/check'
-import { Redirect } from 'react-router-dom'
 
 class RegisterContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
+            token: sessionStorage.getItem('token'),
             fullname: '',
             email: '',
             password: '',
@@ -57,7 +58,6 @@ class RegisterContainer extends React.Component {
         if (_.isEmpty(this.onValidateForm())) {
             const { email, password } = this.state
             const { actions } = this.props
-            console.log(actions)
             const headers = {
                 'Content-Type': 'application/json'
             };
@@ -103,11 +103,11 @@ class RegisterContainer extends React.Component {
     }
 
     render() {
-        const { email, password, confirmPassword, errors, isShowPassword } = this.state
-        const { successMessage, errorMessage, isRedirect } = this.props
-        console.log(this.props)
+        const { token, email, password, confirmPassword, errors, isShowPassword } = this.state
+        const { successMessage, errorMessage } = this.props
         return (
-            isRedirect ? <Redirect to="/profile" />
+            token && token !== 'undefined'
+            ? <Redirect to="/" />
             : (<div className='account-container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
@@ -253,11 +253,9 @@ class RegisterContainer extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-    console.log(state)
     return {
         errorMessage: state.account.errorMessage,
         successMessage: state.account.successMessage,
-        isRedirect: state.account.isRedirect,
     }
 }
 

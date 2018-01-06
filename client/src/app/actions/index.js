@@ -6,16 +6,14 @@ export const signInSubmit = (body, headers) => ({
   headers,
 })
 
-export const signInSuccessed = (isRedirect, errorMessage) => ({
+export const signInSuccessed = (data) => ({
   type: 'SIGN_IN_SUCCESS',
-  isRedirect,
-  errorMessage,
+  data,
 })
 
-export const signInFailed = (isRedirect, errorMessage) => ({
+export const signInFailed = (data) => ({
   type: 'SIGN_IN_FAILED',
-  isRedirect,
-  errorMessage,
+  data
 })
 
 export const signUpSubmit = (body, headers) => ({
@@ -24,17 +22,13 @@ export const signUpSubmit = (body, headers) => ({
   headers,
 })
 
-export const signUpSuccessed = (isRedirect, errorMessage, data) => ({
+export const signUpSuccessed = (data) => ({
   type: 'SIGN_UP_SUCCESS',
-  isRedirect,
-  errorMessage,
   data,
 })
 
-export const signUpFailed = (isRedirect, errorMessage) => ({
+export const signUpFailed = (data) => ({
   type: 'SIGN_UP_FAILED',
-  isRedirect,
-  errorMessage,
 })
 
 export const resetErrorMessage = () => ({
@@ -97,20 +91,20 @@ export const getProfileFailed = (errorMessage) => ({
   errorMessage,
 })
 
-export const verifyTokenSubmit = (body, headers) => ({
-  type: 'VERIFY_TOKEN',
+export const verifyEmailByGoogleAuthSubmit = (body, headers) => ({
+  type: 'VERIFY_EMAIL_BY_GOOGLE_AUTH',
   body,
   headers,
 })
 
-export const verifyTokenSuccessed = (isRedirect, data) => ({
-  type: 'VERIFY_TOKEN_SUCCESS',
+export const verifyEmailByGoogleAuthSuccessed = (isRedirect, data) => ({
+  type: 'VERIFY_EMAIL_BY_GOOGLE_AUTH_SUCCESS',
   isRedirect,
   data,
 })
 
-export const verifyTokenFailed = (isRedirect, data) => ({
-  type: 'VERIFY_TOKEN_FAILED',
+export const verifyEmailByGoogleAuthFailed = (isRedirect, data) => ({
+  type: 'VERIFY_EMAIL_BY_GOOGLE_AUTH_FAILED',
   isRedirect,
   data,
 })
@@ -125,17 +119,14 @@ export function signIn(body, headers) {
     })
       .then(res => res.json())
       .then((data) => {
-        console.log(data)
         if (data.success === true) {
           sessionStorage.setItem('token', data.token)
           sessionStorage.setItem('email', data.email)
-          console.log('success signin')
-          dispatch(signInSuccessed(true, null))
+          dispatch(signInSuccessed(null))
 
         }
         else {
-          console.log('fail signin')
-          dispatch(signInFailed(false, data.msg))
+          dispatch(signInFailed(data))
         }
       })
   }
@@ -154,11 +145,11 @@ export function signUp(body, headers) {
         if (data.success === true) {
           sessionStorage.setItem('token', data.token)
           sessionStorage.setItem('email', data.email)
-          dispatch(signUpSuccessed(true, data.msg, data))
+          dispatch(signUpSuccessed(data))
 
         }
         else {
-          dispatch(signUpFailed(false, data.msg))
+          dispatch(signUpFailed(data))
         }
       })
   }
@@ -214,7 +205,6 @@ export function getUserProfile(headers) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          console.log(data.msg)
           dispatch(getProfileSuccessed(data.msg, data.email, data.address, data.realMoney, data.availableMoney, data.token))
         }
         else {
@@ -224,9 +214,9 @@ export function getUserProfile(headers) {
   }
 }
 
-export function verifyToken(body, headers, key) {
+export function verifyEmailByGoogleAuth(body, headers, key) {
   return function (dispatch) {
-    dispatch(verifyTokenSubmit(body, headers))
+    dispatch(verifyEmailByGoogleAuthSubmit(body, headers))
     return fetch(Server.server() + 'api/users/verify/' + key, {
       method: 'post',
       body: JSON.stringify(body),
@@ -235,11 +225,11 @@ export function verifyToken(body, headers, key) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          dispatch(verifyTokenSuccessed(true, data))
+          dispatch(verifyEmailByGoogleAuthSuccessed(true, data))
 
         }
         else {
-          dispatch(verifyTokenFailed(false, data))
+          dispatch(verifyEmailByGoogleAuthFailed(false, data))
         }
       })
   }

@@ -6,11 +6,13 @@ import { bindActionCreators } from 'redux'
 import * as _ from 'lodash'
 import './styles.scss'
 import { Link } from 'react-router-dom'
-import validator from 'validator'
-class GoogleAuthContainer extends React.Component {
+// import validator from 'validator'
+import { Redirect } from 'react-router-dom'
+class VerifyEmailByGoogleAuthContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
+            token: sessionStorage.getItem('token'),
             authKey: '',
             verifyToken: '',
             errors: [{
@@ -38,7 +40,7 @@ class GoogleAuthContainer extends React.Component {
             const body = {
                 "verifyToken": verifyToken,
             };
-            actions.verifyToken(body, headers, authKey)
+            actions.verifyEmailByGoogleAuth(body, headers, authKey)
         }
     }
 
@@ -65,10 +67,12 @@ class GoogleAuthContainer extends React.Component {
     }
 
     render() {
-        const { verifyToken, authKey, errors } = this.state
+        const { token, verifyToken, authKey, errors } = this.state
         const { errorMessage, successMessage } = this.props
         return (
-            <div className='account-container'>
+            token && token !== 'undefined'
+            ? <Redirect to="/" />
+            : (<div className='account-container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
                         <div className='form-header'>
@@ -113,7 +117,7 @@ class GoogleAuthContainer extends React.Component {
                         </div>
                     </Form>
                 </div>
-            </div>
+            </div>)
         )
     }
 }
@@ -128,7 +132,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
     return {
         actions: bindActionCreators({
-            verifyToken: accountActions.verifyToken,
+            verifyEmailByGoogleAuth: accountActions.verifyEmailByGoogleAuth,
         }, dispatch),
     }
 }
@@ -136,6 +140,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(GoogleAuthContainer)
-
-// module.exports = GoogleAuthContainer
+)(VerifyEmailByGoogleAuthContainer)

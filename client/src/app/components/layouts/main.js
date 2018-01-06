@@ -2,7 +2,7 @@
 import React from 'react'
 // import PropTypes from 'prop-types'
 import { Redirect } from 'react-router-dom'
-import { Sidebar, Segment, Menu, Card, Container, Header, Dropdown } from 'semantic-ui-react'
+import { Sidebar, Segment, Menu, Card, Dropdown } from 'semantic-ui-react'
 import './styles.scss'
 import MdMenu from 'react-icons/lib/md/menu'
 // import CreateIcon from 'react-icons/lib/md/add'
@@ -12,7 +12,6 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import * as accountActions from '../../actions'
 import validator from 'validator'
-import { Route } from 'react-router-dom'
 // import { actions as MainLayoutActions } from '@components/main_layout'
 // import MdArrowDropDown from 'react-icons/lib/md/arrow-drop-down'
 // import DashboardIcon from 'react-icons/lib/md/dashboard'
@@ -32,14 +31,6 @@ class MainLayout extends React.Component {
     this.state = {
       token: sessionStorage.getItem('token'),
       isSideBarShowing: true,
-    }
-  }
-
-  componentWillMount() {
-    if (this.state.token === 'undefined') {
-      console.log('abc', this.state.token)
-    } else {
-      console.log('cdf', this.state.token)
     }
   }
 
@@ -132,7 +123,7 @@ class MainLayout extends React.Component {
   }
 
   render() {
-    const { component: Component, ...rest } = this.props
+    // const { component: Component, ...rest } = this.props
     const { token } = this.state
     return (
       !token || token === 'undefined'

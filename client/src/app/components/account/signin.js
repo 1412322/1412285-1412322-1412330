@@ -12,6 +12,7 @@ class LoginContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
+            token: sessionStorage.getItem('token'),
             email: '',
             password: '',
             // isRememberMe: isRememberMe,
@@ -23,13 +24,13 @@ class LoginContainer extends React.Component {
     }
 
     componentWillMount() {
-        const { actions, verifiedEmail } = this.props
+        const { actions } = this.props
         actions.resetErrorMessage()
-        console.log(verifiedEmail)
-        if (verifiedEmail && verifiedEmail !== 'null')
-        this.setState({
-          email: verifiedEmail,
-        })
+        // console.log(verifiedEmail)
+        // if (verifiedEmail && verifiedEmail !== 'null')
+        // this.setState({
+        //   email: verifiedEmail,
+        // })
     }
 
     onSubmitForm(e) {
@@ -39,7 +40,6 @@ class LoginContainer extends React.Component {
         if (_.isEmpty(this.onValidateForm())) {
             const { email, password } = this.state
             const { actions } = this.props
-            console.log(actions)
             const headers = {
                 'Content-Type': 'application/json'
             };
@@ -92,10 +92,11 @@ class LoginContainer extends React.Component {
     }
 
     render() {
-        const { email, password, errors, isShowPassword } = this.state
-        const { errorMessage, isRedirect } = this.props
+        const { token, email, password, errors, isShowPassword } = this.state
+        const { errorMessage, successMessage } = this.props
         return (
-            isRedirect ? <Redirect to="/profile" />
+            token && token !== 'undefined'
+            ? <Redirect to="/" />
             : (<div className='account-container'>
                 <div className='dialog'>
                     <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>
@@ -163,6 +164,15 @@ class LoginContainer extends React.Component {
                                 }>
                                 {errorMessage}
                             </span>
+                            <span
+                                className='success-message'
+                                style={
+                                    (successMessage !== null)
+                                        ? { display: 'block' }
+                                        : { display: 'none' }
+                                }>
+                                {successMessage}
+                            </span>
                             <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >LOGIN</Button>
                             <div className='center-message'>Not a user, <Link to='/signup'>sign up now.</Link></div>
                         </div>
@@ -176,8 +186,8 @@ class LoginContainer extends React.Component {
 const mapStateToProps = (state) => {
     return {
         errorMessage: state.account.errorMessage,
-        isRedirect: state.account.isRedirect,
-        verifiedEmail: state.account.verifiedEmail,
+        successMessage: state.account.successMessage,
+        // verifiedEmail: state.account.verifiedEmail,
     }
 }
 
@@ -194,5 +204,3 @@ export default connect(
     mapStateToProps,
     mapDispatchToProps
 )(LoginContainer)
-
-// module.exports = LoginContainer

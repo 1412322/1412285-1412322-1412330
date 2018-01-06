@@ -27,7 +27,7 @@ import LoginContainer from './app/components/account/signin.js'
 import RegisterContainer from './app/components/account/signup.js'
 import RetrievePasswordContainer from './app/components/account/retrievepassword.js'
 import ResetPasswordContainer from './app/components/account/resetpassword.js'
-import GoogleAuthContainer from './app/components/account/googleauth.js'
+import VerifyEmailByGoogleAuthContainer from './app/components/account/verifyemailbygoogleauth.js'
 import ProfileContainer from './app/components/home/profile.js'
 import MainLayout from './app/components/layouts/main.js'
 import AppRoute from './app/index.js'
@@ -53,7 +53,7 @@ ReactDOM.render((
                     <Route path='/signup' component={RegisterContainer} />
                     <Route path='/retrievepassword' component={RetrievePasswordContainer} />
                     <Route path='/resetpassword/:id' component={ResetPasswordContainer} />
-                    <Route path='/verify/:key' component={GoogleAuthContainer} />
+                    <Route path='/verify/:key' component={VerifyEmailByGoogleAuthContainer} />
                     <Redirect to='/' />
                 </Switch>
             </BrowserRouter>

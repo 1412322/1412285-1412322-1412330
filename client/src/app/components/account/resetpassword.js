@@ -193,7 +193,6 @@ class ResetPasswordContainer extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-    console.log(state)
     return {
         errorMessage: state.account.errorMessage,
     }

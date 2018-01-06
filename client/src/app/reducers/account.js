@@ -14,16 +14,17 @@ const account = (state = initialState, action) => {
                 isFetching: true,
             })
         case 'SIGN_IN_SUCCESS':
+            window.location.href = '/profile'
             return Object.assign({}, state, {
                 isFetching: false,
-                isRedirect: true,
                 errorMessage: null,
+                successMessage: action.data.msg,
             })
         case 'SIGN_IN_FAILED':
             return Object.assign({}, state, {
                 isFetching: false,
-                isRedirect: false,
-                errorMessage: action.errorMessage,
+                successMessage: null,
+                errorMessage: action.data.msg,
             })
         case 'SIGN_UP':
             return Object.assign({}, state, {
@@ -33,17 +34,15 @@ const account = (state = initialState, action) => {
             window.location.href = '/verify/' + action.data.keyGoogleAuthenticator
             return Object.assign({}, state, {
                 isFetching: false,
-                isRedirect: false,
                 errorMessage: null,
-                successMessage: action.errorMessage,
+                successMessage: action.data.msg,
                 data: action.data,
             })
         case 'SIGN_UP_FAILED':
             return Object.assign({}, state, {
                 isFetching: false,
-                isRedirect: false,
                 successMessage: null,
-                errorMessage: action.errorMessage,
+                errorMessage: action.data.msg,
             })
         case 'RESET_ERROR_MESSAGE':
             return Object.assign({}, state, {
@@ -85,22 +84,20 @@ const account = (state = initialState, action) => {
             window.location.href = '/signin'
             return Object.assign({}, state, {
                 isFetching: true,
-                isRedirect: false,
             })
-        case 'VERIFY_TOKEN':
+        case 'VERIFY_EMAIL_BY_GOOGLE_AUTH':
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case 'VERIFY_TOKEN_SUCCESS':
-                    console.log(action.data.email)
+        case 'VERIFY_EMAIL_BY_GOOGLE_AUTH_SUCCESS':
+            console.log(action.data.email)
             window.location.href = '/signin'
             return Object.assign({}, state, {
                 isFetching: false,
                 errorMessage: null,
                 successMessage: action.data.msg,
-                verifiedEmail: action.data.email,
             })
-        case 'VERIFY_TOKEN_FAILED':
+        case 'VERIFY_EMAIL_BY_GOOGLE_AUTH_FAILED':
             return Object.assign({}, state, {
                 isFetching: false,
                 successMessage: null,
