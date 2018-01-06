@@ -36,7 +36,6 @@ const account = (state = initialState, action) => {
                 isFetching: false,
                 errorMessage: null,
                 successMessage: action.data.msg,
-                data: action.data,
             })
         case 'SIGN_UP_FAILED':
             return Object.assign({}, state, {

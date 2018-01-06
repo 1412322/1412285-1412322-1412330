@@ -29,6 +29,7 @@ export const signUpSuccessed = (data) => ({
 
 export const signUpFailed = (data) => ({
   type: 'SIGN_UP_FAILED',
+  data
 })
 
 export const resetErrorMessage = () => ({
@@ -97,15 +98,13 @@ export const verifyEmailByGoogleAuthSubmit = (body, headers) => ({
   headers,
 })
 
-export const verifyEmailByGoogleAuthSuccessed = (isRedirect, data) => ({
+export const verifyEmailByGoogleAuthSuccessed = (data) => ({
   type: 'VERIFY_EMAIL_BY_GOOGLE_AUTH_SUCCESS',
-  isRedirect,
   data,
 })
 
-export const verifyEmailByGoogleAuthFailed = (isRedirect, data) => ({
+export const verifyEmailByGoogleAuthFailed = (data) => ({
   type: 'VERIFY_EMAIL_BY_GOOGLE_AUTH_FAILED',
-  isRedirect,
   data,
 })
 
@@ -225,11 +224,10 @@ export function verifyEmailByGoogleAuth(body, headers, key) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          dispatch(verifyEmailByGoogleAuthSuccessed(true, data))
-
+          dispatch(verifyEmailByGoogleAuthSuccessed(data))
         }
         else {
-          dispatch(verifyEmailByGoogleAuthFailed(false, data))
+          dispatch(verifyEmailByGoogleAuthFailed(data))
         }
       })
   }
