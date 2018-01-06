@@ -97,6 +97,24 @@ export const getProfileFailed = (errorMessage) => ({
   errorMessage,
 })
 
+export const verifyTokenSubmit = (body, headers) => ({
+  type: 'VERIFY_TOKEN',
+  body,
+  headers,
+})
+
+export const verifyTokenSuccessed = (isRedirect, data) => ({
+  type: 'VERIFY_TOKEN_SUCCESS',
+  isRedirect,
+  data,
+})
+
+export const verifyTokenFailed = (isRedirect, data) => ({
+  type: 'VERIFY_TOKEN_FAILED',
+  isRedirect,
+  data,
+})
+
 export function signIn(body, headers) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -201,6 +219,27 @@ export function getUserProfile(headers) {
         }
         else {
           dispatch(getProfileFailed(data.msg))
+        }
+      })
+  }
+}
+
+export function verifyToken(body, headers, key) {
+  return function (dispatch) {
+    dispatch(verifyTokenSubmit(body, headers))
+    return fetch(Server.server() + 'api/users/verify/' + key, {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          dispatch(verifyTokenSuccessed(true, data))
+
+        }
+        else {
+          dispatch(verifyTokenFailed(false, data))
         }
       })
   }

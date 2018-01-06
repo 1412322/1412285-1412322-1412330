@@ -2,6 +2,7 @@ const initialState = {
     isRedirect: sessionStorage.getItem('token') && sessionStorage.getItem('token') !== 'undefined' ? true : false,
     errorMessage: null,
     successMessage: null,
+    verifiedEmail: null,
     isFetching: false,
     data: {},
 };
@@ -29,6 +30,7 @@ const account = (state = initialState, action) => {
                 isFetching: true,
             })
         case 'SIGN_UP_SUCCESS':
+            window.location.href = '/verify/' + action.data.keyGoogleAuthenticator
             return Object.assign({}, state, {
                 isFetching: false,
                 isRedirect: false,
@@ -84,6 +86,25 @@ const account = (state = initialState, action) => {
             return Object.assign({}, state, {
                 isFetching: true,
                 isRedirect: false,
+            })
+        case 'VERIFY_TOKEN':
+            return Object.assign({}, state, {
+                isFetching: true,
+            })
+        case 'VERIFY_TOKEN_SUCCESS':
+                    console.log(action.data.email)
+            window.location.href = '/signin'
+            return Object.assign({}, state, {
+                isFetching: false,
+                errorMessage: null,
+                successMessage: action.data.msg,
+                verifiedEmail: action.data.email,
+            })
+        case 'VERIFY_TOKEN_FAILED':
+            return Object.assign({}, state, {
+                isFetching: false,
+                successMessage: null,
+                errorMessage: action.data.msg,
             })
         default:
             return state

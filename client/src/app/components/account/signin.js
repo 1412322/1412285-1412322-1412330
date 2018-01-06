@@ -23,8 +23,13 @@ class LoginContainer extends React.Component {
     }
 
     componentWillMount() {
-        const { actions } = this.props
+        const { actions, verifiedEmail } = this.props
         actions.resetErrorMessage()
+        console.log(verifiedEmail)
+        if (verifiedEmail && verifiedEmail !== 'null')
+        this.setState({
+          email: verifiedEmail,
+        })
     }
 
     onSubmitForm(e) {
@@ -172,6 +177,7 @@ const mapStateToProps = (state) => {
     return {
         errorMessage: state.account.errorMessage,
         isRedirect: state.account.isRedirect,
+        verifiedEmail: state.account.verifiedEmail,
     }
 }
 
