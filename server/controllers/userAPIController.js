@@ -607,7 +607,7 @@ SendMessageGoogleAuthenticatorFirstTime = function(user, res)
   {
     formattedKey += formattedKeyArrays[i].toUpperCase();
   }
-  authenticator.generateTotpUri(formattedKey, user.email, "KCoin", 'SHA1', 6, 30);
+  var uriVerify = authenticator.generateTotpUri(key, user.email, "KCoin", 'SHA1', 6, 30);
   var user_instance = new User();
   user_instance._id = user._id;
   user_instance.keyGoogleAuthenticator = key;
@@ -616,9 +616,11 @@ SendMessageGoogleAuthenticatorFirstTime = function(user, res)
           res.json({ success: false, msg: 'User not found.' });
       }
       else {
+        var imgSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + uriVerify;
           res.json({ success: true,
             msg: 'A verify key has been sent to Your Google Authenticator',
-            keyGoogleAuthenticator: formattedKey});
+            keyGoogleAuthenticator: formattedKey,
+            qrCode: imgSrc });
       }
   });
 }

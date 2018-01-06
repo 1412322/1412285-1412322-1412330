@@ -94,7 +94,7 @@ for (let i = 0; i < formattedKeyArrays.length; i++)
   formattedToken: formattedToken,
   result1: authenticator.verifyToken(key, formattedToken),
   result2: authenticator.verifyToken(key, '000 000'),
-  OTPUri: authenticator.generateTotpUri(formattedKey, "mymy010196@gmail.com", "KCoin", 'SHA1', 6, 30)});
+  OTPUri: authenticator.generateTotpUri(key, "abc@gmail.com", "KCoin", 'SHA1', 6, 30)});
 }
 
 exports.verify_first_time = function (req, res, next) {
