@@ -101,6 +101,7 @@ exports.verify_google_authenticator = function (req, res, next) {
 
 exports.signin = function (req, res, next) {
     console.log("req:", req.body.email);
+    var verifyToken = req.body.verifyToken;
     User.findOne({
         email: req.body.email
     }, function (err, user) {
@@ -118,11 +119,26 @@ exports.signin = function (req, res, next) {
             else {
                 if (!user.isVerified)
                     return res.json({ success: false, type: 'not-verified', msg: 'Your account has not been verified.' });
+                    var result = authenticator.verifyToken(user.keyGoogleAuthenticator, verifyToken);
+                    if (result != null)
+                    {
+                      if (result.delta == 0)//xác thực đúng code
+                      {
+                        // if user is found and password is right create a token
+                        var token = jwt.encode(user, config.secret);
+                        // return the information including token as JSON
+                        res.json({ success: true, token: token, email: user.email });
+                      }
+                      else
+                      {
+                        res.json({ success: false, msg: 'Code is expired!' });
+                      }
+                    }
+                    else
+                    {
+                      res.json({ success: false, msg: 'Wrong Code!' });
+                    }
 
-                // if user is found and password is right create a token
-                var token = jwt.encode(user, config.secret);
-                // return the information including token as JSON
-                res.json({ success: true, token: token, email: user.email });
             }
 
         }
