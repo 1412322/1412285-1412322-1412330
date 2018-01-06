@@ -5,7 +5,7 @@ import * as accountActions from '../../actions'
 import { bindActionCreators } from 'redux'
 import * as _ from 'lodash'
 import './styles.scss'
-import { Link } from 'react-router-dom'
+// import { Link } from 'react-router-dom'
 // import validator from 'validator'
 import { Redirect } from 'react-router-dom'
 class VerifyEmailByGoogleAuthContainer extends React.Component {
@@ -59,8 +59,10 @@ class VerifyEmailByGoogleAuthContainer extends React.Component {
     }
 
     onHandleChange(event, fieldName) {
+        const { actions } = this.props
         const target = event.target
         const value = target.value
+        actions.resetErrorMessage()
         this.setState({
             [fieldName]: value,
         })
@@ -79,7 +81,7 @@ class VerifyEmailByGoogleAuthContainer extends React.Component {
                             <Header as='h2' textAlign='center' >Get Google Authenticator Key</Header>
                         </div>
                         <div className='form-body'>
-                            Please enter below key into your Google Authenticator Application to get Verify Token.
+                            Please enter below key into your <span style={{ color: '#7ed321' }}>Google Authenticator Application</span> to get Verify Token.
                             <p>{authKey}</p>
                             <Input
                                 className={
@@ -113,7 +115,7 @@ class VerifyEmailByGoogleAuthContainer extends React.Component {
                                 {successMessage}
                             </span>
                             <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >VERIFY</Button>
-                            <div className='center-message'>Remember now? <Link to='/signin'>Try to sign in</Link> or <Link to='/signup'>create a new one.</Link></div>
+                            <div className='center-message'>Note: This Verify Token will be reset automatically every 30s</div>
                         </div>
                     </Form>
                 </div>
@@ -133,6 +135,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         actions: bindActionCreators({
             verifyEmailByGoogleAuth: accountActions.verifyEmailByGoogleAuth,
+            resetErrorMessage: accountActions.resetErrorMessage
         }, dispatch),
     }
 }

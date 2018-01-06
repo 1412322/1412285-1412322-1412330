@@ -7,7 +7,7 @@ $text-color2: #fff;
 $text-color3: #242951;
 $text-color4: #022145;
 $input-border-color: #ffe0e0;
-$placeholder-text-color: #d8ddff;
+$placeholder-text-color: #ffd8d8;
 $failure-color: #e05d5d;
 $disable-label-color: #000;
 $success-color: #7ed321;
@@ -43,11 +43,10 @@ $font-regular: 400;
 
 @mixin input($background-color, $text-color) {
     background-color: $background-color !important;
-    border: solid 1px $input-border-color !important;
+    border: 0 !important;
     border-radius: 2px !important;
     color: $text-color !important;
     outline: none !important;
-    border-radius: 2px !important;
     height: 50px;
     padding: 0 15px !important;
     &:-webkit-autofill,

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Form, Input, Header, Grid, Popup } from 'semantic-ui-react'
+import { Button, Form, Input, Header, Grid, Popup, Checkbox } from 'semantic-ui-react'
 import { connect } from 'react-redux'
 import * as accountActions from '../../actions'
 import { bindActionCreators } from 'redux'
@@ -56,7 +56,7 @@ class LoginContainer extends React.Component {
     }
 
     onValidateForm() {
-        const { email, password } = this.state
+        const { email, password, verifyToken } = this.state
         const errors = []
         if (_.isEmpty(email)) {
             errors.push({ field: 'email' })
@@ -66,6 +66,10 @@ class LoginContainer extends React.Component {
 
         if (_.isEmpty(password)) {
             errors.push({ field: 'password' })
+        }
+
+        if (_.isEmpty(verifyToken)) {
+            errors.push({ field: 'verifyToken' })
         }
 
         this.setState({
@@ -96,7 +100,7 @@ class LoginContainer extends React.Component {
     }
 
     render() {
-        const { token, email, password, verifyToken, errors, isShowPassword } = this.state
+        const { token, email, password, verifyToken, errors, isShowPassword, isRememberMe } = this.state
         const { errorMessage, successMessage } = this.props
         return (
             token && token !== 'undefined'
@@ -170,7 +174,7 @@ class LoginContainer extends React.Component {
                                     value={verifyToken} />
                                 <Grid columns='equal'>
                                     <Grid.Row>
-                                        {/* <Grid.Column className='left-message'>
+                                        <Grid.Column className='left-message' textAlign='left'>
                                         <Checkbox
                                             checked={isRememberMe}
                                             className={
@@ -180,7 +184,7 @@ class LoginContainer extends React.Component {
                                             }
                                             label={{ children: 'Remember me' }}
                                             onChange={(e) => this.onHandleChange(e, 'isRememberMe')} />
-                                    </Grid.Column> */}
+                                        </Grid.Column>
                                         <Grid.Column textAlign='right'>
                                             <Link to='/retrievepassword' className='right-message'>Forgot password?</Link>
                                         </Grid.Column>
