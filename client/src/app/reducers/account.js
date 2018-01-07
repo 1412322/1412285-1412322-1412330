@@ -4,7 +4,6 @@ const initialState = {
     successMessage: null,
     verifiedEmail: null,
     isFetching: false,
-    data: {},
 };
 
 const account = (state = initialState, action) => {

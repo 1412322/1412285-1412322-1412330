@@ -140,6 +140,21 @@ export const getQRCodeFailed = (data) => ({
   data,
 })
 
+export const checkRole = (headers) => ({
+  type: 'CHECK_ROLE',
+  headers,
+})
+
+export const checkRoleSuccessed = (data) => ({
+  type: 'CHECK_ROLE_SUCCESS',
+  data,
+})
+
+export const checkRoleFailed = (data) => ({
+  type: 'CHECK_ROLE_FAILED',
+  data,
+})
+
 export function signIn(body, headers, isRememberMe) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -312,6 +327,25 @@ export function getVerifyQRCode(headers, key) {
         else {
                     console.log('sad', data)
           dispatch(getQRCodeFailed(data))
+        }
+      })
+  }
+}
+
+export function checkUserRole(headers) {
+  return function (dispatch) {
+    dispatch(checkRole(headers))
+    return fetch(Server.server() + 'api/admin/total', {
+      method: 'get',
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          dispatch(checkRoleSuccessed(data))
+        }
+        else {
+          dispatch(checkRoleFailed(data))
         }
       })
   }

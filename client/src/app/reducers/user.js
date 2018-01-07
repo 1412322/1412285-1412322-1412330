@@ -7,8 +7,10 @@ const initialState = {
         availableMoney: null,
         token: null
     },
+    role: undefined,
     isFetching: false,
     errorMessage: null,
+    statisticData: undefined,
 };
 
 const user = (state = initialState, action) => {
@@ -35,18 +37,21 @@ const user = (state = initialState, action) => {
                 isFetching: false,
                 errorMessage: action.errorMessage,
             })
-        // case 'SIGN_IN_SUCCESS':
-        //     return Object.assign({}, state, {
-        //         isFetching: false,
-        //         isRedirect: true,
-        //         errorMessage: null,
-        //     })
-        // case 'SIGN_IN_FAILED':
-        //     return Object.assign({}, state, {
-        //         isFetching: false,
-        //         isRedirect: false,
-        //         errorMessage: action.errorMessage,
-        //     })
+        case 'CHECK_ROLE':
+            return Object.assign({}, state, {
+                isFetching: true,
+            })
+        case 'CHECK_ROLE_SUCCESS':
+            return Object.assign({}, state, {
+                isFetching: false,
+                statisticData: action.data
+            })
+        case 'CHECK_ROLE_FAILED':
+            return Object.assign({}, state, {
+                isFetching: false,
+                errorMessage: action.data.msg,
+                role: action.data.success,
+            })
         default:
             return state
     }

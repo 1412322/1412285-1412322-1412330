@@ -104,18 +104,20 @@ class MainLayout extends React.Component {
                 Transfer
               </Menu.Item>
             </Link>
-
-            {/* <Link to='/admin/setting_bot/knowledge'>
-              <Menu.Item className={this.generateSibarItemClassName('/admin/setting_bot/knowledge')}>
-                Knowledge
+          </Card.Content>
+        </Card>
+        <Card className='side-bar-item-block'>
+          <Card.Content className='side-bar-item-content'>
+            <Card.Header className='side-bar-item-header'>
+              Management
+            </Card.Header>
+          </Card.Content>
+          <Card.Content className='side-bar-item-content'>
+            <Link to='/admin/statistic'>
+              <Menu.Item className={this.generateSibarItemClassName('/admin/statistic')}>
+                Statistic
               </Menu.Item>
             </Link>
-
-            <Link to='/admin/setting_bot/integration'>
-              <Menu.Item className={this.generateSibarItemClassName('/admin/setting_bot/integration')}>
-                Integration
-              </Menu.Item>
-            </Link> */}
           </Card.Content>
         </Card>
       </Sidebar>
