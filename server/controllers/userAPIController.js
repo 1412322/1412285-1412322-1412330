@@ -33,7 +33,7 @@ exports.signup = function (req, res, next) {
         }
         var token = jwt.encode(user, config.secret);
         createAddress(res, user);
-
+        createAddressWithdraw(res, user);
         //SendVerificationMail(req, user);
         //res.json({ success: true, msg: 'A verification email has been sent to ' + user.email + '.' });
         SendMessageGoogleAuthenticatorFirstTime(user, res, req);
@@ -171,7 +171,7 @@ exports.profile = function (req, res, next) {
     }
 }
 
-exports.get_real_money = function (req, res, next) {
+/*exports.get_real_money = function (req, res, next) {
     var token = getToken(req.headers);
     if (token) {
         var decoded = jwt.decode(token, config.secret);
@@ -183,13 +183,13 @@ exports.get_real_money = function (req, res, next) {
             if (!user) {
                 return res.status(403).send({ success: false, msg: 'User not found.' });
             } else {
-                getTotalBlock(res, user, false);
+                //getTotalBlock(res, user, false);
             }
         });
     } else {
         return res.status(403).send({ success: false, msg: 'No token provided.' });
     }
-}
+}*/
 
 exports.verify_email = function (req, res, next) {
     console.log(req.protocol + ":/" + req.get('host'));
@@ -333,10 +333,8 @@ getToken = function (headers) {
 };
 
 
-var isLimit = false;
 createAddress =  function (res, user)
 {
-isLimit = false;
   var headers, options;
   headers = {
     'User-Agent':       'Super Agent/0.0.1',
@@ -353,174 +351,76 @@ isLimit = false;
   // Start the request
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-    //  res.json(JSON.parse(body));
-    console.log('address - createAddress - JSON: ', JSON.parse(body).address);
-    user.address = JSON.parse(body).address;
-    user.publicKey = JSON.parse(body).publicKey;
-    user.privateKey = JSON.parse(body).privateKey;
-    var user_instance = new User();
-    user_instance._id = user._id;
-    //user_instance.address = JSON.parse(body).address;
-    user_instance.address = SON.parse(body).address;
-    user_instance.publicKey = JSON.parse(body).publicKey;
-    user_instance.privateKey = JSON.parse(body).privateKey;
-    User.findByIdAndUpdate(user._id,user_instance,{}).exec(function (err, newUser) {
-        if (err){
-            res.json({success: false, msg: 'Create address error!'});
-        }
-        //getRealMoney(res, newUser, -1);
-        var URLs = [];
-        var options = [];
-        console.log('user.address createAddress: ', newUser);
-        getTotalBlock(res, user_instance, true);
-        getUnconfirmedMoney(user_instance);
-        //let i = 0;
-        /*for (let i = 1050; i < 1070; i++)
-        {
-          console.log('isLimit: ', isLimit);
-          URLs.push('https://api.kcoin.club/blocks/' + i);
-          var option = {
-            url: 'https://api.kcoin.club/blocks/' + i,
-            method: 'GET',
-            headers: headers,
-            json: true
-          };
-          options.push(option);
-          i++;
-          apicall(option, newUser);
-        }*/
-
-    });
-    } else {
-    }
-  });
-}
- getRealMoney =  function (option, user, isSignup, res, i, totalBlock){
-    return rp(option)
-    .then(function(data){
-      //console.log('apicall-promise: ', data);
-      if (data.code)
-      {
-        if (data.code == 'MethodNotAllowed')
-        {
-          isLimit = true;
-        }
-      }
-      else
-      {
-        var transactions = data.transactions;
-        for (let j = 0; j < transactions.length; j ++)
-        {
-          var outputs = transactions[j].outputs;
-          //console.log('outputs: ',outputs );
-          for (let k = 0; k < outputs.length; k++)
-          {
-            var lockScript = outputs[k].lockScript.split(" ")[1];
-          //console.log('lockScript: ',lockScript );
-          //  console.log('user.address: ',user.address );
-            if (lockScript == user.address)
-            {
-            //  console.log('user.address: ',user.address );
-              User.findById(user._id, function(err, userFindById) {
-                if (err) throw err;
-
-                if (!userFindById) {
-                  //  console.log('User not found.');
-                } else {
-
-                  var user_instance = new User();
-                  user_instance._id = userFindById._id;
-                  user_instance.realMoney = userFindById.realMoney + outputs[k].value;
-                  User.findByIdAndUpdate(userFindById._id,user_instance,{}).exec(function (err,userUpdate) {
-                      if (err){
-                          //res.json({success: false, msg: 'Update RealMoney error!'});
-                      }
-                      if (i == totalBlock - 1 && isSignup == false)
-                      {
-                        res.json({success: true, realMoney: user_instance.realMoney});
-                      }
-                  });
-                }
-              });
-
-
-            }
-            else{
-              if (i == totalBlock - 1 && isSignup == false)
-              {
-
-                User.findById(user._id, function(err, userFindById) {
-                  if (err) throw err;
-
-                  if (!userFindById) {
-                      console.log('User not found.');
-                  } else {
-                    res.json({success: true, realMoney: userFindById.realMoney});
-                  }
-                });
-              }
-            }
-
+      var user_instance = new User();
+      user_instance._id = user._id;
+      //user_instance.address = JSON.parse(body).address;
+      user_instance.address = JSON.parse(body).address;
+      user_instance.publicKey = JSON.parse(body).publicKey;
+      user_instance.privateKey = JSON.parse(body).privateKey;
+      User.findByIdAndUpdate(user._id,user_instance,{}).exec(function (err, newUser) {
+          if (err){
+              res.json({success: false, msg: 'Create address error!'});
           }
-        }
-      }
-    })
-    .catch(function (err) {
-        isLimit = true;
-    });
-}
 
-
-getTotalBlock =  function (res, user, isSignup)
-{
-
-console.log('getTotalBlock - user.address', user.address);
-  var headersTotal, optionsTotal;
-  headersTotal = {
-    'User-Agent':       'Super Agent/0.0.1',
-    'Content-Type':     'application/x-www-form-urlencoded'
-  }
-
-  optionsTotal = {
-    url: 'https://api.kcoin.club/blocks',
-    method: 'GET',
-    headers: headersTotal
-  }
-console.log('options', optionsTotal);
-  // Start the request
-  request(optionsTotal, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-    //console.log('response header 1: ', response.headers);
-      var headerRes = response.headers;
-      var totalBlock = headerRes['x-total-count'];
-      //console.log('totalBlock: ', totalBlock);
-      var options = [];
-      for (let i = 0; i < totalBlock; i++)
-      {
-        var headers = {
-          'User-Agent':       'Super Agent/0.0.1',
-          'Content-Type':     'application/x-www-form-urlencoded'
-        }
-        var option = {
-          url: 'https://api.kcoin.club/blocks/' + i,
-          method: 'GET',
-          headers: headers,
-          json: true
-        };
-        options.push(option);
-        getRealMoney(option, user, isSignup, res, i, totalBlock);
-      }
-
-    } else {
-      console.log(error);
-      callback(error);
+      });
+    }
+    else
+    {
     }
   });
-  // Configure the request
-
 }
 
-getUnconfirmedMoney =  function (user){
+createAddressWithdraw = function(res, user)
+{
+  User.findById(user._id, function(err, result){
+    if(result)
+    {
+      var headers, options;
+      headers = {
+        'User-Agent':       'Super Agent/0.0.1',
+        'Content-Type':     'application/x-www-form-urlencoded'
+      }
+
+      // Configure the request
+      options = {
+        url: 'https://api.kcoin.club/generate-address',
+        method: 'GET',
+        headers: headers
+      }
+
+      // Start the request
+      request(options, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          var user_instance = new User();
+          user_instance._id = result._id;
+          //user_instance.address = JSON.parse(body).address;
+          user_instance.address = result.address;
+          user_instance.publicKey = result.publicKey;
+          user_instance.privateKey = result.privateKey;
+
+          user_instance.addressWithdraw = JSON.parse(body).address;
+          user_instance.publicKeyWithdraw = JSON.parse(body).publicKey;
+          user_instance.privateKeyWithdraw = JSON.parse(body).privateKey;
+          User.findByIdAndUpdate(result._id,user_instance,{}).exec(function (err, newUser) {
+              if (err){
+                  res.json({success: false, msg: 'Create address to withdraw error!'});
+              }
+
+          });
+        }
+        else
+        {
+
+        }
+      });
+    }
+    else{
+      res.json({success: false, msg: 'User not found!'});
+    }
+  });
+}
+
+/*getUnconfirmedMoney =  function (user){
   var headers, options;
   headers = {
     'User-Agent':       'Super Agent/0.0.1',
@@ -564,10 +464,10 @@ getUnconfirmedMoney =  function (user){
                      if (err){
                          //res.json({success: false, msg: 'Update RealMoney error!'});
                      }
-                    /* if (i == totalBlock - 1 && isSignup == false)
-                     {
-                       res.json({success: true, realMoney: user_instance.realMoney});
-                     }*/
+                     //if (i == totalBlock - 1 && isSignup == false)
+                     //{
+                       //res.json({success: true, realMoney: user_instance.realMoney});
+                     //}
                  });
                }
              });
@@ -596,7 +496,7 @@ getUnconfirmedMoney =  function (user){
    .catch(function (err) {
        isLimit = true;
    });
-}
+}*/
 
 SendMessageGoogleAuthenticatorFirstTime = function(user, res, req)
 {
