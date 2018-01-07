@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var expressHbs = require('express-handlebars');
 var mongoose = require('mongoose');
 var passport	= require('passport');
-var config      = require('./config/database'); // get db config file
+var config    = require('./config/database'); // get db config file
 //var User        = require('./app/models/user'); // get the mongoose model
 var jwt         = require('jwt-simple');
 var request = require('request');
@@ -250,25 +250,40 @@ SaveTransaction = function(transactions)
 {
   for(let i=0;i<transactions.length;i++)
   {
-    var newTran = new Transaction();
-    newTran.hash = transactions[i].hash;
-    newTran.state = "confirmed";
-    for(let j=0; j<transactions[i].inputs.length; j++)
-    {
-      newTran.inputs.push(transactions[i].inputs[j]);
-    }
-    for(let k=0; k<transactions[i].outputs.length; k++)
-    {
-      newTran.outputs.push(transactions[i].outputs[k]);
-    }
-    newTran.save(function(err){
-      if(err)
-        console.log(err);
+    Transaction.findOne({hash: transactions[i].hash}, function(err, result){
+      if(err) throw err;
+      if(result)
+      {
+        if(result.state == "unconfirmed"){
+          Transaction.findByIdAndUpdate(result._id,{$set:{state:"confirmed"}},{ new: true },function (err){
+            if(err)
+              console.log(err);
+          });
+        }
+      }
+      else
+      {
+        var newTran = new Transaction();
+        newTran.hash = transactions[i].hash;
+        newTran.state = "confirmed";
+        for(let j=0; j<transactions[i].inputs.length; j++)
+        {
+          newTran.inputs.push(transactions[i].inputs[j]);
+        }
+        for(let k=0; k<transactions[i].outputs.length; k++)
+        {
+          newTran.outputs.push(transactions[i].outputs[k]);
+        }
+        newTran.save(function(err){
+          if(err)
+            console.log(err);
+        });
+      }
     });
+
   }
 };
 UpdateReferenceOutputUser = function(transactions){
-
   for(let i=0; i<transactions.length;i++)
   {
     for(let j=0;j<transactions[i].inputs.length; j++)
@@ -289,15 +304,22 @@ UpdateReferenceOutputUser = function(transactions){
     }
     for(let j=0;j<transactions[i].outputs.length; j++)
     {
-      var newReference = new ReferenceOutput();
-      newReference.referencedOutputHash = transactions[i].hash;
-      newReference.referencedOutputIndex = j;
-      newReference.address = transactions[i].outputs[j].lockScript.split(" ")[1];
-      newReference.money = transactions[i].outputs[j].value;
-      newReference.save(function(err){
-        if(err)
-          console.log(err);
+      User.findOne({address: transactions[i].outputs[j].lockScript.split(" ")[1]}, function(err, user){
+        if(err) throw err;
+        if(user)
+        {
+          var newReference = new ReferenceOutput();
+          newReference.referencedOutputHash = transactions[i].hash;
+          newReference.referencedOutputIndex = j;
+          newReference.address = transactions[i].outputs[j].lockScript.split(" ")[1];
+          newReference.money = transactions[i].outputs[j].value;
+          newReference.save(function(err){
+            if(err)
+              console.log(err);
+          });
+        }
       });
+
     }
   }
 }
@@ -319,7 +341,7 @@ UpdateRealMoneyUser = function(transactions)
             User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
             {
               if(user){
-                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
+                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
                   if(err)
                     console.log(err);
                 });
@@ -336,7 +358,7 @@ UpdateRealMoneyUser = function(transactions)
           if(outputs[j].lockScript.split(" ")[1] == sender.address)
           {
             isReceive = true;
-            User.findByIdAndUpdate(sender._id,{$set:{realMoney: outputs[j].value}},{ new: true },function (err){
+            User.findByIdAndUpdate(sender._id,{$set:{realMoney: outputs[j].value, availableMoney:outputs[j].value}},{ new: true },function (err){
               if(err)
                 console.log(err);
             });
@@ -347,7 +369,7 @@ UpdateRealMoneyUser = function(transactions)
             User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
             {
               if(user){
-                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
+                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
                   if(err)
                     console.log(err);
                 });
@@ -358,7 +380,7 @@ UpdateRealMoneyUser = function(transactions)
         }
         if(isReceive == false)
         {
-          User.findByIdAndUpdate(sender._id,{$set:{realMoney: sender.realMoney - sum}},{ new: true },function (err){
+          User.findByIdAndUpdate(sender._id,{$set:{realMoney: sender.realMoney - sum, availableMoney: sender.realMoney - sum}},{ new: true },function (err){
             if(err)
               console.log(err);
           });
@@ -374,7 +396,7 @@ UpdateRealMoneyUser = function(transactions)
         {
           if(user)
           {
-            User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
+            User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
             if(err)
               console.log(err);
             });
