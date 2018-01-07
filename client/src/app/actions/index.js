@@ -1,4 +1,5 @@
 import Server from '../../server.js'
+import * as ls from 'local-storage'
 
 export const signInSubmit = (body, headers) => ({
   type: 'SIGN_IN',
@@ -153,13 +154,13 @@ export function signIn(body, headers, isRememberMe) {
           sessionStorage.setItem('token', data.token)
           sessionStorage.setItem('email', data.email)
           if (isRememberMe) {
-            localStorage.setItem('email', data.email)
-            localStorage.setItem('password', data.password)
-            localStorage.setItem('isRememberMe', isRememberMe)
+            ls('email', body.email)
+            ls('password', body.password)
+            ls('isRememberMe', true)
           } else {
-            localStorage.setItem('email', '')
-            localStorage.setItem('password', '')
-            localStorage.setItem('isRememberMe', isRememberMe)
+            ls('email', '')
+            ls('password', '')
+            ls('isRememberMe', false)
           }
           dispatch(signInSuccessed(null))
 

@@ -52,7 +52,7 @@ $font-regular: 400;
     &:-webkit-autofill,
     &:-webkit-autofill:hover, 
     &:-webkit-autofill:focus {
-      border: solid 1px $input-border-color !important;
+      // border: solid 1px $input-border-color !important;
       -webkit-text-fill-color: $text-color !important;
       box-shadow: 0 0 0px 1000px $background-color inset !important;
     }   

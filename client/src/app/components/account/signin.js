@@ -7,6 +7,7 @@ import * as _ from 'lodash'
 import './styles.scss'
 import { Link } from 'react-router-dom'
 import validator from 'validator'
+import * as ls from 'local-storage'
 import { Redirect } from 'react-router-dom'
 import RequirementIcon from 'react-icons/lib/md/info-outline'
 // import RightIcon from 'react-icons/lib/md/check'
@@ -18,13 +19,13 @@ class LoginContainer extends React.Component {
         let isRememberMe = false
     
         try {
-          email = localStorage.getItem('email') ? localStorage.getItem('email') : ''
-          password = localStorage.getItem('password') ? localStorage.getItem('password') : ''
-          isRememberMe = localStorage.getItem('isRememberMe') ? localStorage.getItem('isRememberMe') : false
+          email = ls('email') ? ls('email') : ''
+          password = ls('password') ? ls('password') : ''
+          isRememberMe = ls('isRememberMe') ? ls('isRememberMe') : false
         } catch (ex) {
-          console.log(ex)
-        }
 
+        }
+        
         this.state = {
             token: sessionStorage.getItem('token'),
             email: email,
@@ -63,6 +64,7 @@ class LoginContainer extends React.Component {
                 "password": password,
                 "verifyToken": verifyToken,
             };
+            console.log(isRememberMe)
             actions.signIn(body, headers, isRememberMe)
         }
     }
