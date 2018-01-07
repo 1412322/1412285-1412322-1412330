@@ -1,22 +1,9 @@
 import React from 'react'
-// import { MainLayout } from '../../commons/Layout'
-// import ReactDOM from 'react-dom'
 import './styles.scss'
-// import Proptypes from 'prop-types'
-// import { actions as MainLayoutActions } from '@components/main_layout'
-// import * as AppearanceActions from './appearance.actions'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Container, Header, Input } from 'semantic-ui-react'
 import * as actions from '../../actions'
-// import MainLayout from '../layouts/main.js'
-// import EditIcon from '@images/ic_edit@1x.png'
-// import BotAvatar from '@images/laura_default_avatar.png'
-// import AppearanceAvatar from '@images/ic_appearance_avatar@1x.png'
-// import SettingContainer from '../commons'
-// import { SketchPicker } from 'react-color'
-// import AvatarEditor from '../commons/avatar_editor'
-// import ImageDataConverter from '@commons/utils/imageDataConverter'
 
 class ProfileContainer extends React.Component {
 
@@ -58,19 +45,13 @@ class ProfileContainer extends React.Component {
                         <Input
                             className='normal-field'
                             fluid={true}
-                            label={<label>Token</label>}
-                            readOnly={true}
-                            value={userInfo.token} />
-                        <Input
-                            className='normal-field'
-                            fluid={true}
-                            label={<label>Real money</label>}
+                            label={<label>Actual Balance</label>}
                             readOnly={true}
                             value={userInfo.realMoney} />
                         <Input
                             className='normal-field'
                             fluid={true}
-                            label={<label>Availabel money</label>}
+                            label={<label>Available Balance</label>}
                             readOnly={true}
                             value={userInfo.availableMoney} />
                         <Input

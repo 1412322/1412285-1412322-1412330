@@ -186,7 +186,7 @@ class LoginContainer extends React.Component {
                                             onChange={(e) => this.onHandleChange(e, 'isRememberMe')} />
                                         </Grid.Column>
                                         <Grid.Column textAlign='right'>
-                                            <Link to='/retrievepassword' className='right-message'>Forgot password?</Link>
+                                            <Link to='/2faresetpassword' className='right-message'>Forgot password?</Link>
                                         </Grid.Column>
                                     </Grid.Row>
                                 </Grid>

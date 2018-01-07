@@ -68,6 +68,22 @@ export const resetPasswordFailed = (errorMessage) => ({
   errorMessage,
 })
 
+export const resetPasswordByGoogleAuthSubmit = (body, headers) => ({
+  type: 'RESET_PASSWORD_BY_GOOGLE_AUTH',
+  body,
+  headers,
+})
+
+export const resetPasswordByGoogleAuthSuccessed = (data) => ({
+  type: 'RESET_PASSWORD_BY_GOOGLE_AUTH_SUCCESS',
+  data,
+})
+
+export const resetPasswordByGoogleAuthFailed = (data) => ({
+  type: 'RESET_PASSWORD_BY_GOOGLE_AUTH_FAILED',
+  data,
+})
+
 export const signOut = () => ({
   type: 'SIGN_OUT',
 })
@@ -105,6 +121,21 @@ export const verifyEmailByGoogleAuthSuccessed = (data) => ({
 
 export const verifyEmailByGoogleAuthFailed = (data) => ({
   type: 'VERIFY_EMAIL_BY_GOOGLE_AUTH_FAILED',
+  data,
+})
+
+export const getQRCode = (headers) => ({
+  type: 'GET_QRCODE',
+  headers,
+})
+
+export const getQRCodeSuccessed = (data) => ({
+  type: 'GET_QRCODE_SUCCESS',
+  data,
+})
+
+export const getQRCodeFailed = (data) => ({
+  type: 'GET_QRCODE_FAILED',
   data,
 })
 
@@ -194,6 +225,26 @@ export function resetPassword(body, headers, id) {
   }
 }
 
+export function resetPasswordByGoogleAuth(body, headers) {
+  return function (dispatch) {
+    dispatch(resetPasswordByGoogleAuthSubmit(body, headers))
+    return fetch(Server.server() + 'api/users/resetpassword', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          dispatch(resetPasswordByGoogleAuthSuccessed(data))
+        }
+        else {
+          dispatch(resetPasswordByGoogleAuthFailed(data))
+        }
+      })
+  }
+}
+
 export function getUserProfile(headers) {
   return function (dispatch) {
     dispatch(getProfile(headers))
@@ -228,6 +279,29 @@ export function verifyEmailByGoogleAuth(body, headers, key) {
         }
         else {
           dispatch(verifyEmailByGoogleAuthFailed(data))
+        }
+      })
+  }
+}
+
+export function getVerifyQRCode(headers, key) {
+  return function (dispatch) {
+    console.log('key', key)
+    dispatch(getQRCode(headers))
+    return fetch(Server.server() + 'api/users/qrCode/' + key, {
+      method: 'post',
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+                  console.log('sex', data)
+        if (data.success === true) {
+          console.log('sad',data)
+          dispatch(getQRCodeSuccessed(data))
+        }
+        else {
+                    console.log('sad', data)
+          dispatch(getQRCodeFailed(data))
         }
       })
   }

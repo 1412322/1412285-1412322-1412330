@@ -8,7 +8,9 @@ router.post('/signup',  userAPIController.signup);
 router.post('/verify/:key',userAPIController.verify_google_authenticator);
 router.post('/signin',  userAPIController.signin);
 router.get('/profile',  userAPIController.profile);
-//router.get('/realmoney',  userAPIController.get_real_money);
+router.post('/qrCode/:key',  userAPIController.get_qr_code);
+
+router.get('/realmoney',  userAPIController.get_real_money);
 router.get('/verify/:id',userAPIController.verify_email);
 router.post('/resetpassword',userAPIController.reset_password);
 

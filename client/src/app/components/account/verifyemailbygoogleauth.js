@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Form, Input, Header } from 'semantic-ui-react'
+import { Button, Form, Input, Header, Image } from 'semantic-ui-react'
 import { connect } from 'react-redux'
 import * as accountActions from '../../actions'
 import { bindActionCreators } from 'redux'
@@ -22,6 +22,11 @@ class VerifyEmailByGoogleAuthContainer extends React.Component {
     }
 
     componentWillMount() {
+        const { actions } = this.props
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        actions.getVerifyQRCode(headers, this.props.match.params.key)
         this.setState({
           authKey: this.props.match.params.key,
         })
@@ -70,7 +75,8 @@ class VerifyEmailByGoogleAuthContainer extends React.Component {
 
     render() {
         const { token, verifyToken, authKey, errors } = this.state
-        const { errorMessage, successMessage } = this.props
+        const { errorMessage, successMessage, qrCode } = this.props
+        console.log(qrCode)
         return (
             token && token !== 'undefined'
             ? <Redirect to="/" />
@@ -82,6 +88,7 @@ class VerifyEmailByGoogleAuthContainer extends React.Component {
                         </div>
                         <div className='form-body'>
                             Please enter below key into your <span style={{ color: '#7ed321' }}>Google Authenticator Application</span> to get Verify Token.
+                            <Image src={qrCode} centered={true} />
                             <p>{authKey}</p>
                             <Input
                                 className={
@@ -128,6 +135,7 @@ const mapStateToProps = (state) => {
     return {
         errorMessage: state.account.errorMessage,
         successMessage: state.account.successMessage,
+        qrCode: state.account.qrCode,
     }
 }
 
@@ -135,6 +143,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         actions: bindActionCreators({
             verifyEmailByGoogleAuth: accountActions.verifyEmailByGoogleAuth,
+            getVerifyQRCode: accountActions.getVerifyQRCode,
             resetErrorMessage: accountActions.resetErrorMessage
         }, dispatch),
     }

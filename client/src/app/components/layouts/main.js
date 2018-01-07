@@ -94,14 +94,14 @@ class MainLayout extends React.Component {
           </Card.Content>
           <Card.Content className='side-bar-item-content'>
             <Link to='/transactions/history'>
-              <Menu.Item className={this.generateSibarItemClassName('/transactions/history')}>
+              <Menu.Item className={this.generateSibarItemClassName('/transaction/history')}>
                 History
               </Menu.Item>
             </Link>
 
-            <Link to='/transactions/exchange'>
-              <Menu.Item className={this.generateSibarItemClassName('/transactions/exchange')}>
-                Exchange
+            <Link to='/transaction/transfer'>
+              <Menu.Item className={this.generateSibarItemClassName('/transaction/transfer')}>
+                Transfer
               </Menu.Item>
             </Link>
 

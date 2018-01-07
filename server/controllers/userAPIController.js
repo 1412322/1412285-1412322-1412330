@@ -99,6 +99,38 @@ exports.verify_google_authenticator = function (req, res, next) {
 
 }
 
+exports.get_qr_code = function (req, res, next) {
+ var keyGoogleAuthenticatorFormatted = req.params.key;
+ var keyGoogleAuthenticator = '';
+ for (let i = 0; i < keyGoogleAuthenticatorFormatted.length; i++)
+ {
+   if (i % 4 == 0 && i > 0 && i < keyGoogleAuthenticatorFormatted.length)
+    keyGoogleAuthenticator += ' ' + keyGoogleAuthenticatorFormatted[i].toLowerCase();
+  else
+    keyGoogleAuthenticator += keyGoogleAuthenticatorFormatted[i].toLowerCase();;
+ }
+ User.findOne({
+     keyGoogleAuthenticator: keyGoogleAuthenticator
+ }, function (err, user) {
+     if (err)
+     {
+       res.json({ success: false, msg: err });
+     }
+
+     if (!user) {
+         console.log('User not found.', req.body.email);
+         res.json({ success: false, msg: 'User not found.' });
+     } else {
+         //var result = authenticator.verifyToken(keyGoogleAuthenticator, verifyToken);
+         var uriVerify = authenticator.generateTotpUri(keyGoogleAuthenticator, user.email, "KCoin", 'SHA1', 6, 30);
+         var imgSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + uriVerify;
+         res.json({ success: true, msg: 'Get QR Code successfully!', qrCode: imgSrc });
+
+     }
+ });
+
+}
+
 exports.signin = function (req, res, next) {
     console.log("req:", req.body.email);
     var verifyToken = req.body.verifyToken;

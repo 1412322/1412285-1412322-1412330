@@ -14,7 +14,7 @@
     }
   }
 
-  .appearanceSettingContainer {
+  .transferContainer {
     align-content: center;
     align-items: center;
     background-color: $background-color1;
@@ -24,13 +24,13 @@
     justify-content: flex-start;
     padding: 50px 50px 0px;
     width: 100% !important;
-    .appearanceSettingContainerHeader {
+    .transferContainerHeader {
       margin: 0 0 30px 0;
       h2 {
         @include title;
       }
     }
-    .appearanceSettingContainerBody {
+    .transferContainerBody {
       align-content: center;
       background-color: $background-color1;
       border-radius: 3px;
@@ -109,24 +109,7 @@
           }
         }
         .error-field {
-          label {
-            border: 2px solid $failure-color !important;
-            border-right: 0 !important;
-          }
-          input {
-            border: 2px solid $failure-color !important;
-            border-left: 0 !important;
-            &:-webkit-autofill,
-            &:-webkit-autofill:hover,
-            &:-webkit-autofill:focus {
-              border: 2px solid $failure-color !important;
-              border-left: 0 !important;
-            }
-          }
-          .show-password-btn {
-            border: 2px solid $failure-color !important;
-            border-left: none !important;
-          }
+          border: 2px solid $failure-color !important;
         }
         .botAvatarWrapper {
           position: relative;
@@ -174,6 +157,13 @@
         span {
           opacity: 0.36;
           color: #193651;
+        }
+        .submit-btn {
+          @include button($primary-color, $text-color2);
+          font-size: 16px !important;
+          margin-bottom: 25px !important;
+          height: 55px;
+          width: 120px;
         }
         .messageWrapperLeft {
           align-items: center;

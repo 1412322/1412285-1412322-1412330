@@ -31,7 +31,7 @@ const account = (state = initialState, action) => {
                 isFetching: true,
             })
         case 'SIGN_UP_SUCCESS':
-            window.location.href = '/verify/' + action.data.keyGoogleAuthenticator
+            // window.location.href = '/verify/' + action.data.keyGoogleAuthenticator
             return Object.assign({}, state, {
                 isFetching: false,
                 errorMessage: null,
@@ -77,6 +77,23 @@ const account = (state = initialState, action) => {
                 isFetching: false,
                 errorMessage: action.errorMessage,
             })
+        case 'RESET_PASSWORD_BY_GOOGLE_AUTH':
+            return Object.assign({}, state, {
+                isFetching: true,
+            })
+        case 'RESET_PASSWORD_BY_GOOGLE_AUTH_SUCCESS':
+            window.location.href = '/signin'
+            return Object.assign({}, state, {
+                isFetching: false,
+                successMessage: action.data.msg,
+                errorMessage: undefined,
+            })
+        case 'RESET_PASSWORD_BY_GOOGLE_AUTH_FAILED':
+            return Object.assign({}, state, {
+                isFetching: false,
+                successMessage: undefined,
+                errorMessage: action.data.msg,
+            })
         case 'SIGN_OUT':
             sessionStorage.removeItem('email')
             sessionStorage.removeItem('token')
@@ -101,6 +118,21 @@ const account = (state = initialState, action) => {
                 isFetching: false,
                 successMessage: null,
                 errorMessage: action.data.msg,
+            })
+        case 'GET_QRCODE':
+            return Object.assign({}, state, {
+                isFetching: true,
+            })
+        case 'GET_QRCODE_SUCCESS':
+        console.log(action.data.qrCode)
+            return Object.assign({}, state, {
+                isFetching: false,
+                qrCode: action.data.qrCode,
+            })
+        case 'GET_QRCODE_FAILED':
+            return Object.assign({}, state, {
+                isFetching: false,
+                qrCode: undefined,
             })
         default:
             return state

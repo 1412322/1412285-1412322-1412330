@@ -145,7 +145,7 @@
           color: $failure-color;
           display: block;
           position: absolute;
-          top: -40px;
+          top: -30px;
           width: 100%;
           text-align: center;
         }
@@ -153,14 +153,14 @@
           color: $success-color;
           display: block;
           position: absolute;
-          top: -40px;
+          top: -30px;
           width: 100%;
           text-align: center;
         }
         .submit-btn {
           @include button($primary-color, $text-color2);
           font-size: 16px !important;
-          margin-bottom: 33px !important;
+          margin-bottom: 25px !important;
           height: 55px;
           width: 120px;
         }
