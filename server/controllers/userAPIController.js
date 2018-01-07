@@ -361,7 +361,7 @@ isLimit = false;
     var user_instance = new User();
     user_instance._id = user._id;
     //user_instance.address = JSON.parse(body).address;
-    user_instance.address = '77d231e59c95d3c4bad46c4896964427649f77321c38b59642d2ad4c022e3cb5';
+    user_instance.address = SON.parse(body).address;
     user_instance.publicKey = JSON.parse(body).publicKey;
     user_instance.privateKey = JSON.parse(body).privateKey;
     User.findByIdAndUpdate(user._id,user_instance,{}).exec(function (err, newUser) {
