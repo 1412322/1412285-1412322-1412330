@@ -30,7 +30,10 @@ var UserSchema = new Schema({
   availableMoney: {
         type: Number,
         default: 0
-    }
+    },
+    addressWithdraw: String,
+    privateKeyWithdraw: String,
+    publicKeyWithdraw: String
 });
 
 UserSchema.methods.encryptPassword = function(password){
