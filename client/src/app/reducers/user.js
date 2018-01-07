@@ -1,15 +1,6 @@
 const initialState = {
-    userInfo: {
-        welcomeMessage: null,
-        email: null,
-        address: null,
-        realMoney: null,
-        availableMoney: null,
-        token: null
-    },
-    role: undefined,
+    userData: undefined,
     isFetching: false,
-    errorMessage: null,
     statisticData: undefined,
 };
 
@@ -21,21 +12,13 @@ const user = (state = initialState, action) => {
             })
         case 'GET_PROFILE_SUCCESS':
             return Object.assign({}, state, {
-                userInfo: {
-                    email: action.email,
-                    address: action.address,
-                    realMoney: action.realMoney,
-                    availableMoney: action.availableMoney,
-                    welcomeMessage: action.welcomeMessage,
-                    token: action.token
-                },
                 isFetching: false,
-                errorMessage: null,
+                userData: action.data,
             })
         case 'GET_PROFILE_FAILED':
             return Object.assign({}, state, {
                 isFetching: false,
-                errorMessage: action.errorMessage,
+                errorMessage: action.data.msg,
             })
         case 'CHECK_ROLE':
             return Object.assign({}, state, {
@@ -49,8 +32,7 @@ const user = (state = initialState, action) => {
         case 'CHECK_ROLE_FAILED':
             return Object.assign({}, state, {
                 isFetching: false,
-                errorMessage: action.data.msg,
-                role: action.data.success,
+                statisticData: action.data,
             })
         default:
             return state

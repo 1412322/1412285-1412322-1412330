@@ -2,8 +2,9 @@ import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Container, Header, Input } from 'semantic-ui-react'
+import { Container, Header, Input, Button, Dimmer, Loader } from 'semantic-ui-react'
 import * as actions from '../../actions'
+import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 class ProfileContainer extends React.Component {
 
@@ -25,48 +26,66 @@ class ProfileContainer extends React.Component {
     }
 
     render() {
-        const { userInfo } = this.props
+        const { userData } = this.props
         return (
-            <Container className='appearanceSettingContainer'>
-                <div className='appearanceSettingContainerHeader'>
-                    <Header as='h2' textAlign='center' >User's Profile</Header>
-                </div>
-                <div className='appearanceSettingContainerBody'>
-                    <div className='containerHeader'>
-                        {userInfo.welcomeMessage}
+            !userData
+                ? (<Dimmer active={true} inverted={true}>
+                    <Loader />
+                </Dimmer>)
+                : (<Container className='profile-container'>
+                    <div className='profile-container-header'>
+                        <Header as='h2' textAlign='center' >User's Profile</Header>
                     </div>
-                    <div className='containerBody'>
-                        <Input
-                            className='normal-field'
-                            fluid={true}
-                            label={<label>Email address</label>}
-                            readOnly={true}
-                            value={userInfo.email} />
-                        <Input
-                            className='normal-field'
-                            fluid={true}
-                            label={<label>Actual Balance</label>}
-                            readOnly={true}
-                            value={userInfo.realMoney} />
-                        <Input
-                            className='normal-field'
-                            fluid={true}
-                            label={<label>Available Balance</label>}
-                            readOnly={true}
-                            value={userInfo.availableMoney} />
-                        <Input
-                            className='normal-field'
-                            fluid={true}
-                            label={<label>Address</label>}
-                            readOnly={true}
-                            value={userInfo.address} />
-                    </div>
+                    <div className='profile-container-body'>
+                        <div className='container-header'>
+                            {userData.msg}
+                            <div className='user-avatar'>{userData.email.charAt(0)}</div>
+                        </div>
+                        <div className='container-body'>
+                        <label>Email</label>
+                            <Input
+                                className='normal-field'
+                                fluid={true}
+                                readOnly={true}
+                                value={userData.email} />
+                                <label>Role</label>
+                            <Input
+                                className='normal-field'
+                                fluid={true}
+                                readOnly={true}
+                                value={userData.role === 'admin' ? 'Administrator' : 'Member'} />
+                                <label>Actual Balance</label>
+                            <Input
+                                className='normal-field'
+                                fluid={true}
+                                readOnly={true}
+                                value={userData.realMoney} />
+                                <label>Available Balance</label>
+                            <Input
+                                className='normal-field'
+                                fluid={true}
+                                readOnly={true}
+                                value={userData.availableMoney} />
+                                <label>Address</label>
+                            <Input
+                                id='copy-input'
+                                action={
+                                    <CopyToClipboard text={userData.address}>
+                                        <Button className='copy-btn'>Copy</Button>
+                                    </CopyToClipboard>
+                                }
+                                className='normal-field'
+                                fluid={true}
+                                readOnly={true}
+                                value={userData.address} />
+                        </div>
 
-                    <div className='containerFooter'>
-                    </div>
+                        <div className='container-footer'>
+                        hi
+                        </div>
 
-                </div>
-            </Container>
+                    </div>
+                </Container>)
         )
     }
 }
@@ -75,7 +94,7 @@ ProfileContainer.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-    userInfo: state.user.userInfo,
+    userData: state.user.userData,
 })
 
 const mapDispatchToProps = (dispatch) => {

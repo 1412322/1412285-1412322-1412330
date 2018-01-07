@@ -94,19 +94,14 @@ export const getProfile = (headers) => ({
   headers,
 })
 
-export const getProfileSuccessed = (welcomeMessage, email, address, realMoney, availableMoney, token) => ({
+export const getProfileSuccessed = (data) => ({
   type: 'GET_PROFILE_SUCCESS',
-  welcomeMessage,
-  email,
-  address,
-  realMoney,
-  availableMoney,
-  token
+  data,
 })
 
-export const getProfileFailed = (errorMessage) => ({
+export const getProfileFailed = (data) => ({
   type: 'GET_PROFILE_FAILED',
-  errorMessage,
+  data,
 })
 
 export const verifyEmailByGoogleAuthSubmit = (body, headers) => ({
@@ -280,10 +275,10 @@ export function getUserProfile(headers) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          dispatch(getProfileSuccessed(data.msg, data.email, data.address, data.realMoney, data.availableMoney, data.token))
+          dispatch(getProfileSuccessed(data))
         }
         else {
-          dispatch(getProfileFailed(data.msg))
+          dispatch(getProfileFailed(data))
         }
       })
   }
@@ -342,9 +337,11 @@ export function checkUserRole(headers) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
+          console.log(data)
           dispatch(checkRoleSuccessed(data))
         }
         else {
+          console.log(data)
           dispatch(checkRoleFailed(data))
         }
       })

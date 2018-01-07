@@ -1,27 +1,13 @@
-// import { initAdminPage } from '../../../../commons/components/main_layout/main_layout.actions'
 import React from 'react'
-// import PropTypes from 'prop-types'
 import { Redirect } from 'react-router-dom'
 import { Sidebar, Segment, Menu, Card, Dropdown } from 'semantic-ui-react'
 import './styles.scss'
 import MdMenu from 'react-icons/lib/md/menu'
-// import CreateIcon from 'react-icons/lib/md/add'
 import { Link } from 'react-router-dom'
-// import * as _ from 'lodash'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import * as accountActions from '../../actions'
 import validator from 'validator'
-// import { actions as MainLayoutActions } from '@components/main_layout'
-// import MdArrowDropDown from 'react-icons/lib/md/arrow-drop-down'
-// import DashboardIcon from 'react-icons/lib/md/dashboard'
-// import ConversationsIcon from 'react-icons/lib/md/chat-bubble'
-// import AppearanceIcon from 'react-icons/lib/md/format-color-fill'
-// import PersonalityIcon from 'react-icons/lib/md/perm-contact-calendar'
-// import KnowledgeIcon from 'react-icons/lib/md/book'
-// import IntegrationIcon from 'react-icons/lib/md/import-export'
-// import DropDownIconDown from '@images/ic_arrow_down@1x.png'
-// import { actions as authActions } from '@components/auth'
 // import * as ls from 'local-storage'
 
 class MainLayout extends React.Component {
@@ -176,19 +162,6 @@ class MainLayout extends React.Component {
         </div>)
     )
   }
-}
-
-MainLayout.propTypes = {
-  //   children: PropTypes.element.isRequired,
-  //   isSideBarShowing: PropTypes.bool,
-  //   actions: PropTypes.object,
-  //   isCreatingBot: PropTypes.bool,
-  //   isShowingLoading: PropTypes.bool,
-  //   isSideBarLogoShowing: PropTypes.bool,
-  //   bots: PropTypes.array,
-  //   currentBot: PropTypes.object,
-  //   currentBotIndex: PropTypes.number,
-  //   isCompletedFetchingBots: PropTypes.bool,
 }
 
 const mapStateToProps = (state) => ({
