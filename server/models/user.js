@@ -19,21 +19,9 @@ var UserSchema = new Schema({
   passwordResetToken: String,
   keyGoogleAuthenticator: String,
   passwordResetExpires: Date,
-  address: {
-        type: String,
-        required: true,
-        unique: true
-    },
-  privateKey: {
-        type: String,
-        required: true,
-        unique: true
-    },
-  publicKey: {
-        type: String,
-        required: true,
-        unique: true
-    },
+  address: String,
+  privateKey: String,
+  publicKey: String,
   realMoney: {
         type: Number,
         default: 0
@@ -41,21 +29,6 @@ var UserSchema = new Schema({
   availableMoney: {
         type: Number,
         default: 0
-    },
-  addressWithdraw: {
-        type: String,
-        required: true,
-        unique: true
-    },
-  privateKeyWithdraw: {
-        type: String,
-        required: true,
-        unique: true
-    },
-  publicKeyWithdraw: {
-        type: String,
-        required: true,
-        unique: true
     }
 });
 
