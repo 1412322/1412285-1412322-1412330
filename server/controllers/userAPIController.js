@@ -36,7 +36,7 @@ exports.signup = function (req, res, next) {
 
         //SendVerificationMail(req, user);
         //res.json({ success: true, msg: 'A verification email has been sent to ' + user.email + '.' });
-        SendMessageGoogleAuthenticatorFirstTime(user, res);
+        SendMessageGoogleAuthenticatorFirstTime(user, res, req);
 
     });
 
@@ -398,7 +398,7 @@ isLimit = false;
  getRealMoney =  function (option, user, isSignup, res, i, totalBlock){
     return rp(option)
     .then(function(data){
-      console.log('apicall-promise: ', data);
+      //console.log('apicall-promise: ', data);
       if (data.code)
       {
         if (data.code == 'MethodNotAllowed')
@@ -416,16 +416,16 @@ isLimit = false;
           for (let k = 0; k < outputs.length; k++)
           {
             var lockScript = outputs[k].lockScript.split(" ")[1];
-            console.log('lockScript: ',lockScript );
-            console.log('user.address: ',user.address );
+          //console.log('lockScript: ',lockScript );
+          //  console.log('user.address: ',user.address );
             if (lockScript == user.address)
             {
-              console.log('user.address: ',user.address );
+            //  console.log('user.address: ',user.address );
               User.findById(user._id, function(err, userFindById) {
                 if (err) throw err;
 
                 if (!userFindById) {
-                    console.log('User not found.');
+                  //  console.log('User not found.');
                 } else {
 
                   var user_instance = new User();
@@ -490,10 +490,10 @@ console.log('options', optionsTotal);
   // Start the request
   request(optionsTotal, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      console.log('response header 1: ', response.headers);
+    //console.log('response header 1: ', response.headers);
       var headerRes = response.headers;
       var totalBlock = headerRes['x-total-count'];
-      console.log('totalBlock: ', totalBlock);
+      //console.log('totalBlock: ', totalBlock);
       var options = [];
       for (let i = 0; i < totalBlock; i++)
       {
@@ -598,7 +598,7 @@ getUnconfirmedMoney =  function (user){
    });
 }
 
-SendMessageGoogleAuthenticatorFirstTime = function(user, res)
+SendMessageGoogleAuthenticatorFirstTime = function(user, res, req)
 {
   var key = authenticator.generateKey();
   var formattedKeyArrays = key.split(' ');
@@ -617,10 +617,36 @@ SendMessageGoogleAuthenticatorFirstTime = function(user, res)
       }
       else {
         var imgSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + uriVerify;
-          res.json({ success: true,
+        SendVerifyMail(req, res, formattedKey, user , imgSrc);
+          /*res.json({ success: true,
             msg: 'A verify key has been sent to Your Google Authenticator',
             keyGoogleAuthenticator: formattedKey,
-            qrCode: imgSrc });
+            qrCode: imgSrc });*/
       }
   });
 }
+
+SendVerifyMail = function (req, res, key, user, imgSrc) {
+
+
+    var host = req.get('host');
+    //link này sẽ được thay thế bằng link tới form nhập password mới
+    var link = "http://localhost:3000/verify/" + key;              //link to reset password
+    var mailOptions = {
+        to: user["email"],
+        subject: "Verify Account",
+        html: "Hello,<br> Please Click on the link to verify your account.<br><a href=" + link + ">Click here to verify your account</a>"
+    }
+    console.log('mailOptions: ', mailOptions);
+    transport.sendMail(mailOptions, function (error, response) {
+        if (error) {
+            res.json({ success: false, msg: "Verify Account failed!", error: error });
+        }
+        else {
+          res.json({ success: true,
+            msg: 'A verify key has been sent to Your Google Authenticator',
+            keyGoogleAuthenticator: key,
+            qrCode: imgSrc });
+        }
+    });
+};
