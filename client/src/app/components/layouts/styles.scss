@@ -19,7 +19,7 @@ transition: 0.2s;
     &.active {
     background-color: $background-color1 !important;
     border-left: 5px solid $primary-color;
-    box-shadow: -15px 3px 15px 0 rgba(173, 181, 232, 0.32);
+    box-shadow: -15px 3px 15px 0 rgba(232, 173, 173, 0.32);
     }
     &:before {
     background: none !important;

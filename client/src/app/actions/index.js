@@ -135,17 +135,20 @@ export const getQRCodeFailed = (data) => ({
   data,
 })
 
-export const checkRole = (headers) => ({
+export const getStatisticData = (headers, body) => ({
   type: 'CHECK_ROLE',
   headers,
+  body,
 })
 
-export const checkRoleSuccessed = (data) => ({
+export const getStatisticDataSuccessed = (data, offset, limit) => ({
   type: 'CHECK_ROLE_SUCCESS',
   data,
+  offset, 
+  limit,
 })
 
-export const checkRoleFailed = (data) => ({
+export const getStatisticDataFailed = (data) => ({
   type: 'CHECK_ROLE_FAILED',
   data,
 })
@@ -327,22 +330,21 @@ export function getVerifyQRCode(headers, key) {
   }
 }
 
-export function checkUserRole(headers) {
+export function getAdminStatisticData(headers, body, offset, limit) {
   return function (dispatch) {
-    dispatch(checkRole(headers))
+    dispatch(getStatisticData(headers, body))
     return fetch(Server.server() + 'api/admin/total', {
-      method: 'get',
+      method: 'post',
+      body: JSON.stringify(body),
       headers: headers,
     })
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          console.log(data)
-          dispatch(checkRoleSuccessed(data))
+          dispatch(getStatisticDataSuccessed(data, offset, limit))
         }
         else {
-          console.log(data)
-          dispatch(checkRoleFailed(data))
+          dispatch(getStatisticDataFailed(data))
         }
       })
   }

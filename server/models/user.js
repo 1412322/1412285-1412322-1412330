@@ -44,4 +44,8 @@ UserSchema.methods.validPassword = function(password){
 	return bcrypt.compareSync(password, this.password);
 };
 
+UserSchema.statics.findPerPage = function(filter, limit, start) {
+	return this.find(filter).skip(start).limit(limit);
+};
+
 module.exports = mongoose.model('User', UserSchema);

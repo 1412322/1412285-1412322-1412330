@@ -1,7 +1,11 @@
 const initialState = {
     userData: undefined,
-    isFetching: false,
+    isFetching: true,
+    isAdmin: false,
     statisticData: undefined,
+    limit: undefined,
+    offset: undefined,
+    pageCount: undefined,
 };
 
 const user = (state = initialState, action) => {
@@ -27,7 +31,10 @@ const user = (state = initialState, action) => {
         case 'CHECK_ROLE_SUCCESS':
             return Object.assign({}, state, {
                 isFetching: false,
-                statisticData: action.data
+                isAdmin: action.data.success,
+                statisticData: action.data,
+                pageCount: Math.ceil(action.data.totalUser / action.limit),
+                offset: action.data.offset,
             })
         case 'CHECK_ROLE_FAILED':
             return Object.assign({}, state, {
