@@ -34,8 +34,10 @@ class RegisterContainer extends React.Component {
     }
 
     onHandleChange(event, fieldName) {
+        const { actions } = this.props
         const target = event.target
         const value = target.value
+        actions.resetErrorMessage()
         this.setState({
             [fieldName]: value,
         })
@@ -104,7 +106,7 @@ class RegisterContainer extends React.Component {
 
     render() {
         const { token, email, password, confirmPassword, errors, isShowPassword } = this.state
-        const { successMessage, errorMessage } = this.props
+        const { successMessage, errorMessage, isFetching } = this.props
         return (
             token && token !== 'undefined'
             ? <Redirect to="/" />
@@ -242,7 +244,7 @@ class RegisterContainer extends React.Component {
                                 }>
                                 {successMessage}
                             </span>
-                            <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >REGISTER</Button>
+                            <Button loading={isFetching} type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >REGISTER</Button>
                             <div className='center-message' >Already have an account, <Link to='/signin'>sign in now.</Link></div>
                         </div>
                     </Form>
@@ -256,6 +258,7 @@ const mapStateToProps = (state) => {
     return {
         errorMessage: state.account.errorMessage,
         successMessage: state.account.successMessage,
+        isFetching: state.account.isFetching,
     }
 }
 

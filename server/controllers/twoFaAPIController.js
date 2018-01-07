@@ -88,7 +88,7 @@ for (let i = 0; i < formattedKeyArrays.length; i++)
   // null
 
 //  authenticator.generateTotpUri(formattedKey, "john.doe@email.com", "ACME Co", 'SHA1', 6, 30);
-  res.json({ success: true, msg: 'Account verified!',
+  res.json({ success: true, msg: 'Account verified successfully.',
   key: key,
   formattedKey: formattedKey,
   formattedToken: formattedToken,
@@ -103,7 +103,7 @@ exports.verify_first_time = function (req, res, next) {
   var formattedToken = req.body.formattedToken;
 
 //  authenticator.generateTotpUri(formattedKey, "john.doe@email.com", "ACME Co", 'SHA1', 6, 30);
-  res.json({ success: true, msg: 'Account verified!',
+  res.json({ success: true, msg: 'Account verified successfully.',
   key: key,
   formattedToken: formattedToken,
   result: authenticator.verifyToken(key, formattedToken) });

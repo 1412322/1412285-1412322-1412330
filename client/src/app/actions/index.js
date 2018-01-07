@@ -139,7 +139,7 @@ export const getQRCodeFailed = (data) => ({
   data,
 })
 
-export function signIn(body, headers) {
+export function signIn(body, headers, isRememberMe) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
     return fetch(Server.server() + 'api/users/signin', {
@@ -152,6 +152,15 @@ export function signIn(body, headers) {
         if (data.success === true) {
           sessionStorage.setItem('token', data.token)
           sessionStorage.setItem('email', data.email)
+          if (isRememberMe) {
+            localStorage.setItem('email', data.email)
+            localStorage.setItem('password', data.password)
+            localStorage.setItem('isRememberMe', isRememberMe)
+          } else {
+            localStorage.setItem('email', '')
+            localStorage.setItem('password', '')
+            localStorage.setItem('isRememberMe', isRememberMe)
+          }
           dispatch(signInSuccessed(null))
 
         }

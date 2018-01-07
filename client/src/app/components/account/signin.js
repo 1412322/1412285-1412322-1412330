@@ -13,12 +13,24 @@ import RequirementIcon from 'react-icons/lib/md/info-outline'
 class LoginContainer extends React.Component {
     constructor(props) {
         super(props)
+        let email = ''
+        let password = ''
+        let isRememberMe = false
+    
+        try {
+          email = localStorage.getItem('email') ? localStorage.getItem('email') : ''
+          password = localStorage.getItem('password') ? localStorage.getItem('password') : ''
+          isRememberMe = localStorage.getItem('isRememberMe') ? localStorage.getItem('isRememberMe') : false
+        } catch (ex) {
+          console.log(ex)
+        }
+
         this.state = {
             token: sessionStorage.getItem('token'),
-            email: '',
-            password: '',
+            email: email,
+            password: password,
             verifyToken: '',
-            // isRememberMe: isRememberMe,
+            isRememberMe: isRememberMe,
             isShowPassword: false,
             errors: [{
                 field: '',
@@ -41,7 +53,7 @@ class LoginContainer extends React.Component {
         // const { actions } = this.props
         // const { fullname, email, password, isRememberMe } = this.state
         if (_.isEmpty(this.onValidateForm())) {
-            const { email, password, verifyToken } = this.state
+            const { email, password, verifyToken, isRememberMe } = this.state
             const { actions } = this.props
             const headers = {
                 'Content-Type': 'application/json'
@@ -51,7 +63,7 @@ class LoginContainer extends React.Component {
                 "password": password,
                 "verifyToken": verifyToken,
             };
-            actions.signIn(body, headers)
+            actions.signIn(body, headers, isRememberMe)
         }
     }
 
@@ -80,8 +92,10 @@ class LoginContainer extends React.Component {
     }
 
     onHandleChange(event, fieldName) {
+        const { actions } = this.props
         const target = event.target
         const value = fieldName === 'isRememberMe' ? !this.state.isRememberMe : target.value
+        actions.resetErrorMessage()
         this.setState({
             [fieldName]: value,
         })
@@ -101,7 +115,7 @@ class LoginContainer extends React.Component {
 
     render() {
         const { token, email, password, verifyToken, errors, isShowPassword, isRememberMe } = this.state
-        const { errorMessage, successMessage } = this.props
+        const { errorMessage, successMessage, isFetching } = this.props
         return (
             token && token !== 'undefined'
                 ? <Redirect to="/" />
@@ -210,7 +224,7 @@ class LoginContainer extends React.Component {
                                     }>
                                     {successMessage}
                                 </span>
-                                <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >LOGIN</Button>
+                                <Button loading={isFetching} type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >LOGIN</Button>
                                 <div className='center-message'>Not a user, <Link to='/signup'>sign up now.</Link></div>
                             </div>
                         </Form>
@@ -224,7 +238,7 @@ const mapStateToProps = (state) => {
     return {
         errorMessage: state.account.errorMessage,
         successMessage: state.account.successMessage,
-        // verifiedEmail: state.account.verifiedEmail,
+        isFetching: state.account.isFetching,
     }
 }
 

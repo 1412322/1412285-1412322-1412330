@@ -6,6 +6,7 @@ import { bindActionCreators } from 'redux'
 import * as _ from 'lodash'
 import './styles.scss'
 import { Redirect } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import RequirementIcon from 'react-icons/lib/md/info-outline'
 import RightIcon from 'react-icons/lib/md/check'
 import validator from 'validator'
@@ -237,6 +238,7 @@ class ResetPasswordByGoogleAuthContainer extends React.Component {
                                 {errorMessage}
                             </span>
                             <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >RESET</Button>
+                            <div className='center-message' >Remember now? <Link to='/signin'>back to sign in.</Link></div>
                         </div>
                     </Form>
                 </div>
