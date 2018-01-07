@@ -25,7 +25,7 @@ exports.signup = function (req, res, next) {
     var newUser = new User();
     newUser.email = req.body.email;
     newUser.password = newUser.encryptPassword(req.body.password);
-
+    newUser.role = 'user';
     // save the user
     newUser.save(function (err, user) {
         if (err) {
@@ -150,7 +150,7 @@ exports.signin = function (req, res, next) {
                         // if user is found and password is right create a token
                         var token = jwt.encode(user, config.secret);
                         // return the information including token as JSON
-                        res.json({ success: true, token: token, email: user.email });
+                        res.json({ success: true, token: token, email: user.email, role: user.role });
                     }
                     else {
                         res.json({ success: false, msg: 'Verify Token is expired.' });
@@ -181,6 +181,7 @@ exports.profile = function (req, res, next) {
                 res.json({
                     success: true, msg: 'Welcome to KCoin Application, ' + user.email + '!',
                     email: user.email,
+                    role: user.role,
                     token: token,
                     address: user.address,
                     realMoney: user.realMoney,

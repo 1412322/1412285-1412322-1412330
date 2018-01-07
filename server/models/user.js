@@ -12,6 +12,7 @@ var UserSchema = new Schema({
         type: String,
         required: true
     },
+  role: String,
   isVerified: {
         type: Boolean,
         default: false

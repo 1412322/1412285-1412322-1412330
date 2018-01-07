@@ -20,6 +20,7 @@ var exchangeAPI = require('./routes/exchangeAPI');
 var socketAPI = require('./routes/socketAPI');
 var transactionAPI = require('./routes/transactionAPI');
 var twoFaAPI = require('./routes/twoFaAPI');
+var adminAPI = require('./routes/adminAPI');
 
 var app = express();
 app.use(cors());
@@ -45,7 +46,7 @@ app.use('/api/exchanges',exchangeAPI);
 app.use('/api/sockets',socketAPI);
 app.use('/api/transactions',transactionAPI);
 app.use('/api/twoFa', twoFaAPI);
-
+app.use('/api/admin', adminAPI);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
