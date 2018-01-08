@@ -60,7 +60,9 @@ exports.get_transaction_info = function (req, res, next) {
           } else {
             if (user.role == 'admin')
             {
-              getBlocks(res);
+              var limit = req.body.limit;
+              var offset = req.body.offset;
+              getBlocks(res, limit, offset);
               //res.json({ success: true, msg: 'Authorized successfully' });
             }
             else
@@ -188,7 +190,7 @@ getTotalValueByAddress = function (res, offset, limit) {
   });
 }
 
-getBlocks = function(res)
+getBlocks = function(res, limit, offset)
 {
   Block.find(function(err,blockList){
     if (err)
@@ -215,6 +217,7 @@ getBlocks = function(res)
               res.json({ success: false, msg: ' User List is empty!' });
             } else {
               var listResult = [];
+              var listResultPaginated = [];
               for (let i = 0; i < blockList.length; i++)
               {
                 var time = blockList[i].timestamp;
@@ -393,8 +396,17 @@ getBlocks = function(res)
                 }
 
               }
+              var from = offset * 5;
+              var to = (offset + 1) * 5;
+              if (to > listResult.length)
+                to = listResult.length;
+              for (let index = from; index < to; index ++)
+              {
+                listResultPaginated.push(listResult[index]);
+              }
               res.json({success: true,
-                listResult: listResult });
+                total: listResult.length,
+                listResult: listResultPaginated });
             }
           });
 
