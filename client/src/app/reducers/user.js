@@ -51,7 +51,7 @@ const user = (state = initialState, action) => {
                 isFetching: false,
                 isAdmin: action.data.success,
                 transactionData: action.data,
-                pageCount: Math.ceil(10 / action.limit),
+                pageCount: Math.ceil(action.data.total / action.limit),
                 offset: action.data.offset,
             })
         case 'GET_TRANSACTION_DATA_FAILED':

@@ -49,11 +49,11 @@ exports.get_total = function (req, res, next) {
 exports.get_transaction_info = function (req, res, next) {
   var token = getToken(req.headers);
   if (token) {
-    var decoded = jwt.decode(token, config.secret);
-    User.findOne({
-      email: decoded.email
-    }, function (err, user) {
-      if (err) throw err;
+      var decoded = jwt.decode(token, config.secret);
+      User.findOne({
+          email: decoded.email
+      }, function (err, user) {
+          if (err) throw err;
 
           if (!user) {
               res.json({ success: false, msg: 'User Not Found!', statusCode: 404 });
@@ -70,10 +70,10 @@ exports.get_transaction_info = function (req, res, next) {
               res.json({ success: false, msg: 'This user is not authorized to access this page', statusCode: 403 });
             }
 
-      }
-    });
+          }
+      });
   } else {
-    return res.status(403).send({ success: false, msg: 'No token provided.' });
+      return res.status(403).send({ success: false, msg: 'No token provided.' });
   }
 }
 
@@ -133,7 +133,7 @@ getTotalValue = function (res, offset, limit) {
         var totalRealMoney = 0;
         var totalAvailMoney = 0;
         var listTotalResult = [];
-        userList.forEach(function (element, key, array) {
+        userList.forEach(function(element, key, array) {
           totalRealMoney += userList[key].realMoney;
           totalAvailMoney += userList[key].availableMoney;
           var userInfo = {
@@ -200,8 +200,9 @@ getBlocks = function(res, limit, offset)
     if (!blockList) {
       res.json({ success: false, msg: 'Block is empty!' });
     } else {
-      Transaction.find(function (err2, transList) {
-        if (err2) {
+      Transaction.find(function(err2,transList){
+        if (err2)
+        {
           res.json({ success: false, msg: 'Get Transactions Failed!', error: err2 });
         }
         if (!transList) {
@@ -412,5 +413,5 @@ getBlocks = function(res, limit, offset)
         }
       });
     }
-  });
+    });
 }
