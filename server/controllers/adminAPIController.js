@@ -75,6 +75,35 @@ exports.get_transaction_info = function (req, res, next) {
   }
 }
 
+exports.get_total_by_address = function (req, res, next) {
+  var token = getToken(req.headers);
+  var offset = req.body.offset;
+  var limit = req.body.limit;
+  if (token) {
+    var decoded = jwt.decode(token, config.secret);
+    User.findOne({
+      email: decoded.email
+    }, function (err, user) {
+      if (err) throw err;
+
+      if (!user) {
+        return res.status(403).send({ success: false, msg: 'User not found.' });
+      } else {
+        if (user.role == 'admin') {
+          getTotalValueByAddress(res, offset, limit);
+          //res.json({ success: true, msg: 'Authorized successfully' });
+        }
+        else {
+          res.json({ success: false, msg: 'This user is not authorized to access this page', statusCode: 403 });
+        }
+
+      }
+    });
+  } else {
+    return res.status(403).send({ success: false, msg: 'No token provided.' });
+  }
+}
+
 getToken = function (headers) {
   if (headers && headers.authorization) {
     var parted = headers.authorization;
@@ -118,6 +147,40 @@ getTotalValue = function (res, offset, limit) {
           totalUser: totalUser,
           totalRealMoney: totalRealMoney,
           totalAvailableMoney: totalRealMoney - totalAvailMoney,
+          listTotalResult: listTotalResult
+        });
+      }
+    })
+  });
+}
+
+getTotalValueByAddress = function (res, offset, limit) {
+  // User.find(function(err,userList)
+  User.findPerPage({}, limit, offset).then(function (userList) {
+    User.count({}, function (err, total) {
+      if (err) {
+        res.json({ success: false, msg: 'Get Total Value Failed!', error: err });
+      }
+      if (!userList) {
+        res.json({ success: false, msg: 'Exchange not found!' });
+      } else {
+        var totalUser = total;
+        var totalRealMoney = 0;
+        var totalAvailMoney = 0;
+        var listTotalResult = [];
+        userList.forEach(function(element, key, array) {
+          totalRealMoney += userList[key].realMoney;
+          totalAvailMoney += userList[key].availableMoney;
+          var userInfo = {
+            address: userList[key].address,
+            realMoney: userList[key].realMoney,
+            availableMoney: userList[key].realMoney - userList[key].availableMoney,
+            referenceUser: userList[key].email
+          };
+          listTotalResult.push(userInfo);
+        })
+        res.json({
+          success: true,
           listTotalResult: listTotalResult
         });
       }
