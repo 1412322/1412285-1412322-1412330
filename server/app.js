@@ -13,6 +13,8 @@ var config    = require('./config/database'); // get db config file
 var jwt         = require('jwt-simple');
 var request = require('request');
 const rp = require('request-promise');
+var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
 
 var nBlocks = require('./models/nBlocks');
 var User = require('./models/user');
@@ -21,7 +23,14 @@ var Transaction = require('./models/transaction');
 var Block = require('./models/block');
 var ReferenceOutput = require('./models/referenceOutput');
 
-
+var transport = nodemailer.createTransport(smtpTransport({
+    service: 'gmail',
+    secureConnection: false,
+    auth: {
+        user: '1412285.1412322.1412330.group@gmail.com',
+        pass: 'kcoin1234'
+    }
+}));
 
 var userAPI = require('./routes/userAPI');
 var walletAPI = require('./routes/walletAPI');
@@ -258,6 +267,9 @@ SaveTransaction = function(transactions)
           Transaction.findByIdAndUpdate(result._id,{$set:{state:"confirmed"}},{ new: true },function (err){
             if(err)
               console.log(err);
+              else {
+
+              }
           });
         }
       }
@@ -341,9 +353,12 @@ UpdateRealMoneyUser = function(transactions)
             User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
             {
               if(user){
-                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
+                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
                   if(err)
                     console.log(err);
+                    else {
+                      SendMail(user);
+                    }
                 });
               }
 
@@ -358,9 +373,12 @@ UpdateRealMoneyUser = function(transactions)
           if(outputs[j].lockScript.split(" ")[1] == sender.address)
           {
             isReceive = true;
-            User.findByIdAndUpdate(sender._id,{$set:{realMoney: outputs[j].value, availableMoney:outputs[j].value}},{ new: true },function (err){
+            User.findByIdAndUpdate(sender._id,{$set:{realMoney: outputs[j].value}},{ new: true },function (err){
               if(err)
                 console.log(err);
+                else {
+                  SendMail(user);
+                }
             });
           }
           else
@@ -369,9 +387,12 @@ UpdateRealMoneyUser = function(transactions)
             User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
             {
               if(user){
-                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
+                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
                   if(err)
                     console.log(err);
+                    else {
+                      SendMail(user);
+                    }
                 });
               }
 
@@ -380,9 +401,12 @@ UpdateRealMoneyUser = function(transactions)
         }
         if(isReceive == false)
         {
-          User.findByIdAndUpdate(sender._id,{$set:{realMoney: sender.realMoney - sum, availableMoney: sender.realMoney - sum}},{ new: true },function (err){
+          User.findByIdAndUpdate(sender._id,{$set:{realMoney: sender.realMoney - sum}},{ new: true },function (err){
             if(err)
               console.log(err);
+              else {
+                SendMail(user);
+              }
           });
         }
       }
@@ -399,6 +423,9 @@ UpdateRealMoneyUser = function(transactions)
             User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
             if(err)
               console.log(err);
+              else {
+                SendMail(user);
+              }
             });
           }
         });
@@ -406,5 +433,24 @@ UpdateRealMoneyUser = function(transactions)
     }
   }
 }
+
+SendMail = function (user) {
+
+
+    var mailOptions = {
+        to: user["email"],
+        subject: "Walet information",
+        html: "Actual balance: "+user.realMoney+"<br>Available money: "+user.realMoney-user.availableMoney+"<br>"
+    }
+    console.log('mailOptions: ', mailOptions);
+    transport.sendMail(mailOptions, function (error, response) {
+        if (error) {
+
+        }
+        else {
+
+        }
+    });
+};
 
 module.exports = app;
