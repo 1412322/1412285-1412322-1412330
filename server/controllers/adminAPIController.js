@@ -396,8 +396,8 @@ getBlocks = function(res, limit, offset)
                 }
 
               }
-              var from = offset * 5;
-              var to = (offset + 1) * 5;
+              var from = offset * limit;
+              var to = (offset + 1) * limit;
               if (to > listResult.length)
                 to = listResult.length;
               for (let index = from; index < to; index ++)
