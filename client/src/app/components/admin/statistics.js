@@ -79,7 +79,7 @@ class StatisticContainer extends React.Component {
                             <Statistic.Group>
                                 <Statistic>
                                     <Statistic.Value style={{ color: '#7ed321' }}>{data.totalUser ? data.totalUser : 0}</Statistic.Value>
-                                    <Statistic.Label>Total Users</Statistic.Label>
+                                    <Statistic.Label>Users</Statistic.Label>
                                 </Statistic>
                                 <Statistic>
                                     <Statistic.Value style={{ color: '#7ed321' }}>{data.totalrealMoney ? data.totalrealMoney : 0}</Statistic.Value>
