@@ -327,19 +327,19 @@
     position: relative !important;
   }
 
-  .statistic-container {
+  .admin-container {
     background-color: $background-color1;
     height: 100%;
     width: 100% !important;
     padding: 50px;
     overflow: scroll;
-    .statistic-container-header {
+    .admin-container-header {
         margin: 0 0 30px 0;
         h2 {
           @include title;
         }
       }
-      .statistic-container-body {
+      .admin-container-body {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -451,18 +451,21 @@
             }
           }
       }
-      .statistic-container-footer {
+      .admin-container-footer {
     }
 }
 
 .pagination {
   list-style: none;
+  display: flex;
+  justify-content: center;
+  padding: 0;
   li {
     background-color: $border-color;
     display: inline-block;
     cursor: pointer;
     margin: 0 10px;
-    padding: 10px 20px;
+    padding: 5px 12px;
     border-radius: 2px;
     transition: 0.3s;
     a {
@@ -481,10 +484,11 @@
       color: $text-color2;
     }
     background-color: $primary-color;
-    box-shadow: 0 5px 14px 0 rgba(173, 181, 232, 0.5);
+    box-shadow: 0 5px 14px 0 rgba(232, 173, 173, 0.5);
   }
   .disabled {
     background-color: transparent;
+    border: 1px solid $border-color;
     cursor: unset;
     &:hover {
       a {

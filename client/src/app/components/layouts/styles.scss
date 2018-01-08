@@ -27,7 +27,7 @@ transition: 0.2s;
 }
 }
 
-.mainLayout {
+.main-layout {
 
 // body::-webkit-scrollbar { 
 //   display: none !important;
@@ -47,7 +47,7 @@ height: 100% !important;
     margin: 0 0 !important;
     box-shadow: none;
 }
-.navbarItem {
+.navbar-item {
     color: $text-color2 !important;
     font-size: 22px !important;
     font-weight: $font-bold !important;
@@ -64,7 +64,7 @@ height: 100% !important;
         span {
           font-size: 22px !important;
         }
-        .dropdownMenu {
+        .dropdown-menu {
           top: 45px !important;
           border-radius: 3px;
           background-color: #ffffff;
@@ -79,7 +79,7 @@ height: 100% !important;
             // box-shadow: -1px -1px 0 0 rgba(216,221,255,.5)!important;
             z-index: -1!important;
           }
-          .dropdownItem {
+          .dropdown-item {
             font-size: 22px !important;
             color: $text-color4;
             &:hover {
@@ -98,17 +98,17 @@ height: 100% !important;
     font-weight: $font-bold !important;
     height: 40px;
     }
-    .navbarItemDropBox {
+    .navbar-itemDropBox {
     align-items: center;
     display: flex !important;
     justify-content: center;
     }
-    .navbarItemDropBoxIcon {
+    .navbar-itemDropBoxIcon {
     align-self: center;
     }
 }
-.navbarLogo {
-    background-color: $navbarlogo-background-color !important;
+.navbar-logo {
+    background-color: $navbar-logo-background-color !important;
     display: flex;
     justify-content: center;
     width: 164px !important;
@@ -116,12 +116,12 @@ height: 100% !important;
         color: $text-color2;
     }
 }
-.navbarToggle {
+.navbar-toggle {
     cursor: pointer !important;
     font-size: 25px !important;
     opacity: 0.5;
 }
-.accountAvatar {
+.account-avatar {
     align-items: center;
     background-color: $background-color1 !important;
     border-radius: 50%;
@@ -203,8 +203,8 @@ height: 100% !important;
     display: flex;
     flex-direction: row;
     height: 100%;
-    width: 100%;
     flex-grow: 1;
+    width: min-content;
     }
 }
 .processing {

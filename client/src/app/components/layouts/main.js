@@ -99,14 +99,19 @@ class MainLayout extends React.Component {
             </Card.Header>
           </Card.Content>
           <Card.Content className='side-bar-item-content'>
-            <Link to='/admin/statistic'>
-              <Menu.Item className={this.generateSibarItemClassName('/admin/statistic')}>
+            <Link to='/admin/statistics'>
+              <Menu.Item className={this.generateSibarItemClassName('/admin/statistics')}>
                 Statistics
               </Menu.Item>
             </Link>
-            <Link to='/admin/transaction'>
-              <Menu.Item className={this.generateSibarItemClassName('/admin/transaction')}>
+            <Link to='/admin/transactions'>
+              <Menu.Item className={this.generateSibarItemClassName('/admin/transactions')}>
                 Transactions
+              </Menu.Item>
+            </Link>
+            <Link to='/admin/addresses'>
+              <Menu.Item className={this.generateSibarItemClassName('/admin/addresses')}>
+                Addresses
               </Menu.Item>
             </Link>
           </Card.Content>
@@ -121,24 +126,24 @@ class MainLayout extends React.Component {
     return (
       !token || token === 'undefined'
         ? <Redirect to="/signin" />
-        : (<div className='mainLayout' id='MainLayout'>
+        : (<div className='main-layout' id='MainLayout'>
           <Menu className='navbar'>
-            <Menu.Item className='navbarItem navbarLogo'>
+            <Menu.Item className='navbar-item navbar-logo'>
               <Link to='/admin/dashboard'>
                 LOGO
 				      </Link>
             </Menu.Item>
 
-            <Menu.Item className='navbarItem'>
-              <MdMenu className='navbarToggle' onClick={() => this.toggleSideBar()} />
+            <Menu.Item className='navbar-item'>
+              <MdMenu className='navbar-toggle' onClick={() => this.toggleSideBar()} />
             </Menu.Item>
 
 
             <Menu.Menu position='right'>
-              <Menu.Item className='navbarItem'>
+              <Menu.Item className='navbar-item'>
                 <Dropdown
                   trigger={(
-                    <div className='accountAvatar'>
+                    <div className='account-avatar'>
                       {sessionStorage.getItem('email') && (
                         <span>{sessionStorage.getItem('email').charAt(0)}</span>
                       )}
@@ -147,8 +152,8 @@ class MainLayout extends React.Component {
                   icon={null}
                   pointing='top right'
                   className='dropdown'>
-                  <Dropdown.Menu className='dropdownMenu'>
-                    <Dropdown.Item className='dropdownItem' onClick={() => this.props.actions.signOut()}>
+                  <Dropdown.Menu className='dropdown-menu'>
+                    <Dropdown.Item className='dropdown-item' onClick={() => this.props.actions.signOut()}>
                       Sign-out
                 </Dropdown.Item>
                   </Dropdown.Menu>

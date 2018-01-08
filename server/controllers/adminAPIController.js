@@ -166,7 +166,6 @@ getTotalValueByAddress = function (res, offset, limit) {
       if (!userList) {
         res.json({ success: false, msg: 'Exchange not found!' });
       } else {
-        var totalUser = total;
         var totalRealMoney = 0;
         var totalAvailMoney = 0;
         var listTotalResult = [];
@@ -182,6 +181,7 @@ getTotalValueByAddress = function (res, offset, limit) {
           listTotalResult.push(userInfo);
         })
         res.json({
+          total: total,
           success: true,
           listTotalResult: listTotalResult
         });
@@ -221,12 +221,12 @@ getBlocks = function(res, limit, offset)
               for (let i = 0; i < blockList.length; i++)
               {
                 var time = blockList[i].timestamp;
-                var date = new Date(time * 1000);
-                var hours = date.getHours();
-                var minutes = "0" + date.getMinutes();
-                var seconds = "0" + date.getSeconds();
-                var day = date.getDate() + '/' + (date.getMonth()+1) + '/' + date.getFullYear();
-                var formattedDate = day + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+                // var date = new Date(time * 1000);
+                // var hours = date.getHours();
+                // var minutes = "0" + date.getMinutes();
+                // var seconds = "0" + date.getSeconds();
+                // var day = date.getDate() + '/' + (date.getMonth()+1) + '/' + date.getFullYear();
+                // var formattedDate = day + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
                 for (let j = 0; j < blockList[i].transactions.length; j++)
                 {
                   for (let k = 0; k < transList.length; k++)
@@ -344,7 +344,7 @@ getBlocks = function(res, limit, offset)
                           }
                           var transInfo = {
                             hash: transList[k].hash,
-                            time: formattedDate,
+                            time: time,
                             state: transList[k].state,
                             inputs: inputs,//tham chiếu output index
                             outputs: outputs
@@ -396,7 +396,7 @@ getBlocks = function(res, limit, offset)
                 }
 
               }
-              var from = offset * limit;
+              var from = offset;
               var to = (offset + 1) * limit;
               if (to > listResult.length)
                 to = listResult.length;

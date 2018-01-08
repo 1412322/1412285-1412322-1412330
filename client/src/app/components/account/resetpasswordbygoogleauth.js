@@ -105,7 +105,7 @@ class ResetPasswordByGoogleAuthContainer extends React.Component {
 
     render() {
         const { token, email, password, confirmPassword, verifyToken, isShowPassword, errors } = this.state
-        const { errorMessage } = this.props
+        const { errorMessage, isFetching } = this.props
         return (
           token && token !== 'undefined'
               ? <Redirect to="/" />
@@ -237,7 +237,7 @@ class ResetPasswordByGoogleAuthContainer extends React.Component {
                                 }>
                                 {errorMessage}
                             </span>
-                            <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >RESET</Button>
+                            <Button loading={isFetching} type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >RESET</Button>
                             <div className='center-message' >Remember now? <Link to='/signin'>back to sign in.</Link></div>
                         </div>
                     </Form>
@@ -250,6 +250,7 @@ class ResetPasswordByGoogleAuthContainer extends React.Component {
 const mapStateToProps = (state) => {
     return {
         errorMessage: state.account.errorMessage,
+        isFetching: state.account.isFetching,
     }
 }
 

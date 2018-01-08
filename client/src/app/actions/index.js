@@ -171,6 +171,24 @@ export const getTransactionDataFailed = (data) => ({
   data,
 })
 
+export const getAddressData = (headers, body) => ({
+  type: 'GET_ADDRESS_DATA',
+  headers,
+  body,
+})
+
+export const getAddressDataSuccessed = (data, offset, limit) => ({
+  type: 'GET_ADDRESS_DATA_SUCCESS',
+  data,
+  offset, 
+  limit,
+})
+
+export const getAddressDataFailed = (data) => ({
+  type: 'GET_ADDRESS_DATA_FAILED',
+  data,
+})
+
 export function signIn(body, headers, isRememberMe) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -373,13 +391,12 @@ export function getAdminTransactionData(headers, body, offset, limit) {
     dispatch(getTransactionData(headers, body))
     return fetch(Server.server() + 'api/admin/transactions/data', {
       method: 'post',
-      // body: JSON.stringify(body),
+      body: JSON.stringify(body),
       headers: headers,
     })
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          console.log(data)
           dispatch(getTransactionDataSuccessed(data, offset, limit))
         }
         else {
@@ -388,3 +405,24 @@ export function getAdminTransactionData(headers, body, offset, limit) {
       })
   }
 }
+
+export function getAdminAddressData(headers, body, offset, limit) {
+  return function (dispatch) {
+    dispatch(getAddressData(headers, body))
+    return fetch(Server.server() + 'api/admin/addresses/data', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          dispatch(getAddressDataSuccessed(data, offset, limit))
+        }
+        else {
+          dispatch(getAddressDataFailed(data))
+        }
+      })
+  }
+}
+

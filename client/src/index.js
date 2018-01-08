@@ -15,8 +15,9 @@ import ResetPasswordByGoogleAuthContainer from './app/components/account/resetpa
 import VerifyEmailByGoogleAuthContainer from './app/components/account/verifyemailbygoogleauth.js'
 import ProfileContainer from './app/components/home/profile.js'
 import TransferContainer from './app/components/transaction/transfer.js'
-import StatisticContainer from './app/components/admin/statistic.js'
-import TransactionDataContainer from './app/components/admin/transaction.js'
+import StatisticContainer from './app/components/admin/statistics.js'
+import TransactionDataContainer from './app/components/admin/transactions.js'
+import AddressDataContainer from './app/components/admin/addresses.js'
 import AccessDeniedContainer from './app/components/errorpage/403.js'
 import MainLayout from './app/components/layouts/main.js'
 import AppRoute from './app/index.js'
@@ -36,8 +37,9 @@ ReactDOM.render((
                 <Switch>
                     <AppRoute exact={true} path="/" layout={MainLayout} component={ProfileContainer} />
                     <AppRoute path="/transaction/transfer" layout={MainLayout} component={TransferContainer} />
-                    <AppRoute path="/admin/statistic" layout={MainLayout} component={StatisticContainer} />
-                    <AppRoute path="/admin/transaction" layout={MainLayout} component={TransactionDataContainer} />
+                    <AppRoute path="/admin/statistics" layout={MainLayout} component={StatisticContainer} />
+                    <AppRoute path="/admin/transactions" layout={MainLayout} component={TransactionDataContainer} />
+                    <AppRoute path="/admin/addresses" layout={MainLayout} component={AddressDataContainer} />
                     <AppRoute path="/admin/403" layout={MainLayout} component={AccessDeniedContainer} />
                     <Route path='/signin' component={LoginContainer} />
                     <Route path='/signup' component={RegisterContainer} />

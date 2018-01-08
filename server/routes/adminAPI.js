@@ -6,6 +6,6 @@ var User = require ('../models/user');
 
 router.post('/statistics/data',  adminAPIController.get_total);
 router.post('/transactions/data',  adminAPIController.get_transaction_info);
-router.post('/totalByAddress',  adminAPIController.get_total_by_address);
+router.post('/addresses/data',  adminAPIController.get_total_by_address);
 
 module.exports = router;

@@ -8,7 +8,7 @@ import { Redirect } from 'react-router-dom'
 import { Table, Container, Header, Dimmer, Loader, Statistic } from 'semantic-ui-react'
 import ReactPaginate from 'react-paginate'
 
-class TransactionDataContainer extends React.Component {
+class StatisticContainer extends React.Component {
 
     constructor(props) {
         super(props)
@@ -21,13 +21,14 @@ class TransactionDataContainer extends React.Component {
     }
 
     componentWillMount() {
-        this.loadDataFromServer()
+        console.log(this.state.offset)
+        this.loadDataFromServer(this.state.offset)
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.transactionData !== nextProps.transactionData) {
+        if (this.props.statisticData !== nextProps.statisticData) {
             this.setState({
-                data: nextProps.transactionData,
+                data: nextProps.statisticData,
             })
         }
     }
@@ -57,7 +58,7 @@ class TransactionDataContainer extends React.Component {
             "offset": this.state.offset,
             "limit": this.state.limit,
         };
-        actions.getAdminTransactionData(headers, body, this.state.offset, this.state.limit)
+        actions.getAdminStatisticData(headers, body, this.state.offset, this.state.limit)
     }
 
     render() {
@@ -70,46 +71,54 @@ class TransactionDataContainer extends React.Component {
                 </Dimmer>)
                 : !data.success
                     ? <Redirect to="/admin/403" />
-                    : (<Container className='statistic-container'>
-                        <div className='statistic-container-header'>
-                            <Header as='h2' textAlign='center' >Transactions</Header>
+                    : (<Container className='admin-container'>
+                        <div className='admin-container-header'>
+                            <Header as='h2' textAlign='center' >Statistics</Header>
                         </div>
-                        <div className='statistic-container-body'>
-                            <Table className='statistic-table' fixed={true}>
+                        <div className='admin-container-body'>
+                            <Statistic.Group>
+                                <Statistic>
+                                    <Statistic.Value style={{ color: '#7ed321' }}>{data.totalUser ? data.totalUser : 0}</Statistic.Value>
+                                    <Statistic.Label>Total Users</Statistic.Label>
+                                </Statistic>
+                                <Statistic>
+                                    <Statistic.Value style={{ color: '#7ed321' }}>{data.totalrealMoney ? data.totalrealMoney : 0}</Statistic.Value>
+                                    <Statistic.Label>Actual Balances</Statistic.Label>
+                                </Statistic>
+                                <Statistic>
+                                    <Statistic.Value style={{ color: '#7ed321' }}>{data.totalavailableMoney ? data.totalavailableMoney : 0}</Statistic.Value>
+                                    <Statistic.Label>Available Balances</Statistic.Label>
+                                </Statistic>
+                            </Statistic.Group>
+                            <Table className='statistic-table'>
                                 <Table.Header className='table-header'>
                                     <Table.Row verticalAlign='middle'>
-                                        <Table.HeaderCell>Hash</Table.HeaderCell>
-                                        <Table.HeaderCell>Time</Table.HeaderCell>
-                                        <Table.HeaderCell>Status</Table.HeaderCell>
-                                        <Table.HeaderCell>Inputs</Table.HeaderCell>
-                                        <Table.HeaderCell>Outputs</Table.HeaderCell>
+                                        <Table.HeaderCell>User</Table.HeaderCell>
+                                        <Table.HeaderCell>Address</Table.HeaderCell>
+                                        <Table.HeaderCell width={2}>Actual Balance</Table.HeaderCell>
+                                        <Table.HeaderCell width={2}>Available Balance</Table.HeaderCell>
                                     </Table.Row>
                                 </Table.Header>
                                 <Table.Body>
                                     {isFetching
                                         ? (<Table.Row>
-                                            <Loader active={true} inline='centered' />
+                                            <Table.HeaderCell colSpan='4'>
+                                                <Loader active={true} inline='centered' />
+                                            </Table.HeaderCell>
                                         </Table.Row>)
-                                        : (data.listResult.map((data, index) =>
+                                        : (data.listTotalResult.map((data, index) =>
                                             <Table.Row key={index} verticalAlign='top'>
                                                 <Table.Cell>
-                                                    <span className='order'>{index + offset + 1}</span>{data.hash}
+                                                    <span className='order'>{index + offset + 1}</span>{data.email}
                                                 </Table.Cell>
                                                 <Table.Cell>
-                                                    {data.time}
+                                                    {data.address}
                                                 </Table.Cell>
                                                 <Table.Cell>
-                                                    {data.state}
+                                                    {data.realMoney}
                                                 </Table.Cell>
                                                 <Table.Cell>
-                                                    {data.inputs.map((input, index) =>
-                                                        <div className='address-block' key={index}>#{index}: <a>{input.referencedOutputHash}</a></div>
-                                                    )}
-                                                </Table.Cell>
-                                                <Table.Cell>
-                                                    {data.outputs.map((output, index) =>
-                                                        <div className='address-block' key={index}>#{index}: {output.value} to <a>{output.address}</a></div>
-                                                    )}
+                                                    {data.availableMoney}
                                                 </Table.Cell>
                                             </Table.Row>
                                         ))
@@ -140,7 +149,7 @@ class TransactionDataContainer extends React.Component {
 }
 
 const mapStateToProps = (state) => ({
-    transactionData: state.user.transactionData,
+    statisticData: state.user.statisticData,
     pageCount: state.user.pageCount,
     isFetching: state.user.isFetching,
 })
@@ -148,10 +157,10 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => {
     return {
         actions: bindActionCreators({
-            getAdminTransactionData: actions.getAdminTransactionData,
+            getAdminStatisticData: actions.getAdminStatisticData,
         }, dispatch),
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TransactionDataContainer)
+export default connect(mapStateToProps, mapDispatchToProps)(StatisticContainer)
 
