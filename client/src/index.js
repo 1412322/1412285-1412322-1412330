@@ -16,6 +16,7 @@ import VerifyEmailByGoogleAuthContainer from './app/components/account/verifyema
 import ProfileContainer from './app/components/home/profile.js'
 import TransferContainer from './app/components/transaction/transfer.js'
 import StatisticContainer from './app/components/admin/statistic.js'
+import TransactionDataContainer from './app/components/admin/transaction.js'
 import AccessDeniedContainer from './app/components/errorpage/403.js'
 import MainLayout from './app/components/layouts/main.js'
 import AppRoute from './app/index.js'
@@ -36,6 +37,7 @@ ReactDOM.render((
                     <AppRoute exact={true} path="/" layout={MainLayout} component={ProfileContainer} />
                     <AppRoute path="/transaction/transfer" layout={MainLayout} component={TransferContainer} />
                     <AppRoute path="/admin/statistic" layout={MainLayout} component={StatisticContainer} />
+                    <AppRoute path="/admin/transaction" layout={MainLayout} component={TransactionDataContainer} />
                     <AppRoute path="/admin/403" layout={MainLayout} component={AccessDeniedContainer} />
                     <Route path='/signin' component={LoginContainer} />
                     <Route path='/signup' component={RegisterContainer} />

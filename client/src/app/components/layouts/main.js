@@ -101,7 +101,12 @@ class MainLayout extends React.Component {
           <Card.Content className='side-bar-item-content'>
             <Link to='/admin/statistic'>
               <Menu.Item className={this.generateSibarItemClassName('/admin/statistic')}>
-                Statistic
+                Statistics
+              </Menu.Item>
+            </Link>
+            <Link to='/admin/transaction'>
+              <Menu.Item className={this.generateSibarItemClassName('/admin/transaction')}>
+                Transactions
               </Menu.Item>
             </Link>
           </Card.Content>

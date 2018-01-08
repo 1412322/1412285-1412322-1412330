@@ -42,4 +42,8 @@ var TransactionSchema = new Schema({
   }
 });
 
+TransactionSchema.statics.findPerPage = function(filter, offset, limit) {
+	return this.find(filter).skip(offset).limit(limit);
+};
+
 module.exports = mongoose.model('Transaction', TransactionSchema);

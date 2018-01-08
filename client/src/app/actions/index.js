@@ -153,6 +153,24 @@ export const getStatisticDataFailed = (data) => ({
   data,
 })
 
+export const getTransactionData = (headers, body) => ({
+  type: 'GET_TRANSACTION_DATA',
+  headers,
+  body,
+})
+
+export const getTransactionDataSuccessed = (data, offset, limit) => ({
+  type: 'GET_TRANSACTION_DATA_SUCCESS',
+  data,
+  offset, 
+  limit,
+})
+
+export const getTransactionDataFailed = (data) => ({
+  type: 'GET_TRANSACTION_DATA_FAILED',
+  data,
+})
+
 export function signIn(body, headers, isRememberMe) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -333,7 +351,7 @@ export function getVerifyQRCode(headers, key) {
 export function getAdminStatisticData(headers, body, offset, limit) {
   return function (dispatch) {
     dispatch(getStatisticData(headers, body))
-    return fetch(Server.server() + 'api/admin/total', {
+    return fetch(Server.server() + 'api/admin/statistics/data', {
       method: 'post',
       body: JSON.stringify(body),
       headers: headers,
@@ -345,6 +363,27 @@ export function getAdminStatisticData(headers, body, offset, limit) {
         }
         else {
           dispatch(getStatisticDataFailed(data))
+        }
+      })
+  }
+}
+
+export function getAdminTransactionData(headers, body, offset, limit) {
+  return function (dispatch) {
+    dispatch(getTransactionData(headers, body))
+    return fetch(Server.server() + 'api/admin/transactions/data', {
+      method: 'post',
+      // body: JSON.stringify(body),
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          console.log(data)
+          dispatch(getTransactionDataSuccessed(data, offset, limit))
+        }
+        else {
+          dispatch(getTransactionDataFailed(data))
         }
       })
   }

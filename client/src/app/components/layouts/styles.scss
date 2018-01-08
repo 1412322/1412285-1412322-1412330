@@ -144,7 +144,7 @@ height: 100% !important;
     height: 100% !important;
     // width: $sidebar-width !important;
     width: 100%;
-    display: -webkit-box;
+    display: flex;
     .text-side-bar-menu {
     @include sidebarMenu($secondary-color);
     .sidebarItem {

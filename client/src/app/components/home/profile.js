@@ -2,7 +2,7 @@ import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Container, Header, Input, Button, Dimmer, Loader } from 'semantic-ui-react'
+import { Container, Header, Input, Button, Dimmer, Loader, Form } from 'semantic-ui-react'
 import * as actions from '../../actions'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 
@@ -39,34 +39,50 @@ class ProfileContainer extends React.Component {
                     <div className='profile-container-body'>
                         <div className='container-header'>
                             {userData.msg}
-                            <div className='user-avatar'>{userData.email.charAt(0)}</div>
+                            {/* <div className='user-avatar'>{userData.email.charAt(0)}</div> */}
                         </div>
                         <div className='container-body'>
-                        <label>Email</label>
-                            <Input
-                                className='normal-field'
-                                fluid={true}
-                                readOnly={true}
-                                value={userData.email} />
-                                <label>Role</label>
-                            <Input
-                                className='normal-field'
-                                fluid={true}
-                                readOnly={true}
-                                value={userData.role === 'admin' ? 'Administrator' : 'Member'} />
-                                <label>Actual Balance</label>
-                            <Input
-                                className='normal-field'
-                                fluid={true}
-                                readOnly={true}
-                                value={userData.realMoney} />
-                                <label>Available Balance</label>
-                            <Input
-                                className='normal-field'
-                                fluid={true}
-                                readOnly={true}
-                                value={userData.availableMoney} />
-                                <label>Address</label>
+                            <Form>
+                                <Form.Group widths='equal'>
+                                    <Form.Field>
+                                        <label>Email</label>
+                                        <Input
+                                            className='normal-field'
+                                            fluid={true}
+                                            readOnly={true}
+                                            value={userData.email} />
+                                    </Form.Field>
+                                    <Form.Field>
+                                        <label>Role</label>
+                                        <Input
+                                            className='normal-field'
+                                            fluid={true}
+                                            readOnly={true}
+                                            value={userData.role === 'admin' ? 'Administrator' : 'Member'} />
+                                    </Form.Field>
+                                </Form.Group>
+                            </Form>
+                            <Form>
+                                <Form.Group widths='equal'>
+                                    <Form.Field>
+                                        <label>Actual Balance</label>
+                                        <Input
+                                            className='normal-field'
+                                            fluid={true}
+                                            readOnly={true}
+                                            value={userData.realMoney} />
+                                    </Form.Field>
+                                    <Form.Field>
+                                        <label>Available Balance</label>
+                                        <Input
+                                            className='normal-field'
+                                            fluid={true}
+                                            readOnly={true}
+                                            value={userData.availableMoney} />
+                                    </Form.Field>
+                                </Form.Group>
+                            </Form>
+                            <label>Address</label>
                             <Input
                                 id='copy-input'
                                 action={
@@ -80,9 +96,9 @@ class ProfileContainer extends React.Component {
                                 value={userData.address} />
                         </div>
 
-                        <div className='container-footer'>
-                        hi
-                        </div>
+                        {/* <div className='container-footer'>
+
+                        </div> */}
 
                     </div>
                 </Container>)

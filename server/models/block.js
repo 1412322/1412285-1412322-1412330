@@ -32,4 +32,8 @@ var BlockSchema = new Schema({
     }
 });
 
+BlockSchema.statics.findPerPage = function(filter, offset, limit) {
+	return this.find(filter).skip(offset).limit(limit);
+};
+
 module.exports = mongoose.model('Block', BlockSchema);

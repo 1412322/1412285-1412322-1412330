@@ -332,6 +332,7 @@
     height: 100%;
     width: 100% !important;
     padding: 50px;
+    overflow: scroll;
     .statistic-container-header {
         margin: 0 0 30px 0;
         h2 {
@@ -412,6 +413,15 @@
                   border-top: 0 !important;
                   border-left: 1px solid $border-color;
                   padding: 14px !important;
+                  .address-block {
+                    white-space: nowrap; 
+                    width: 100%; 
+                    overflow: hidden;
+                    text-overflow: ellipsis; 
+                    a {
+                      color: $success-color;
+                    }
+                  }
                   &:first-child {
                     display: flex;
                     border-left: 0;
