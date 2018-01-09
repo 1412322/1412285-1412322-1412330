@@ -1,7 +1,8 @@
 var User = require('../models/user');
+var Transaction = require('../models/transaction');
 var ReferenceOutput = require('../models/referenceOutput');
 var Block = require('../models/block');
-
+ 
 var jwt = require('jwt-simple');
 var config = require('../config/database');
 var bcrypt = require('bcrypt-nodejs');
@@ -9,8 +10,12 @@ var request = require('request');
 const rp = require('request-promise');
 var ursa = require('ursa');
 var bigInt = require('big-integer');
+var authenticator = require('authenticator');
+var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
+var async = require('async');
 const HASH_ALGORITHM = 'sha256';
-
+ 
 var transport = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
     secureConnection: false,
@@ -19,7 +24,7 @@ var transport = nodemailer.createTransport(smtpTransport({
         pass: 'kcoin1234'
     }
 }));
-
+ 
 exports.history = function(req, res, next)
 {
   var token = getToken(req.headers);
@@ -69,7 +74,7 @@ exports.history = function(req, res, next)
     });
   }
 }
-
+ 
 exports.send_money = function (req, res, next) {
   var token = getToken(req.headers);
   if (token) {
@@ -81,10 +86,9 @@ exports.send_money = function (req, res, next) {
 
           if (!user) {
               return res.status(403).send({ success: false, msg: 'User not found.' });
-          }
-          else
-          {
-              sendToTransactionKcoin(user, user.privateKey, user.publicKey, user.address, res, req);
+          } else {
+              sendToTransactionKcoin(user.privateKey, user.publicKey, user.address, res, req);
+
           }
       });
   } else {
@@ -92,181 +96,7 @@ exports.send_money = function (req, res, next) {
   }
 
 }
-
-sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req)
-{
-  const HASH_ALGORITHM = 'sha256';
-  if(req.body.destination.length == 64)
-  {
-    if(address == req.body.destination)
-    {
-      return res.json({ success: false, msg: 'Cannot send money to yourself.' });
-    }
-    else
-    {
-
-      /*Transaction.find({state: "unconfirmed"}, function(err, listUnTran){
-        for(let i=0;i<listUnTran.length; i++){
-          User.findOne({publicKey: listUnTran[i].inputs[0].unlockScript}, function(err, userCheck){
-            if(userCheck)
-              {
-                if(userCheck.address == user.address){
-                  checkUntran = true;
-                }
-              }
-
-          });
-        }
-
-      });*/
-      async.parallel({
-  		listUnTran: function (callback) {
-  			Transaction.find({}).sort({state:"unconfirmed"}).exec(callback);
-          },
-  		userCheck: function (callback) {
-  			User.findOne({}).sort({publicKey: listUnTran[i].inputs[0].unlockScript.split(" ")[1]}).exec(callback);
-          }
-  	   }, function (err,results) {
-         var checkUntran =false;
-         for(let i=0;i<results.listUnTran.length; i++)
-         {
-           if(userCheck)
-             {
-               if(results.userCheck.address == user.address){
-                 checkUntran = true;
-               }
-             }
-         }
-
-         if(checkUntran)
-         {
-           return res.json({ success: false, msg: 'You cannot create new transaction.' });
-         }
-         else
-         {
-
-           var sendMoney = req.body.sendMoney;
-           let destinations = [
-             address,
-             req.body.destination
-           ];
-           let key = {
-             privateKey: privateKey,
-             publicKey: publicKey,
-             address: address
-           };
-           console.log('sendMoney: ', sendMoney);
-           console.log('destinations: ', destinations);
-           console.log('key: ', key);
-           ReferenceOutput.find({ 'address': address }, function(err,referenceList){
-             if (err)
-             {
-               res.json({ success: false, msg: 'Get Reference Output Failed!', error: err });
-             }
-             if (!referenceList) {
-               res.json({ success: false, msg: 'Reference Output Not Found!' });
-             }
-             else
-             {
-               var money  = 0;
-               let referenceOutputs = [];
-               console.log('referenceList.length: ', referenceList.length);
-               for (let i = 0; i < referenceList.length; i++)
-               {
-                 money += referenceList[i].money;
-                 console.log('referenceList[i].money: ', referenceList[i].money);
-                 console.log('money: ', money);
-                 var referenceOutput =
-                 {
-                   referencedOutputHash: referenceList[i].referencedOutputHash,
-                   referencedOutputIndex: referenceList[i].referencedOutputIndex
-                 };
-                 referenceOutputs.push(referenceOutput);
-                 if (money >= sendMoney)
-                 {
-                   break;
-                 }
-               }
-               if (money < sendMoney)
-               {
-                 res.json({ success: false, msg: 'Do not have enough money to send!' });
-               }
-               else
-               {
-
-                 let bountyTransaction = {
-                   version: 1,
-                   inputs: [],
-                   outputs: []
-                 };
-                 let keys = [];
-                 referenceOutputs.forEach(referenceOutput => {
-                   bountyTransaction.inputs.push({
-                     referencedOutputHash: referenceOutput.referencedOutputHash,
-                     referencedOutputIndex: referenceOutput.referencedOutputIndex,
-                     unlockScript: ''
-                   });
-                   keys.push(key);
-                 });
-                 bountyTransaction.outputs.push({
-                   value: money - sendMoney,
-                   lockScript: 'ADD ' + destinations[0]
-                 });
-                 bountyTransaction.outputs.push({
-                   value: sendMoney,
-                   lockScript: 'ADD ' + destinations[1]
-                 });
-                 sign(bountyTransaction, keys);
-                 console.log(JSON.stringify(bountyTransaction));
-                 //console.log(option);
-                 var newTran = new Transaction();
-                 newTran.hash = user._id;
-                 newTran.inputs=bountyTransaction.inputs;
-                 newTran.outputs=bountyTransaction.outputs;
-                 newTran.state="initialized";
-                 newTran.auth = user.keyGoogleAuthenticator;
-                 newTran.save(function(err){
-                   if(err)
-                     return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
-                   else{
-                     User.findByIdAndUpdate(user._id,{$set:{availableMoney: sendMoney}},{ new: true },function (err){
-                       if(err)
-                       return res.json({ success: false, msg: 'Cannot update availableMoney.'});
-                       else {
-                         SendMessageGoogleAuthenticator(user, req.body.sendMoney, req.body.destination, res, req);
-                       }
-                     });
-                   }
-                 });
-               }
-             }
-           });
-         }
-       });
-
-    }
-  }
-  else {
-    res.json({ success: false, msg: 'Wrong address!' });
-  }
-
-
-}
-
-
-getToken = function (headers) {
-    if (headers && headers.authorization) {
-        var parted = headers.authorization;
-        if (parted) {
-            return parted;
-        } else {
-            return null;
-        }
-    } else {
-        return null;
-    }
-};
-
+ 
 sendToTransactionKcoin = function(privateKey, publicKey, address, res, req)
 {
   const HASH_ALGORITHM = 'sha256';
@@ -289,11 +119,130 @@ sendToTransactionKcoin = function(privateKey, publicKey, address, res, req)
     {
       res.json({ success: false, msg: 'Get Reference Output Failed!', error: err });
     }
+    if (!referenceList) {
+      res.json({ success: false, msg: 'Reference Output Not Found!' });
+    } else {
+      var money  = 0;
+      let referenceOutputs = [];
+      console.log('referenceList.length: ', referenceList.length);
+      for (let i = 0; i < referenceList.length; i++)
+      {
+        money += referenceList[i].money;
+        console.log('referenceList[i].money: ', referenceList[i].money);
+        console.log('money: ', money);
+        var referenceOutput =
+        {
+          referencedOutputHash: referenceList[i].referencedOutputHash,
+          referencedOutputIndex: referenceList[i].referencedOutputIndex
+        };
+        referenceOutputs.push(referenceOutput);
+        if (money >= sendMoney)
+        {
+          break;
+        }
+      }
+      if (money < sendMoney)
+      {
+        res.json({ success: false, msg: 'Do not have enough money!' });
+      }
+      else//đủ tiền
+      {
+        let bountyTransaction = {
+          version: 1,
+          inputs: [],
+          outputs: []
+        };
+        let keys = [];
+        referenceOutputs.forEach(referenceOutput => {
+          bountyTransaction.inputs.push({
+            referencedOutputHash: referenceOutput.referencedOutputHash,
+            referencedOutputIndex: referenceOutput.referencedOutputIndex,
+            unlockScript: ''
+          });
+          keys.push(key);
+        });
+        bountyTransaction.outputs.push({
+          value: money - sendMoney,
+          lockScript: 'ADD ' + destinations[0]
+        });
+        bountyTransaction.outputs.push({
+          value: sendMoney,
+          lockScript: 'ADD ' + destinations[1]
+        });
+        sign(bountyTransaction, keys);
+        console.log(JSON.stringify(bountyTransaction));
+        var header, option;
+        header = {
+          'User-Agent':       'Super Agent/0.0.1',
+          'Content-Type':     'application/json'
+        }
+
+        option = {
+          url: 'https://api.kcoin.club/transactions',
+          method: 'POST',
+          headers: header,
+          body: JSON.stringify(bountyTransaction)
+        }
+
+        console.log(option);
+        request(option, function (error, response, body) {
+          if (!error)
+          {
+            console.log("Response:" + response);
+            res.json({ success: true, response: response});
+          }
+          else {
+            console.log("Error:" + error);
+            res.json({ success: false, msg: error});
+          }
+        });
+      }//đủ tiền
+    }
+    });
+  /*let referenceOutputsHashes = [
+    'd6fd4a290c22190d6c414f51c96a7eb800c1705e83d3931861f562935c1f831c'
+  ];*/
+  //let referenceOutputsHashes = [];
+
+
+
+
+
+
+
+
+// Write to file then POST https://api.kcoin.club/transactions
+
+
+}
+ 
+ 
+getToken = function (headers) {
+    if (headers && headers.authorization) {
+        var parted = headers.authorization;
+        if (parted) {
+            return parted;
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+};
+
+ 
+SendMessageGoogleAuthenticator= function (user, valueMoney, receiveAddress, res, req) {
+    var key = user.keyGoogleAuthenticator;
+    var formattedKeyArrays = key.split(' ');
+    var formattedKey = '';
+    for (let i = 0; i < formattedKeyArrays.length; i++) {
+        formattedKey += formattedKeyArrays[i].toUpperCase();
+    }
     SendVerifyMail(req, res, formattedKey, user, valueMoney, receiveAddress);
 }
-
+ 
 SendVerifyMail = function (req, res, key, user, valueMoney, receiveAddress) {
-
+ 
     var host = req.get('host');
     var link = "http://localhost:3000/transactions/verify/" + key;
     var mailOptions = {
@@ -313,7 +262,10 @@ SendVerifyMail = function (req, res, key, user, valueMoney, receiveAddress) {
                 keyGoogleAuthenticator: key
             });
         }
-
+    });
+};
+ 
+ 
 exports.verify_google_authenticator = function (req, res, next) {
     var token = getToken(req.headers);
     var keyGoogleAuthenticatorFormatted = req.params.key;
@@ -335,7 +287,7 @@ exports.verify_google_authenticator = function (req, res, next) {
         }, function (err, user)
         {
           if (err) res.json({ success: false, msg: err });
-
+ 
           if (!user) {
               return res.json({ success: false, msg: 'User not found.' });
           }
@@ -357,7 +309,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                     if (err) {
                         res.json({ success: false, msg: err });
                     }
-
+ 
                     if (!tran) {
                         //console.log('User not found.', req.body.email);
                         res.json({ success: false, msg: 'Transaction not found.' });
@@ -377,7 +329,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                     inputs: [],
                                     outputs: []
                                   };
-
+ 
                                   for(let i=0;i<tran.inputs.length;i++)
                                   {
                                     bountyTransaction.inputs.push({
@@ -393,17 +345,17 @@ exports.verify_google_authenticator = function (req, res, next) {
                                       lockScript: tran.outputs[i].lockScript
                                     });
                                   }
-
+ 
                                   option = {
                                     url: 'https://api.kcoin.club/transactions',
                                     method: 'POST',
                                     headers: header,
                                     body: JSON.stringify(bountyTransaction)
                                   }
-
+ 
                                   console.log("bountyTransaction:"+JSON.stringify(bountyTransaction));
                                   console.log("Option2" + JSON.stringify(option));
-
+ 
                                   request(option, function (error, response, body) {
                                     if (response.statusCode == 200)
                                     {
@@ -419,7 +371,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                         if(err)
                                           res.json({ success: false, msg: "Cannot update hash transaction." });
                                       });
-
+ 
                                       for(let j=0;j<tran.inputs.length; j++)
                                       {
                                         if(tran.inputs[j].unlockScript.indexOf("PUB") != -1)
@@ -434,9 +386,9 @@ exports.verify_google_authenticator = function (req, res, next) {
                                             }
                                           });
                                         }
-
+ 
                                       }
-
+ 
                                       for(let j=0;j<receiveTran.outputs.length; j++)
                                       {
                                         User.findOne({address: receiveTran.outputs[j].lockScript.split(" ")[1]}, function(err, user){
@@ -454,7 +406,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                             });
                                           }
                                         });
-
+ 
                                       }
                                       res.json({ success: true, msg: 'Waiting for server to confirm.'});
                                     }
@@ -479,7 +431,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                   }
                                 });
                               }
-
+ 
                             }
                             else {
                                 res.json({ success: false, msg: 'Verify Token is expired.' });
@@ -488,8 +440,8 @@ exports.verify_google_authenticator = function (req, res, next) {
                         else {
                             res.json({ success: false, msg: 'Wrong Verify Token.', result: result });
                         }
-
-
+ 
+ 
                     }
                 });
               }
@@ -498,68 +450,68 @@ exports.verify_google_authenticator = function (req, res, next) {
         });
     }
 }
-
-
-
+ 
+ 
+ 
 toBinary = function (transaction, withoutUnlockScript) {
-    let version = Buffer.alloc(4);
-    version.writeUInt32BE(transaction.version);
-    let inputCount = Buffer.alloc(4);
-    inputCount.writeUInt32BE(transaction.inputs.length);
-    let inputs = Buffer.concat(transaction.inputs.map(input => {
-      // Output transaction hash
-      let outputHash = Buffer.from(input.referencedOutputHash, 'hex');
-      // Output transaction index
-      let outputIndex = Buffer.alloc(4);
-      // Signed may be -1
-      outputIndex.writeInt32BE(input.referencedOutputIndex);
-      let unlockScriptLength = Buffer.alloc(4);
-      // For signing
-      if (!withoutUnlockScript) {
-        // Script length
-        unlockScriptLength.writeUInt32BE(input.unlockScript.length);
-        // Script
-        let unlockScript = Buffer.from(input.unlockScript, 'binary');
-        return Buffer.concat([ outputHash, outputIndex, unlockScriptLength, unlockScript ]);
-      }
-      // 0 input
-      unlockScriptLength.writeUInt32BE(0);
-      return Buffer.concat([ outputHash, outputIndex, unlockScriptLength]);
-    }));
-    let outputCount = Buffer.alloc(4);
-    outputCount.writeUInt32BE(transaction.outputs.length);
-    let outputs = Buffer.concat(transaction.outputs.map(output => {
-      // Output value
-      let value = Buffer.alloc(4);
-      value.writeUInt32BE(output.value);
+  let version = Buffer.alloc(4);
+  version.writeUInt32BE(transaction.version);
+  let inputCount = Buffer.alloc(4);
+  inputCount.writeUInt32BE(transaction.inputs.length);
+  let inputs = Buffer.concat(transaction.inputs.map(input => {
+    // Output transaction hash
+    let outputHash = Buffer.from(input.referencedOutputHash, 'hex');
+    // Output transaction index
+    let outputIndex = Buffer.alloc(4);
+    // Signed may be -1
+    outputIndex.writeInt32BE(input.referencedOutputIndex);
+    let unlockScriptLength = Buffer.alloc(4);
+    // For signing
+    if (!withoutUnlockScript) {
       // Script length
-      let lockScriptLength = Buffer.alloc(4);
-      lockScriptLength.writeUInt32BE(output.lockScript.length);
+      unlockScriptLength.writeUInt32BE(input.unlockScript.length);
       // Script
-      let lockScript = Buffer.from(output.lockScript);
-      return Buffer.concat([value, lockScriptLength, lockScript ]);
-    }));
-    return Buffer.concat([ version, inputCount, inputs, outputCount, outputs ]);
-  }
+      let unlockScript = Buffer.from(input.unlockScript, 'binary');
+      return Buffer.concat([ outputHash, outputIndex, unlockScriptLength, unlockScript ]);
+    }
+    // 0 input
+    unlockScriptLength.writeUInt32BE(0);
+    return Buffer.concat([ outputHash, outputIndex, unlockScriptLength]);
+  }));
+  let outputCount = Buffer.alloc(4);
+  outputCount.writeUInt32BE(transaction.outputs.length);
+  let outputs = Buffer.concat(transaction.outputs.map(output => {
+    // Output value
+    let value = Buffer.alloc(4);
+    value.writeUInt32BE(output.value);
+    // Script length
+    let lockScriptLength = Buffer.alloc(4);
+    lockScriptLength.writeUInt32BE(output.lockScript.length);
+    // Script
+    let lockScript = Buffer.from(output.lockScript);
+    return Buffer.concat([value, lockScriptLength, lockScript ]);
+  }));
+  return Buffer.concat([ version, inputCount, inputs, outputCount, outputs ]);
+}
 
 signUtils = function (message, privateKeyHex) {
-    // Create private key form hex
-    let privateKey = ursa.createPrivateKey(Buffer.from(privateKeyHex, 'hex'));
-    // Create signer
-    let signer = ursa.createSigner(HASH_ALGORITHM);
-    // Push message to verifier
-    signer.update(message);
-    // Sign
-    return signer.sign(privateKey, 'hex');
-  }
+  // Create private key form hex
+  let privateKey = ursa.createPrivateKey(Buffer.from(privateKeyHex, 'hex'));
+  // Create signer
+  let signer = ursa.createSigner(HASH_ALGORITHM);
+  // Push message to verifier
+  signer.update(message);
+  // Sign
+  return signer.sign(privateKey, 'hex');
+}
 
-    //transactions.sign(bountyTransaction, keys);
+  //transactions.sign(bountyTransaction, keys);
 sign = function (bountyTransaction, keys) {
-    let message = toBinary(bountyTransaction, true);
-    bountyTransaction.inputs.forEach((input, index) => {
-      let key = keys[index];
-      let signature = signUtils(message, key.privateKey);
-      // Genereate unlock script
-      input.unlockScript = 'PUB ' + key.publicKey + ' SIG ' + signature;
-    });
-  }
+  let message = toBinary(bountyTransaction, true);
+  bountyTransaction.inputs.forEach((input, index) => {
+    let key = keys[index];
+    let signature = signUtils(message, key.privateKey);
+    // Genereate unlock script
+    input.unlockScript = 'PUB ' + key.publicKey + ' SIG ' + signature;
+  });
+}
