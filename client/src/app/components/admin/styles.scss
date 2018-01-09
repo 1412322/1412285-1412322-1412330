@@ -418,6 +418,9 @@
                     width: 100%; 
                     overflow: hidden;
                     text-overflow: ellipsis; 
+                    span {
+                      font-weight: $font-bold !important;
+                    }
                     a {
                       color: $success-color;
                     }

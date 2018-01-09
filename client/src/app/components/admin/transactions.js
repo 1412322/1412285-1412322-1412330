@@ -116,7 +116,7 @@ class TransactionDataContainer extends React.Component {
                                                 </Table.Cell>
                                                 <Table.Cell>
                                                     {data.outputs.map((output, index) =>
-                                                        <div className='address-block' key={index}>#{output.index}: {output.value} to <a>{output.address}</a></div>
+                                                        <div className='address-block' key={index}>#{output.index}: <span>{output.value}</span> to <a>{output.address}</a></div>
                                                     )}
                                                 </Table.Cell>
                                             </Table.Row>
