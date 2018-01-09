@@ -304,7 +304,7 @@ getBlocks = function(res, limit, offset)
                           }
                           var transInfo = {
                             hash: transList[k].hash,
-                            time: formattedDate,
+                            time: time,
                             state: transList[k].state,
                             inputs: inputs,//tham chiếu output index
                             outputs: outputs
