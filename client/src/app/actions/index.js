@@ -189,6 +189,22 @@ export const getAddressDataFailed = (data) => ({
   data,
 })
 
+export const transferMoneySubmit = (headers, body) => ({
+  type: 'SEND_MONEY',
+  headers,
+  body,
+})
+
+export const transferMoneySuccessed = (data) => ({
+  type: 'SEND_MONEY_SUCCESS',
+  data,
+})
+
+export const transferMoneyFailed = (data) => ({
+  type: 'SEND_MONEY_FAILED',
+  data,
+})
+
 export function signIn(body, headers, isRememberMe) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -426,3 +442,25 @@ export function getAdminAddressData(headers, body, offset, limit) {
   }
 }
 
+export function transferMoney(body, headers) {
+  return function (dispatch) {
+    console.log(body)
+    console.log(headers)
+    dispatch(transferMoneySubmit(body, headers))
+    return fetch(Server.server() + 'api/transactions/sendMoney', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          dispatch(transferMoneySuccessed(data))
+
+        }
+        else {
+          dispatch(transferMoneyFailed(data))
+        }
+      })
+  }
+}

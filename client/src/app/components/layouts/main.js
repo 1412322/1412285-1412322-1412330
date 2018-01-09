@@ -1,12 +1,12 @@
 import React from 'react'
 import { Redirect } from 'react-router-dom'
-import { Sidebar, Segment, Menu, Card, Dropdown } from 'semantic-ui-react'
+import { Sidebar, Segment, Menu, Card, Dropdown, Dimmer, Loader } from 'semantic-ui-react'
 import './styles.scss'
 import MdMenu from 'react-icons/lib/md/menu'
 import { Link } from 'react-router-dom'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import * as accountActions from '../../actions'
+import * as actions from '../../actions'
 import validator from 'validator'
 // import * as ls from 'local-storage'
 
@@ -18,6 +18,16 @@ class MainLayout extends React.Component {
       token: sessionStorage.getItem('token'),
       isSideBarShowing: true,
     }
+  }
+
+  componentWillMount() {
+    const { token } = this.state
+    const { actions } = this.props
+    const headers = {
+      authorization: token,
+      'Content-Type': 'application/json'
+    }
+    actions.getUserProfile(headers)
   }
 
   generateSibarItemClassName(url) {
@@ -123,65 +133,77 @@ class MainLayout extends React.Component {
   render() {
     // const { component: Component, ...rest } = this.props
     const { token } = this.state
+    const { userData } = this.props
     return (
       !token || token === 'undefined'
         ? <Redirect to="/signin" />
-        : (<div className='main-layout' id='MainLayout'>
-          <Menu className='navbar'>
-            <Menu.Item className='navbar-item navbar-logo'>
-              <Link to='/admin/dashboard'>
-                LOGO
+        : (!userData
+          ? (<Dimmer active={true} inverted={true}>
+            <Loader />
+          </Dimmer>)
+          : (<div className='main-layout' id='MainLayout'>
+            <Menu className='navbar'>
+              <Menu.Item className='navbar-item navbar-logo'>
+                <Link to='/admin/dashboard'>
+                  KCOIN
 				      </Link>
-            </Menu.Item>
-
-            <Menu.Item className='navbar-item'>
-              <MdMenu className='navbar-toggle' onClick={() => this.toggleSideBar()} />
-            </Menu.Item>
-
-
-            <Menu.Menu position='right'>
-              <Menu.Item className='navbar-item'>
-                <Dropdown
-                  trigger={(
-                    <div className='account-avatar'>
-                      {sessionStorage.getItem('email') && (
-                        <span>{sessionStorage.getItem('email').charAt(0)}</span>
-                      )}
-                    </div>
-                  )}
-                  icon={null}
-                  pointing='top right'
-                  className='dropdown'>
-                  <Dropdown.Menu className='dropdown-menu'>
-                    <Dropdown.Item className='dropdown-item' onClick={() => this.props.actions.signOut()}>
-                      Sign-out
-                </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
               </Menu.Item>
-            </Menu.Menu>
 
-          </Menu>
+              <Menu.Item className='navbar-item'>
+                <MdMenu className='navbar-toggle' onClick={() => this.toggleSideBar()} />
+              </Menu.Item>
 
-          <Sidebar.Pushable as={Segment} className='side-bar'>
-            {this.textSideBarContainer()}
-            <Sidebar.Pusher className='text-side-content'>
-              {this.props.children}
-            </Sidebar.Pusher>
-          </Sidebar.Pushable>
-        </div>)
+
+              <Menu.Menu position='right'>
+                <Menu.Item className='navbar-item'>
+                  <Dropdown
+                    trigger={(
+                      <div className='account-avatar'>
+                        {sessionStorage.getItem('email') && (
+                          <span>{userData.email.charAt(0)}</span>
+                        )}
+                      </div>
+                    )}
+                    icon={null}
+                    pointing='top right'
+                    className='dropdown'>
+                    <Dropdown.Menu className='dropdown-menu'>
+                      <Dropdown.Item className='dropdown-item'>
+                        Actual Balance: {userData.realMoney}
+                      </Dropdown.Item>
+                      <Dropdown.Item className='dropdown-item'>
+                        Available Balance: {userData.availableMoney}
+                      </Dropdown.Item>
+                      <Dropdown.Item className='dropdown-item' onClick={() => this.props.actions.signOut()}>
+                        Sign-out
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Menu.Item>
+              </Menu.Menu>
+
+            </Menu>
+
+            <Sidebar.Pushable as={Segment} className='side-bar'>
+              {this.textSideBarContainer()}
+              <Sidebar.Pusher className='text-side-content'>
+                {this.props.children}
+              </Sidebar.Pusher>
+            </Sidebar.Pushable>
+          </div>))
     )
   }
 }
 
 const mapStateToProps = (state) => ({
-
+  userData: state.user.userData,
 })
 
 const mapDispatchToProps = (dispatch) => {
   return {
     actions: bindActionCreators({
-      signOut: accountActions.signOut,
+      getUserProfile: actions.getUserProfile,
+      signOut: actions.signOut,
     }, dispatch),
   }
 }

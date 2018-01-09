@@ -63,14 +63,14 @@ class StatisticContainer extends React.Component {
 
     render() {
         const { data, offset } = this.state
-        const { isFetching } = this.props
+        const { isFetching, userData } = this.props
         return (
-            !data
-                ? (<Dimmer active={true} inverted={true}>
-                    <Loader />
-                </Dimmer>)
-                : !data.success
-                    ? <Redirect to="/admin/403" />
+            userData.role !== 'admin'
+                ? <Redirect to="/admin/403" />
+                : !data
+                    ? (<Dimmer active={true} inverted={true}>
+                        <Loader />
+                    </Dimmer>)
                     : (<Container className='admin-container'>
                         <div className='admin-container-header'>
                             <Header as='h2' textAlign='center' >Statistics</Header>
@@ -95,8 +95,8 @@ class StatisticContainer extends React.Component {
                                     <Table.Row verticalAlign='middle'>
                                         <Table.HeaderCell>User</Table.HeaderCell>
                                         <Table.HeaderCell>Address</Table.HeaderCell>
-                                        <Table.HeaderCell width={2}>Actual Balance</Table.HeaderCell>
-                                        <Table.HeaderCell width={2}>Available Balance</Table.HeaderCell>
+                                        <Table.HeaderCell width={3}>Actual Balance</Table.HeaderCell>
+                                        <Table.HeaderCell width={3}>Available Balance</Table.HeaderCell>
                                     </Table.Row>
                                 </Table.Header>
                                 <Table.Body>
@@ -112,7 +112,7 @@ class StatisticContainer extends React.Component {
                                                     <span className='order'>{index + offset + 1}</span>{data.email}
                                                 </Table.Cell>
                                                 <Table.Cell>
-                                                    {data.address}
+                                                    <div className='address-block'>{data.address}</div>
                                                 </Table.Cell>
                                                 <Table.Cell>
                                                     {data.realMoney}
@@ -152,6 +152,7 @@ const mapStateToProps = (state) => ({
     statisticData: state.user.statisticData,
     pageCount: state.user.pageCount,
     isFetching: state.user.isFetching,
+    userData: state.user.userData,
 })
 
 const mapDispatchToProps = (dispatch) => {

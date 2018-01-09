@@ -64,14 +64,14 @@ class TransactionDataContainer extends React.Component {
 
     render() {
         const { data, offset } = this.state
-        const { isFetching } = this.props
+        const { isFetching, userData } = this.props
         return (
-            !data
-                ? (<Dimmer active={true} inverted={true}>
-                    <Loader />
-                </Dimmer>)
-                : !data.success
-                    ? <Redirect to="/admin/403" />
+            userData.role !== 'admin'
+                ? <Redirect to="/admin/403" />
+                : !data
+                    ? (<Dimmer active={true} inverted={true}>
+                        <Loader />
+                    </Dimmer>)
                     : (<Container className='admin-container'>
                         <div className='admin-container-header'>
                             <Header as='h2' textAlign='center' >Transactions Management</Header>
@@ -147,6 +147,7 @@ const mapStateToProps = (state) => ({
     transactionData: state.user.transactionData,
     pageCount: state.user.pageCount,
     isFetching: state.user.isFetching,
+    userData: state.user.userData,
 })
 
 const mapDispatchToProps = (dispatch) => {

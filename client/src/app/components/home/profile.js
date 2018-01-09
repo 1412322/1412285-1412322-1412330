@@ -106,9 +106,6 @@ class ProfileContainer extends React.Component {
     }
 }
 
-ProfileContainer.propTypes = {
-}
-
 const mapStateToProps = (state) => ({
     userData: state.user.userData,
 })

@@ -57,20 +57,20 @@ class AddressDataContainer extends React.Component {
         const body = {
             "offset": offset,
             "limit": limit,
-        };
+        }
         actions.getAdminAddressData(headers, body, offset, limit)
     }
 
     render() {
         const { data, offset } = this.state
-        const { isFetching } = this.props
+        const { isFetching, userData } = this.props
         return (
-            !data
-                ? (<Dimmer active={true} inverted={true}>
-                    <Loader />
-                </Dimmer>)
-                : !data.success
-                    ? <Redirect to="/admin/403" />
+            userData.role !== 'admin'
+                ? <Redirect to="/admin/403" />
+                : !data
+                    ? (<Dimmer active={true} inverted={true}>
+                        <Loader />
+                    </Dimmer>)
                     : (<Container className='admin-container'>
                         <div className='admin-container-header'>
                             <Header as='h2' textAlign='center' >Addresses Management</Header>
@@ -80,9 +80,10 @@ class AddressDataContainer extends React.Component {
                                 <Table.Header className='table-header'>
                                     <Table.Row verticalAlign='middle'>
                                         <Table.HeaderCell>Address</Table.HeaderCell>
-                                        <Table.HeaderCell>Actual Balance</Table.HeaderCell>
-                                        <Table.HeaderCell>Available Balance</Table.HeaderCell>
                                         <Table.HeaderCell>Reference User</Table.HeaderCell>
+                                        <Table.HeaderCell width={3}>Actual Balance</Table.HeaderCell>
+                                        <Table.HeaderCell width={3}>Available Balance</Table.HeaderCell>
+
                                     </Table.Row>
                                 </Table.Header>
                                 <Table.Body>
@@ -137,6 +138,7 @@ const mapStateToProps = (state) => ({
     addressData: state.user.addressData,
     pageCount: state.user.pageCount,
     isFetching: state.user.isFetching,
+    userData: state.user.userData,
 })
 
 const mapDispatchToProps = (dispatch) => {

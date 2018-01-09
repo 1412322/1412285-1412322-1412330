@@ -2,17 +2,18 @@ import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Container, Header, Input, Button, Popup } from 'semantic-ui-react'
+import { Container, Header, Input, Button, Statistic } from 'semantic-ui-react'
 import * as actions from '../../actions'
-import validator from 'validator'
+// import validator from 'validator'
 import * as _ from 'lodash'
-import RequirementIcon from 'react-icons/lib/md/info-outline'
+// import RequirementIcon from 'react-icons/lib/md/info-outline'
 
 class TransferContainer extends React.Component {
 
     constructor(props) {
         super(props)
         this.state = {
+            token: sessionStorage.getItem('token'),
             receiverAddress: '',
             numberOfCoinsTransfer: '',
             errors: [{
@@ -21,32 +22,22 @@ class TransferContainer extends React.Component {
         }
     }
 
-    componentWillMount() {
-        const { token } = this.state
-        const { actions } = this.props
-        const headers = {
-            authorization: token,
-            'Content-Type': 'application/json'
-        }
-          // actions.getUserProfile(headers)
-    }
-
     onSubmitForm(e) {
         e.preventDefault()
         // const { actions } = this.props
         // const { fullname, receiverAddress, password, isRememberMe } = this.state
         if (_.isEmpty(this.onValidateForm())) {
-            const { receiverAddress, numberOfCoinsTransfer, verifyToken } = this.state
+            const { receiverAddress, numberOfCoinsTransfer, token } = this.state
             const { actions } = this.props
             const headers = {
-                'Content-Type': 'application/json'
-            };
+                'Content-Type': 'application/json',
+                authorization: token,
+            }
             const body = {
-                "receiverAddress": receiverAddress,
-                "numberOfCoinsTransfer": numberOfCoinsTransfer,
-                "verifyToken": verifyToken,
-            };
-            actions.signIn(body, headers)
+                "destination": receiverAddress,
+                "sendMoney": numberOfCoinsTransfer,
+            }
+            actions.transferMoney(body, headers)
         }
     }
 
@@ -57,7 +48,7 @@ class TransferContainer extends React.Component {
             errors.push({ field: 'receiverAddress' })
         }
 
-        if (_.isEmpty(receiverAddress)) {
+        if (_.isEmpty(numberOfCoinsTransfer)) {
             errors.push({ field: 'numberOfCoinsTransfer' })
         }
 
@@ -68,15 +59,35 @@ class TransferContainer extends React.Component {
         return errors
     }
 
+    onHandleChange(event, fieldName) {
+        const { actions } = this.props
+        const target = event.target
+        const value = target.value
+        // actions.resetErrorMessage()
+        this.setState({
+            [fieldName]: value,
+        })
+    }
+
     render() {
         const { receiverAddress, numberOfCoinsTransfer, errors } = this.state
-        const { errorMessage, successMessage } = this.props
+        const { errorMessage, successMessage, isFetching, userData } = this.props
         return (
             <Container className='transferContainer'>
                 <div className='transferContainerHeader'>
                     <Header as='h2' textAlign='center' >Coins Transfer</Header>
                 </div>
                 <div className='transferContainerBody'>
+                    <div className='containerHeader'>
+                        <Statistic size='mini'>
+                            <Statistic.Label>Actual Balance</Statistic.Label>
+                            <Statistic.Value>{userData.realMoney}</Statistic.Value>
+                        </Statistic>
+                        <Statistic size='mini'>
+                            <Statistic.Label>Available Balance</Statistic.Label>
+                            <Statistic.Value>{userData.availableMoney}</Statistic.Value>
+                        </Statistic>
+                    </div>
                     <div className='containerBody'>
                         <Input
                             className={
@@ -99,11 +110,29 @@ class TransferContainer extends React.Component {
                             label={<label>Coins</label>}
                             onChange={(e) => this.onHandleChange(e, 'numberOfCoinsTransfer')}
                             type='text'
-                            value={receiverAddress} />
+                            value={numberOfCoinsTransfer} />
                     </div>
 
                     <div className='containerFooter'>
-                        <Button type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >Transfer</Button>
+                        <span
+                            className='error-message'
+                            style={
+                                (errorMessage !== null)
+                                    ? { display: 'block' }
+                                    : { display: 'none' }
+                            }>
+                            {errorMessage}
+                        </span>
+                        <span
+                            className='success-message'
+                            style={
+                                (successMessage !== null)
+                                    ? { display: 'block' }
+                                    : { display: 'none' }
+                            }>
+                            {successMessage}
+                        </span>
+                        <Button loading={isFetching} type='submit' className='submit-btn' onClick={(e) => this.onSubmitForm(e)} >Transfer</Button>
                     </div>
 
                 </div>
@@ -117,15 +146,17 @@ TransferContainer.propTypes = {
 
 const mapStateToProps = (state) => {
     return {
-        errorMessage: state.account.errorMessage,
-        successMessage: state.account.successMessage,
+        errorMessage: state.transaction.errorMessage,
+        successMessage: state.transaction.successMessage,
+        isFetching: state.transaction.isFetching,
+        userData: state.user.userData,
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return {
         actions: bindActionCreators({
-            // signIn: accountActions.signIn,
+            transferMoney: actions.transferMoney,
             // resetErrorMessage: accountActions.resetErrorMessage
         }, dispatch),
     }

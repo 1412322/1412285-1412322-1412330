@@ -24,6 +24,7 @@
     justify-content: flex-start;
     padding: 50px 50px 0px;
     width: 100% !important;
+    overflow: auto;
     .transferContainerHeader {
       margin: 0 0 30px 0;
       h2 {
@@ -34,7 +35,7 @@
       align-content: center;
       background-color: $background-color1;
       border-radius: 3px;
-      box-shadow: 0 10px 25px 0 rgba(173, 181, 232, 0.32);
+      box-shadow: 0 10px 25px 0 rgba(232, 173, 173, 0.32);
       display: flex;
       flex-direction: column;
       margin-bottom: 50px;
@@ -154,9 +155,26 @@
       }
       .containerFooter {
         margin: 0 !important;
-        span {
-          opacity: 0.36;
-          color: #193651;
+        position: relative;
+        // span {
+        //   opacity: 0.36;
+        //   color: #193651;
+        // }
+        .error-message {
+          color: $failure-color;
+          display: block;
+          position: absolute;
+          top: -30px;
+          width: 100%;
+          text-align: center;
+        }
+        .success-message {
+          color: $success-color;
+          display: block;
+          position: absolute;
+          top: -30px;
+          width: 100%;
+          text-align: center;
         }
         .submit-btn {
           @include button($primary-color, $text-color2);
