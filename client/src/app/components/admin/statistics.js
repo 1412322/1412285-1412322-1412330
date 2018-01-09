@@ -81,11 +81,11 @@ class StatisticContainer extends React.Component {
                                     <Statistic.Label>Users</Statistic.Label>
                                 </Statistic>
                                 <Statistic>
-                                    <Statistic.Value style={{ color: '#7ed321' }}>{data.totalrealMoney ? data.totalrealMoney : 0}</Statistic.Value>
+                                    <Statistic.Value style={{ color: '#7ed321' }}>{data.totalRealMoney ? data.totalRealMoney : 0}</Statistic.Value>
                                     <Statistic.Label>Actual Balances</Statistic.Label>
                                 </Statistic>
                                 <Statistic>
-                                    <Statistic.Value style={{ color: '#7ed321' }}>{data.totalavailableMoney ? data.totalavailableMoney : 0}</Statistic.Value>
+                                    <Statistic.Value style={{ color: '#7ed321' }}>{data.totalAvailableMoney ? data.totalAvailableMoney : 0}</Statistic.Value>
                                     <Statistic.Label>Available Balances</Statistic.Label>
                                 </Statistic>
                             </Statistic.Group>
@@ -163,4 +163,3 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(StatisticContainer)
-
