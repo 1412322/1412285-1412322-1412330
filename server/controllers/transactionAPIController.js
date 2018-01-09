@@ -2,7 +2,7 @@ var User = require('../models/user');
 var Transaction = require('../models/transaction');
 var ReferenceOutput = require('../models/referenceOutput');
 var Block = require('../models/block');
- 
+
 var jwt = require('jwt-simple');
 var config = require('../config/database');
 var bcrypt = require('bcrypt-nodejs');
@@ -15,7 +15,7 @@ var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var async = require('async');
 const HASH_ALGORITHM = 'sha256';
- 
+
 var transport = nodemailer.createTransport(smtpTransport({
     service: 'gmail',
     secureConnection: false,
@@ -24,57 +24,302 @@ var transport = nodemailer.createTransport(smtpTransport({
         pass: 'kcoin1234'
     }
 }));
- 
+
+exports.delete_initialized_transaction = function(req, res, next)
+{
+  var token = getToken(req.headers);
+  var keyGoogleAuthenticatorFormatted = req.params.key;
+  var keyGoogleAuthenticator = '';
+  for (let i = 0; i < keyGoogleAuthenticatorFormatted.length; i++) {
+      if (i % 4 == 0 && i > 0 && i < keyGoogleAuthenticatorFormatted.length)
+          keyGoogleAuthenticator += ' ' + keyGoogleAuthenticatorFormatted[i].toLowerCase();
+      else
+          keyGoogleAuthenticator += keyGoogleAuthenticatorFormatted[i].toLowerCase();;
+  }
+
+  if (token)
+  {
+      var decoded = jwt.decode(token, config.secret);
+      User.findOne({
+          email: decoded.email
+      }, function (err, user)
+      {
+        if (err) throw err;
+
+        if (!user) {
+          return res.status(403).send({ success: false, msg: 'User not found.' });
+        }
+        else
+        {
+          Transaction.findOneAndRemove({auth: keyGoogleAuthenticator}, function(err){
+            if(err){
+              res.json({ success: false, msg: err });
+            }
+              else {
+                res.json({ success: true, msg: 'Delete initialized transaction successfully.' });
+              }
+          });
+        }
+      });
+  }
+  else {
+    return res.status(403).send({ success: false, msg: 'No token provided.' });
+  }
+}
+
 exports.history = function(req, res, next)
 {
   var token = getToken(req.headers);
-  if (token){
+  if (token)
+  {
     var decoded = jwt.decode(token, config.secret);
     User.findOne({
         email: decoded.email
-    }, function (err, user) {
-      var dataSend = [];
-      var output = "ADD" + user.address;
-      Transaction.find({outputs:{$elemMatch:{output}}}, function(err, listTran){
-        for(let i=0;i<listTran.length;i++){
-          if(listTran[i].inputs[0].unlockScript.indexOf("PUB") != -1)
-          {
-            if(listTran[i].inputs[0].unlockScript.split(" ")[1] == user.publicKey)
+    }, function (err, user)
+    {
+
+      if (err) throw err;
+
+      if (!user) {
+        return res.status(403).send({ success: false, msg: 'User not found.' });
+      }
+      else
+      {
+      var dataTranSend = [];
+      var dataTranReceive = [];
+
+      async.parallel({
+      listBlock: function (callback){
+        Block.find({}).sort({}).exec(callback);},
+      listTran: function (callback){
+        Transaction.find({}).sort({}).exec(callback);},
+      listUser: function (callback){
+        User.find({}).sort({}).exec(callback);}
+       }, function (err,result)
+       {
+         var listTranUserSend = [];
+         var listTranUserReceive=[];
+         var listTimeStampSend = [];
+         var listTimeStampReceive = [];
+         for(let i=0; i<result.listTran.length; i++)
+         {
+            if(result.listTran[i].inputs[0].unlockScript.indexOf("PUB") != -1)
             {
-                Block.find({transactions: {$in:[listTran[i].hash]}}, function(err, block){
-                  var ouputs = [];
-                  var outputIndex=0;
-                  for(let j=0;j<listTran[i].outputs.length;j++)
+              if(result.listTran[i].inputs[0].unlockScript.split(" ")[1] == user.publicKey)
+              {
+                listTranUserSend.push(result.listTran[i]);
+              }
+              else
+              {
+                for(let j=0;j<result.listTran[i].outputs.length;j++)
+                {
+                  if(result.listTran[i].outputs[j].lockScript.split(" ")[1] == user.address)
                   {
-                    if(listTran[i].outputs[j].lockScript.split(" ")[1] != user.address)
-                    {
-                        outputs.push({
-                        address: listTran[i].outputs[j].lockScript.split(" ")[1],
-                        money: listTran[i].outputs[j].value,
-                        index: j
-                      });
-                    }
-                    else{
-                      outputIndex = j;
-                    }
+                    listTranUserReceive.push(result.listTran[i]);
                   }
-                  dataSend.push({
-                    type:'send',
-                    time: block[0].timestamp,
-                    transactionsHash: listTran[i].hash,
-                    outputs: outputs,
-                    outputIndex: outputIndex,
-                    state: listTran[i].state
-                  });
-                });
+                }
+              }
             }
-          }
-        }
-      });
-    });
-  }
+            else
+            {
+              for(let j=0;j<result.listTran[i].outputs.length;j++)
+              {
+                if(result.listTran[i].outputs[j].lockScript.split(" ")[1] == user.address)
+                {
+                  listTranUserReceive.push(result.listTran[i]);
+                }
+              }
+            }
+         }
+
+         for(let i=0; i< listTranUserSend.length; i++)
+         {
+           for(let j=0; j<result.listBlock.length; j++)
+           {
+             for(let k=0; k<result.listBlock[j].transactions.length;k++)
+             {
+               if(result.listBlock[j].transactions[k] == listTranUserSend[i].hash)
+               {
+                 var outputs = [];
+                 for(let t=0;t<listTranUserSend[i].outputs.length; t++)
+                 {
+                   outputs.push({
+                     address: listTranUserSend[i].outputs[t].lockScript.split(" ")[1],
+                     money: listTranUserSend[i].outputs[t].value,
+                     index: t
+                   });
+                 }
+                 if(listTranUserSend[i].state == "initialized")
+                 {
+                   listTimeStampSend.push(result.listBlock[j].timestamp);
+                   dataTranSend.push({
+                     hash: listTranUserSend[i].hash,
+                     time: result.listBlock[j].timestamp,
+                     outputs: outputs,
+                     state: listTranUserSend[i].state,
+                     auth: listTranUserSend[i].auth
+                   });
+                 }
+                 else{
+                   listTimeStampSend.push(result.listBlock[j].timestamp);
+                   dataTranSend.push({
+                     hash: listTranUserSend[i].hash,
+                     time: result.listBlock[j].timestamp,
+                     outputs: outputs,
+                     state: listTranUserSend[i].state
+                   });
+                 }
+
+                 break;
+               }
+             }
+           }
+         }
+
+         for(let i=0; i< listTranUserReceive.length; i++)
+         {
+             var money = 0;
+             var index = 0;
+             for(let j=0;j<listTranUserReceive[i].outputs.length;j++)
+             {
+               if(listTranUserReceive[i].outputs[j].lockScript.split(" ")[1] == user.address)
+               {
+                 money = listTranUserReceive[i].outputs[j].value;
+                 index = j;
+                 break;
+               }
+             }
+             var time = 0;
+             for(let j=0; j<result.listBlock.length;j++)
+             {
+               for(let k=0; k<result.listBlock[j].transactions.length;k++)
+               {
+                 if(result.listBlock[j].transactions[k] == listTranUserReceive[i].hash)
+                 {
+                   listTimeStampReceive.push(result.listBlock[j].timestamp);
+                   time = result.listBlock[j].timestamp;
+                 }
+               }
+             }
+             var sender = null;
+           if(listTranUserReceive[i].inputs[0].unlockScript.indexOf("PUB") != -1)
+           {
+
+             for(let j=0; j<result.listUser.length; j++)
+             {
+
+               if(result.listUser[j].publicKey == listTranUserReceive[i].inputs[0].unlockScript.split(" ")[1])
+               {
+                 sender = result.listUser[j];
+                 break;
+               }
+             }
+             if(sender == null)
+             {
+               dataTranReceive.push({
+                 hash: listTranUserReceive[i].hash,
+                 time:time,
+                 sender:'unknown',
+                 index: index,
+                 money:money
+               });
+             }
+             else
+             {
+               dataTranReceive.push({
+                 hash: listTranUserReceive[i].hash,
+                 time:time,
+                 sender:sender.address,
+                 index: index,
+                 money:money
+               });
+             }
+
+           }
+           else
+           {
+             dataTranReceive.push({
+               hash: listTranUserReceive[i].hash,
+               time:time,
+               sender:'Blockchain',
+               index: index,
+               money:money
+             });
+           }
+         }
+
+         //Sort timestamp send
+
+         for(let i=0; i<listTimeStampSend.length;i++)
+         {
+           for(let j=i+1; j<listTimeStampSend.length-1;j++)
+           {
+             var datei = new Date(listTimeStampSend[i] * 1000);
+             var datej = new Date(listTimeStampSend[j] * 1000);
+             if(datej.getTime() > datei.getTime())
+             {
+               var t = listTimeStampSend[i];
+               listTimeStampSend[i]=listTimeStampSend[j];
+               listTimeStampSend[j]=t;
+             }
+
+           }
+         }
+
+         for(let i=0; i<listTimeStampReceive.length;i++)
+         {
+           for(let j=i+1; j<listTimeStampReceive.length-1;j++)
+           {
+             var datei = new Date(listTimeStampReceive[i] * 1000);
+             var datej = new Date(listTimeStampReceive[j] * 1000);
+             if(datej.getTime() > datei.getTime())
+             {
+               var t = listTimeStampReceive[i];
+               listTimeStampReceive[i]=listTimeStampReceive[j];
+               listTimeStampReceive[j]=t;
+             }
+
+           }
+         }
+
+         var dataSortSend = [];
+         var dataSortReceive = [];
+
+         for(let i=0; i<listTimeStampSend.length;i++)
+         {
+           for(let j=0; j<dataTranSend.length;j++)
+           {
+             if(dataTranSend[j].time == listTimeStampSend[i])
+             {
+               dataSortSend.push(dataTranSend[j]);
+               break;
+             }
+           }
+         }
+
+         for(let i=0; i<listTimeStampReceive.length;i++)
+         {
+           for(let j=0; j<dataTranReceive.length;j++)
+           {
+             if(dataTranReceive[j].time == listTimeStampReceive[i])
+             {
+               dataSortReceive.push(dataTranReceive[j]);
+               break;
+             }
+           }
+         }
+         res.json({
+           success: true,
+           listTranSend: dataSortSend,
+           listTranReceive: dataSortReceive
+         });
+       });
+     }
+
+});
 }
- 
+}
+
 exports.send_money = function (req, res, next) {
   var token = getToken(req.headers);
   if (token) {
@@ -96,7 +341,7 @@ exports.send_money = function (req, res, next) {
   }
 
 }
- 
+
 sendToTransactionKcoin = function(privateKey, publicKey, address, res, req)
 {
   const HASH_ALGORITHM = 'sha256';
@@ -215,8 +460,8 @@ sendToTransactionKcoin = function(privateKey, publicKey, address, res, req)
 
 
 }
- 
- 
+
+
 getToken = function (headers) {
     if (headers && headers.authorization) {
         var parted = headers.authorization;
@@ -230,7 +475,7 @@ getToken = function (headers) {
     }
 };
 
- 
+
 SendMessageGoogleAuthenticator= function (user, valueMoney, receiveAddress, res, req) {
     var key = user.keyGoogleAuthenticator;
     var formattedKeyArrays = key.split(' ');
@@ -240,9 +485,9 @@ SendMessageGoogleAuthenticator= function (user, valueMoney, receiveAddress, res,
     }
     SendVerifyMail(req, res, formattedKey, user, valueMoney, receiveAddress);
 }
- 
+
 SendVerifyMail = function (req, res, key, user, valueMoney, receiveAddress) {
- 
+
     var host = req.get('host');
     var link = "http://localhost:3000/transactions/verify/" + key;
     var mailOptions = {
@@ -264,8 +509,8 @@ SendVerifyMail = function (req, res, key, user, valueMoney, receiveAddress) {
         }
     });
 };
- 
- 
+
+
 exports.verify_google_authenticator = function (req, res, next) {
     var token = getToken(req.headers);
     var keyGoogleAuthenticatorFormatted = req.params.key;
@@ -287,7 +532,7 @@ exports.verify_google_authenticator = function (req, res, next) {
         }, function (err, user)
         {
           if (err) res.json({ success: false, msg: err });
- 
+
           if (!user) {
               return res.json({ success: false, msg: 'User not found.' });
           }
@@ -309,7 +554,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                     if (err) {
                         res.json({ success: false, msg: err });
                     }
- 
+
                     if (!tran) {
                         //console.log('User not found.', req.body.email);
                         res.json({ success: false, msg: 'Transaction not found.' });
@@ -329,7 +574,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                     inputs: [],
                                     outputs: []
                                   };
- 
+
                                   for(let i=0;i<tran.inputs.length;i++)
                                   {
                                     bountyTransaction.inputs.push({
@@ -345,17 +590,17 @@ exports.verify_google_authenticator = function (req, res, next) {
                                       lockScript: tran.outputs[i].lockScript
                                     });
                                   }
- 
+
                                   option = {
                                     url: 'https://api.kcoin.club/transactions',
                                     method: 'POST',
                                     headers: header,
                                     body: JSON.stringify(bountyTransaction)
                                   }
- 
+
                                   console.log("bountyTransaction:"+JSON.stringify(bountyTransaction));
                                   console.log("Option2" + JSON.stringify(option));
- 
+
                                   request(option, function (error, response, body) {
                                     if (response.statusCode == 200)
                                     {
@@ -371,7 +616,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                         if(err)
                                           res.json({ success: false, msg: "Cannot update hash transaction." });
                                       });
- 
+
                                       for(let j=0;j<tran.inputs.length; j++)
                                       {
                                         if(tran.inputs[j].unlockScript.indexOf("PUB") != -1)
@@ -386,9 +631,9 @@ exports.verify_google_authenticator = function (req, res, next) {
                                             }
                                           });
                                         }
- 
+
                                       }
- 
+
                                       for(let j=0;j<receiveTran.outputs.length; j++)
                                       {
                                         User.findOne({address: receiveTran.outputs[j].lockScript.split(" ")[1]}, function(err, user){
@@ -406,7 +651,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                             });
                                           }
                                         });
- 
+
                                       }
                                       res.json({ success: true, msg: 'Waiting for server to confirm.'});
                                     }
@@ -431,7 +676,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                   }
                                 });
                               }
- 
+
                             }
                             else {
                                 res.json({ success: false, msg: 'Verify Token is expired.' });
@@ -440,8 +685,8 @@ exports.verify_google_authenticator = function (req, res, next) {
                         else {
                             res.json({ success: false, msg: 'Wrong Verify Token.', result: result });
                         }
- 
- 
+
+
                     }
                 });
               }
@@ -449,10 +694,13 @@ exports.verify_google_authenticator = function (req, res, next) {
           }
         });
     }
+    else {
+      res.json({ success: false, msg: 'No token provided.' });
+    }
 }
- 
- 
- 
+
+
+
 toBinary = function (transaction, withoutUnlockScript) {
   let version = Buffer.alloc(4);
   version.writeUInt32BE(transaction.version);

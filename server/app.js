@@ -155,16 +155,22 @@ UpdateData = function(){
             var updateN = new nBlocks();
             updateN._id = nblocks[0]._id;
             updateN.value = totalBlock;
-            for (let i = 0; i < totalBlock; i++)
-            {
-              option = {
-                url: 'https://api.kcoin.club/blocks/' + i,
-                method: 'GET',
-                headers: headers,
-                json: true
+            async.parallel({
+            listUser: function (callback){
+              User.find({}).sort({}).exec(callback);}
+            }, function (err,result){
+              for (let i = 0; i < totalBlock; i++)
+              {
+                option = {
+                  url: 'https://api.kcoin.club/blocks/' + i,
+                  method: 'GET',
+                  headers: headers,
+                  json: true
+                }
+                UpdateDataValues(option, result.listUser);
               }
-              UpdateDataValues(option);
-            }
+            });
+
 
             nBlocks.findByIdAndUpdate(nblocks[0]._id, updateN, {}).exec(function (err)
             {
@@ -195,16 +201,19 @@ UpdateData = function(){
             var totalBlock = headerRes['x-total-count'];
             if(nblocks[0].value < totalBlock)
             {
-              for (let i = nblocks[0].value; i < totalBlock; i++)
+              User.find({},function(err, listUser)
               {
-                option = {
-                  url: 'https://api.kcoin.club/blocks/' + i,
-                  method: 'GET',
-                  headers: headers,
-                  json: true
+                for (let i = nblocks[0].value; i < totalBlock; i++)
+                {
+                  option = {
+                    url: 'https://api.kcoin.club/blocks/' + i,
+                    method: 'GET',
+                    headers: headers,
+                    json: true
+                  }
+                  UpdateDataValues(option, listUser);
                 }
-                UpdateDataValues(option);
-              }
+              });
               var updateN = new nBlocks();
               updateN._id = nblocks[0]._id;
               updateN.value = totalBlock;
@@ -223,12 +232,12 @@ UpdateData = function(){
   });
 }
 
-UpdateDataValues = function(option)
+UpdateDataValues = function(option, listUser)
 {
   return rp(option)
   .then(function(data){
-    SaveBlock(data);
-    SaveTransaction(data.transactions);
+    SaveBlock(data, listUser);
+    SaveTransaction(data.transactions, listUser);
     UpdateReferenceOutputUser(data.transactions);
     UpdateRealMoneyUser(data.transactions);
   })
@@ -237,21 +246,15 @@ UpdateDataValues = function(option)
   });
 };
 
-SaveBlock = function(data)
+SaveBlock = function(data, listUser)
 {
-  async.parallel({
-  listUser: function (callback) {
-    User.find({}).sort({}).exec(callback);
-      }
-   }, function (err,result) {
-     //console.log(result.listUser.length);
      var isSave = false;
      for(let i=0; i<data.transactions.length; i++)
      {
        if(data.transactions[i].inputs[0].unlockScript.indexOf("PUB") != -1)
        {
-         for(let j=0; j<result.listUser.length;j++){
-           if(result.listUser[j].publicKey == data.transactions[i].inputs[0].unlockScript.split(" ")[1])
+         for(let j=0; j<listUser.length;j++){
+           if(listUser[j].publicKey == data.transactions[i].inputs[0].unlockScript.split(" ")[1])
            {
              isSave=true;
              break;
@@ -263,7 +266,7 @@ SaveBlock = function(data)
            {
              for(let k=0; k<result.listUser.length;k++)
              {
-               if(result.listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
+               if(listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
                {
                  isSave=true;
                  break;
@@ -280,9 +283,9 @@ SaveBlock = function(data)
        else {
          for(let j=0; j<data.transactions[i].outputs.length;j++)
          {
-           for(let k=0; k<result.listUser.length;k++)
+           for(let k=0; k<listUser.length;k++)
            {
-             if(result.listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
+             if(listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
              {
                isSave=true;
                break;
@@ -311,14 +314,10 @@ SaveBlock = function(data)
            console.log(err);
        });
      }
-   });
-
-
-
 
 };
 
-SaveTransaction = function(transactions)
+SaveTransaction = function(transactions, listUser)
 {
   for(let i=0;i<transactions.length;i++)
   {
@@ -358,16 +357,11 @@ SaveTransaction = function(transactions)
       }
       else
       {
-        async.parallel({
-        listUser: function (callback) {
-          User.find({}).sort({}).exec(callback);
-            }
-         }, function (err,result) {
            var isSave=false;
            if(transactions[i].inputs[0].unlockScript.indexOf("PUB") != -1)
            {
-             for(let j=0; j<result.listUser.length;j++){
-               if(result.listUser[j].publicKey == transactions[i].inputs[0].unlockScript.split(" ")[1])
+             for(let j=0; j<listUser.length;j++){
+               if(listUser[j].publicKey == transactions[i].inputs[0].unlockScript.split(" ")[1])
                {
                  isSave=true;
                  break;
@@ -379,7 +373,7 @@ SaveTransaction = function(transactions)
                {
                  for(let k=0; k<result.listUser.length;k++)
                  {
-                   if(result.listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
+                   if(listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
                    {
                      isSave=true;
                      break;
@@ -394,9 +388,9 @@ SaveTransaction = function(transactions)
            {
              for(let j=0; j<transactions[i].outputs.length;j++)
              {
-               for(let k=0; k<result.listUser.length;k++)
+               for(let k=0; k<listUser.length;k++)
                {
-                 if(result.listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
+                 if(listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
                  {
                    isSave=true;
                    break;
@@ -424,7 +418,6 @@ SaveTransaction = function(transactions)
                  console.log(err);
              });
            }
-         });
       }
     });
 
@@ -492,7 +485,7 @@ UpdateRealMoneyUser = function(transactions)
                   if(err)
                     console.log(err);
                     else {
-                      SendMail(user);
+                      //SendMail(user);
                     }
                 });
               }
@@ -515,7 +508,7 @@ UpdateRealMoneyUser = function(transactions)
                     if(err)
                       console.log(err);
                       else {
-                        SendMail(user);
+                        //SendMail(user);
                       }
                   });
                 }
@@ -526,7 +519,7 @@ UpdateRealMoneyUser = function(transactions)
             if(err)
               console.log(err);
               else {
-                SendMail(sender);
+                //SendMail(sender);
               }
           });
 
@@ -545,7 +538,7 @@ UpdateRealMoneyUser = function(transactions)
             if(err)
               console.log(err);
               else {
-                SendMail(user);
+                //SendMail(user);
               }
             });
           }
