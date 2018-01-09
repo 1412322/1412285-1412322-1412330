@@ -2,7 +2,7 @@ import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Table, Tab, Loader, Button, Modal, Input } from 'semantic-ui-react'
+import { Table, Tab, Loader, Button } from 'semantic-ui-react'
 import * as actions from '../../actions'
 // import validator from 'validator'
 import * as _ from 'lodash'
@@ -16,7 +16,6 @@ class SendHistoryContainer extends React.Component {
             token: sessionStorage.getItem('token'),
             data: undefined,
             open: false,
-            googleKey: '',
         }
     }
 
@@ -40,45 +39,44 @@ class SendHistoryContainer extends React.Component {
     show = () => this.setState({ open: true })
     close = () => this.setState({ open: false })
 
-    onValidateForm() {
-        const { googleKey } = this.state
-        const errors = []
+    // onValidateForm() {
+    //     const { googleKey } = this.state
+    //     const errors = []
 
-        if (_.isEmpty(googleKey)) {
-            errors.push({ field: 'googleKey' })
-        }
+    //     if (_.isEmpty(googleKey)) {
+    //         errors.push({ field: 'googleKey' })
+    //     }
 
-        this.setState({
-            errors: errors,
-        })
+    //     this.setState({
+    //         errors: errors,
+    //     })
 
-        return errors
-    }
+    //     return errors
+    // }
 
-    onHandleChange(event, fieldName) {
-        const target = event.target
-        const value = target.value
-        this.setState({
-            [fieldName]: value,
-        })
-    }
+    // onHandleChange(event, fieldName) {
+    //     const target = event.target
+    //     const value = target.value
+    //     this.setState({
+    //         [fieldName]: value,
+    //     })
+    // }
 
-    onDeleteTransaction = () => {
+    onDeleteTransaction(key) {
         const { actions, userData } = this.props
-        const { googleKey } = this.state
         const headers = {
             authorization: userData.token,
             'Content-Type': 'application/json'
         }
-        actions.deleteInitializedTransaction(headers, googleKey)
+        actions.deleteInitializedTransaction(headers, key)
     }
 
     render() {
-        const { data, open, googleKey } = this.state
+        const { data } = this.state
         const { isFetching } = this.props
         return (
             <React.Fragment>
-                <Modal className='popup-message' size='tiny' open={open} onClose={this.close}>
+                {/* <Modal className='popup-message' size='tiny' open={open} onClose={this.close}>
                     <Modal.Header className='message-header'>
                         Please enter Verify Code from Google Authenticator
                     </Modal.Header>
@@ -92,7 +90,7 @@ class SendHistoryContainer extends React.Component {
                     <Modal.Actions className='message-footer'>
                         <Button disabled={!googleKey} className='submit-btn' content='Submit' onClick={this.onDeleteTransaction} />
                     </Modal.Actions>
-                </Modal>
+                </Modal> */}
                 <Tab.Pane attached={false} className='channelContent'>
                     <Table className='statistic-table'>
                         <Table.Header className='table-header'>
@@ -128,7 +126,7 @@ class SendHistoryContainer extends React.Component {
                                             )}
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <Button className='delete-btn' onClick={this.show}>Delete</Button>
+                                            <Button disabled={!data.state === 'confirmed'} className='delete-btn' onClick={() => this.onDeleteTransaction(data.auth)}>Delete</Button>
                                         </Table.Cell>
                                     </Table.Row>
                                 ))
