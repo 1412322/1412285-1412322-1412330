@@ -15,6 +15,7 @@ var request = require('request');
 const rp = require('request-promise');
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
+var async = require('async');
 
 var nBlocks = require('./models/nBlocks');
 var User = require('./models/user');
@@ -228,8 +229,8 @@ UpdateDataValues = function(option)
   .then(function(data){
     SaveBlock(data);
     SaveTransaction(data.transactions);
-    UpdateReferenceOutputUser(data.transactions);
-    UpdateRealMoneyUser(data.transactions);
+    //UpdateReferenceOutputUser(data.transactions);
+    //UpdateRealMoneyUser(data.transactions);
   })
   .catch(function (err) {
       console.log(err);
@@ -238,21 +239,83 @@ UpdateDataValues = function(option)
 
 SaveBlock = function(data)
 {
-  var block = new Block();
-  block.hash = data.hash;
-  block.nonce = data.nonce;
-  block.timestamp = data.timestamp;
-  block.difficulty = data.difficulty;
-  block.transactionsHash = data.transactionsHash;
-  block.previousBlockHash = data.previousBlockHash;
-  for(let i=0;i<data.transactions.length; i++)
-  {
-    block.transactions.push(data.transactions[i].hash);
-  }
-  block.save(function(err){
-    if(err)
-      console.log(err);
-  });
+  async.parallel({
+  listUser: function (callback) {
+    User.find({}).sort({}).exec(callback);
+      }
+   }, function (err,result) {
+     //console.log(result.listUser.length);
+     var isSave = false;
+     for(let i=0; i<data.transactions.length; i++)
+     {
+       if(data.transactions[i].inputs[0].unlockScript.indexOf("PUB") != -1)
+       {
+         for(let j=0; j<result.listUser.length;j++){
+           if(result.listUser[j].publicKey == data.transactions[i].inputs[0].unlockScript.split(" ")[1])
+           {
+             isSave=true;
+             break;
+           }
+         }
+         if(isSave==false)
+         {
+           for(let j=0; j<data.transactions[i].outputs.length;j++)
+           {
+             for(let k=0; k<result.listUser.length;k++)
+             {
+               if(result.listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
+               {
+                 isSave=true;
+                 break;
+               }
+             }
+             if(isSave)
+              break;
+           }
+         }
+         else {
+           break;
+         }
+       }
+       else {
+         for(let j=0; j<data.transactions[i].outputs.length;j++)
+         {
+           for(let k=0; k<result.listUser.length;k++)
+           {
+             if(result.listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
+             {
+               isSave=true;
+               break;
+             }
+           }
+           if(isSave)
+            break;
+         }
+       }
+     }
+     if(isSave)
+     {
+       var block = new Block();
+       block.hash = data.hash;
+       block.nonce = data.nonce;
+       block.timestamp = data.timestamp;
+       block.difficulty = data.difficulty;
+       block.transactionsHash = data.transactionsHash;
+       block.previousBlockHash = data.previousBlockHash;
+       for(let i=0;i<data.transactions.length; i++)
+       {
+         block.transactions.push(data.transactions[i].hash);
+       }
+       block.save(function(err){
+         if(err)
+           console.log(err);
+       });
+     }
+   });
+
+
+
+
 };
 
 SaveTransaction = function(transactions)
@@ -268,28 +331,100 @@ SaveTransaction = function(transactions)
             if(err)
               console.log(err);
               else {
-
+                User.findOne({publicKey: result.inputs[0].unlockScript.split(" ")[1]}, function(err, user){
+                  if(err)
+                    console.log(err);
+                  else{
+                    if(user)
+                    {
+                      var sendMoney = 0;
+                      for(let j=0; j<result.outputs.length;j++)
+                      {
+                        if(result.outputs[j].lockScript.split(" ")[1] != user.address)
+                        {
+                          sendMoney += result.outputs[j].value;
+                        }
+                      }
+                      User.findByIdAndUpdate(user._id,{$set:{availableMoney: user.availableMoney-sendMoney}},{ new: true },function (err){
+                        if(err)
+                          console.log(err);
+                      });
+                    }
+                  }
+                });
               }
           });
         }
       }
       else
       {
-        var newTran = new Transaction();
-        newTran.hash = transactions[i].hash;
-        newTran.state = "confirmed";
-        for(let j=0; j<transactions[i].inputs.length; j++)
-        {
-          newTran.inputs.push(transactions[i].inputs[j]);
-        }
-        for(let k=0; k<transactions[i].outputs.length; k++)
-        {
-          newTran.outputs.push(transactions[i].outputs[k]);
-        }
-        newTran.save(function(err){
-          if(err)
-            console.log(err);
-        });
+        async.parallel({
+        listUser: function (callback) {
+          User.find({}).sort({}).exec(callback);
+            }
+         }, function (err,result) {
+           var isSave=false;
+           if(transactions[i].inputs[0].unlockScript.indexOf("PUB") != -1)
+           {
+             for(let j=0; j<result.listUser.length;j++){
+               if(result.listUser[j].publicKey == transactions[i].inputs[0].unlockScript.split(" ")[1])
+               {
+                 isSave=true;
+                 break;
+               }
+             }
+             if(isSave==false)
+             {
+               for(let j=0; j<transactions[i].outputs.length;j++)
+               {
+                 for(let k=0; k<result.listUser.length;k++)
+                 {
+                   if(result.listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
+                   {
+                     isSave=true;
+                     break;
+                   }
+                 }
+                 if(isSave)
+                  break;
+               }
+             }
+           }
+           else
+           {
+             for(let j=0; j<transactions[i].outputs.length;j++)
+             {
+               for(let k=0; k<result.listUser.length;k++)
+               {
+                 if(result.listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
+                 {
+                   isSave=true;
+                   break;
+                 }
+               }
+               if(isSave)
+                break;
+             }
+           }
+
+           if(isSave){
+             var newTran = new Transaction();
+             newTran.hash = transactions[i].hash;
+             newTran.state = "confirmed";
+             for(let j=0; j<transactions[i].inputs.length; j++)
+             {
+               newTran.inputs.push(transactions[i].inputs[j]);
+             }
+             for(let k=0; k<transactions[i].outputs.length; k++)
+             {
+               newTran.outputs.push(transactions[i].outputs[k]);
+             }
+             newTran.save(function(err){
+               if(err)
+                 console.log(err);
+             });
+           }
+         });
       }
     });
 
@@ -377,7 +512,7 @@ UpdateRealMoneyUser = function(transactions)
               if(err)
                 console.log(err);
                 else {
-                  SendMail(user);
+                  SendMail(sender);
                 }
             });
           }
@@ -440,7 +575,7 @@ SendMail = function (user) {
     var mailOptions = {
         to: user["email"],
         subject: "Walet information",
-        html: "Actual balance: "+user.realMoney+"<br>Available money: "+user.realMoney-user.availableMoney+"<br>"
+        html: "Actual balance: "+user.realMoney+"<br> Available money: "+(user.realMoney-user.availableMoney)+"<br>"
     }
     console.log('mailOptions: ', mailOptions);
     transport.sendMail(mailOptions, function (error, response) {
