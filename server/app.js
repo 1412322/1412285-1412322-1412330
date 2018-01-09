@@ -16,6 +16,7 @@ const rp = require('request-promise');
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var async = require('async');
+var Promise = require("bluebird");
 
 var nBlocks = require('./models/nBlocks');
 var User = require('./models/user');
@@ -93,7 +94,6 @@ setInterval(
   30000
 )
 ws.onmessage = function (data) {
-  console.log('data', data);
   console.log('data of KCoin', data.data);//từ data thu được này, chỉnh sửa và đồng bộ bên api
   var source = JSON.parse(data.data);
   console.log("Type data: " + source.type);
@@ -103,6 +103,7 @@ ws.onmessage = function (data) {
     SaveTransaction(source.data.transactions);
     UpdateReferenceOutputUser(source.data.transactions);
     UpdateRealMoneyUser(source.data.transactions);
+    UpdateRealMoneyUserWhenReceive(source.data.transactions);
     nBlocks.find(function(err,nblocks){
       if(nblocks)
       {
@@ -155,22 +156,16 @@ UpdateData = function(){
             var updateN = new nBlocks();
             updateN._id = nblocks[0]._id;
             updateN.value = totalBlock;
-            async.parallel({
-            listUser: function (callback){
-              User.find({}).sort({}).exec(callback);}
-            }, function (err,result){
-              for (let i = 0; i < totalBlock; i++)
-              {
-                option = {
-                  url: 'https://api.kcoin.club/blocks/' + i,
-                  method: 'GET',
-                  headers: headers,
-                  json: true
-                }
-                UpdateDataValues(option, result.listUser);
+            for (let i = 0; i < totalBlock; i++)
+            {
+              option = {
+                url: 'https://api.kcoin.club/blocks/' + i,
+                method: 'GET',
+                headers: headers,
+                json: true
               }
-            });
-
+              UpdateDataValues(option);
+            }
 
             nBlocks.findByIdAndUpdate(nblocks[0]._id, updateN, {}).exec(function (err)
             {
@@ -201,19 +196,16 @@ UpdateData = function(){
             var totalBlock = headerRes['x-total-count'];
             if(nblocks[0].value < totalBlock)
             {
-              User.find({},function(err, listUser)
+              for (let i = nblocks[0].value; i < totalBlock; i++)
               {
-                for (let i = nblocks[0].value; i < totalBlock; i++)
-                {
-                  option = {
-                    url: 'https://api.kcoin.club/blocks/' + i,
-                    method: 'GET',
-                    headers: headers,
-                    json: true
-                  }
-                  UpdateDataValues(option, listUser);
+                option = {
+                  url: 'https://api.kcoin.club/blocks/' + i,
+                  method: 'GET',
+                  headers: headers,
+                  json: true
                 }
-              });
+                UpdateDataValues(option);
+              }
               var updateN = new nBlocks();
               updateN._id = nblocks[0]._id;
               updateN.value = totalBlock;
@@ -232,12 +224,13 @@ UpdateData = function(){
   });
 }
 
-UpdateDataValues = function(option, listUser)
+UpdateDataValues = function(option)
 {
+  console.log('UpdateDataValues');
   return rp(option)
   .then(function(data){
-    SaveBlock(data, listUser);
-    SaveTransaction(data.transactions, listUser);
+    SaveBlock(data);
+    SaveTransaction(data.transactions);
     UpdateReferenceOutputUser(data.transactions);
     UpdateRealMoneyUser(data.transactions);
   })
@@ -245,16 +238,22 @@ UpdateDataValues = function(option, listUser)
       console.log(err);
   });
 };
-
-SaveBlock = function(data, listUser)
+/*
+SaveBlock = function(data)
 {
+  async.parallel({
+  listUser: function (callback) {
+    User.find({}).sort({}).exec(callback);
+      }
+   }, function (err,result) {
+     //console.log(result.listUser.length);
      var isSave = false;
      for(let i=0; i<data.transactions.length; i++)
      {
        if(data.transactions[i].inputs[0].unlockScript.indexOf("PUB") != -1)
        {
-         for(let j=0; j<listUser.length;j++){
-           if(listUser[j].publicKey == data.transactions[i].inputs[0].unlockScript.split(" ")[1])
+         for(let j=0; j<result.listUser.length;j++){
+           if(result.listUser[j].publicKey == data.transactions[i].inputs[0].unlockScript.split(" ")[1])
            {
              isSave=true;
              break;
@@ -266,7 +265,7 @@ SaveBlock = function(data, listUser)
            {
              for(let k=0; k<result.listUser.length;k++)
              {
-               if(listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
+               if(result.listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
                {
                  isSave=true;
                  break;
@@ -283,9 +282,9 @@ SaveBlock = function(data, listUser)
        else {
          for(let j=0; j<data.transactions[i].outputs.length;j++)
          {
-           for(let k=0; k<listUser.length;k++)
+           for(let k=0; k<result.listUser.length;k++)
            {
-             if(listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
+             if(result.listUser[k].address == data.transactions[i].outputs[j].lockScript.split(" ")[1])
              {
                isSave=true;
                break;
@@ -314,115 +313,168 @@ SaveBlock = function(data, listUser)
            console.log(err);
        });
      }
+   });
 
-};
 
-SaveTransaction = function(transactions, listUser)
+
+
+};*/
+
+SaveBlock = function(data)
 {
-  for(let i=0;i<transactions.length;i++)
+  var addresses = [];
+
+  for (let i = 0; i < data.transactions.length; i++)
   {
-    Transaction.findOne({hash: transactions[i].hash}, function(err, result){
-      if(err) throw err;
-      if(result)
-      {
-        if(result.state == "unconfirmed"){
-          Transaction.findByIdAndUpdate(result._id,{$set:{state:"confirmed"}},{ new: true },function (err){
-            if(err)
-              console.log(err);
-              else {
-                User.findOne({publicKey: result.inputs[0].unlockScript.split(" ")[1]}, function(err, user){
-                  if(err)
-                    console.log(err);
-                  else{
-                    if(user)
-                    {
-                      var sendMoney = 0;
-                      for(let j=0; j<result.outputs.length;j++)
-                      {
-                        if(result.outputs[j].lockScript.split(" ")[1] != user.address)
-                        {
-                          sendMoney += result.outputs[j].value;
-                        }
-                      }
-                      User.findByIdAndUpdate(user._id,{$set:{availableMoney: user.availableMoney-sendMoney}},{ new: true },function (err){
-                        if(err)
-                          console.log(err);
-                      });
-                    }
-                  }
-                });
-              }
-          });
-        }
+    for (let j = 0; j < data.transactions[i].outputs.length; j++)
+    {
+        var lockScript = data.transactions[i].outputs[j].lockScript.split(' ');
+        addresses.push(lockScript[1]);
+
+    }
+
+  }
+  var usersPromise = Promise.promisifyAll(User);
+
+
+  Promise.each(addresses, function(address) {
+    //console.log('address; ', address);
+    return usersPromise.findOneAsync({'address': address}).then(function(doc) {
+      if (!doc) {
+        //console.log('NULL usersPromise.findOneAsync');
       }
       else
       {
-           var isSave=false;
-           if(transactions[i].inputs[0].unlockScript.indexOf("PUB") != -1)
-           {
-             for(let j=0; j<listUser.length;j++){
-               if(listUser[j].publicKey == transactions[i].inputs[0].unlockScript.split(" ")[1])
-               {
-                 isSave=true;
-                 break;
-               }
-             }
-             if(isSave==false)
-             {
-               for(let j=0; j<transactions[i].outputs.length;j++)
-               {
-                 for(let k=0; k<result.listUser.length;k++)
-                 {
-                   if(listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
-                   {
-                     isSave=true;
-                     break;
-                   }
-                 }
-                 if(isSave)
-                  break;
-               }
-             }
-           }
-           else
-           {
-             for(let j=0; j<transactions[i].outputs.length;j++)
-             {
-               for(let k=0; k<listUser.length;k++)
-               {
-                 if(listUser[k].address == transactions[i].outputs[j].lockScript.split(" ")[1])
-                 {
-                   isSave=true;
-                   break;
-                 }
-               }
-               if(isSave)
-                break;
-             }
-           }
+        //console.log('NOT NULL usersPromise.findOneAsync: ', doc);
+        var transSave = [];
+        var block = new Block();
+        block.hash = data.hash;
+        block.nonce = data.nonce;
+        block.timestamp = data.timestamp;
+        block.difficulty = data.difficulty;
+        block.transactionsHash = data.transactionsHash;
+        block.previousBlockHash = data.previousBlockHash;
+        for(let i=0;i<data.transactions.length; i++)
+        {
+          block.transactions.push(data.transactions[i].hash);
+          for (let j = 0; j < data.transactions[i].outputs.length; j++)
+          {
+            var lockScript = data.transactions[i].outputs[j].lockScript.split(' ');
+            if (lockScript[1] == address)
+            {
+              transSave.push(data.transactions[i]);
+            }
+          }
 
-           if(isSave){
-             var newTran = new Transaction();
-             newTran.hash = transactions[i].hash;
-             newTran.state = "confirmed";
-             for(let j=0; j<transactions[i].inputs.length; j++)
-             {
-               newTran.inputs.push(transactions[i].inputs[j]);
-             }
-             for(let k=0; k<transactions[i].outputs.length; k++)
-             {
-               newTran.outputs.push(transactions[i].outputs[k]);
-             }
-             newTran.save(function(err){
-               if(err)
-                 console.log(err);
-             });
-           }
+
+        }
+        block.save(function(err){
+          if(err)
+          {
+
+          }
+            //console.log(err);
+        });
+        SaveTransactionPromised(transSave);
       }
+    })
+}).then(function(result) {
+    if (result === null) {
+    } else {
+    }
+}, function(err) {
+    console.log('err: ', err);
+});
+
+};
+
+
+SaveTransaction = function(transactions)
+{
+
+};
+SaveTransactionPromised = function(transactions)
+{
+  //
+  var transPromise = Promise.promisifyAll(Transaction);
+
+
+  Promise.each(transactions, function(transaction) {
+    //console.log('address; ', address);
+    return transPromise.findOneAsync({'hash': transaction.hash}).then(function(doc) {
+      if (!doc) {
+        // tạo mới
+        var newTran = new Transaction();
+        newTran.hash = transaction.hash;
+        newTran.state = "confirmed";
+        for(let j=0; j< transaction.inputs.length; j++)
+        {
+          newTran.inputs.push(transaction.inputs[j]);
+        }
+        for(let k=0; k<transaction.outputs.length; k++)
+        {
+          newTran.outputs.push(transaction.outputs[k]);
+        }
+        newTran.save(function(err){
+          if(err)
+          {
+
+          }
+            //console.log(err);
+        });
+      }
+      else
+      {
+        //cập nhật trạng thái và tiền
+        transPromise.findByIdAndUpdate(doc._id,{$set:{state:"confirmed"}},{ new: true },function (err){
+          if(err)
+          {
+            //console.log(err);
+          }
+            else {
+              User.findOne({publicKey: doc.inputs[0].unlockScript.split(" ")[1]}, function(err, user){
+                if(err)
+                {
+                    //console.log(err);
+                }
+
+                else{
+                  if(user)
+                  {
+                    var sendMoney = 0;
+                    for(let j=0; j<doc.outputs.length;j++)
+                    {
+                      if(doc.outputs[j].lockScript.split(" ")[1] != user.address)
+                      {
+                        sendMoney += doc.outputs[j].value;
+                      }
+                    }
+                    User.findByIdAndUpdate(user._id,{$set:{availableMoney: user.availableMoney-sendMoney}},{ new: true },function (err){
+                      if(err)
+                      {
+                        //console.log(err);
+
+                      }
+                    });
+                  }
+                }
+              });
+            }
+        });
+      }
+      //UpdateReferenceOutputUser(transaction);
+
+    })
+    }).then(function(result) {
+        if (result === null) {
+        } else {
+        }
+    }, function(err) {
+        //console.log('err: ', err);
     });
 
-  }
 };
+
 UpdateReferenceOutputUser = function(transactions){
   for(let i=0; i<transactions.length;i++)
   {
@@ -463,7 +515,152 @@ UpdateReferenceOutputUser = function(transactions){
     }
   }
 }
+/*
+UpdateReferenceOutputUser = function(transaction){
+  console.log('UpdateReferenceOutputUser');
+  var sendInfo = [];
+  var receiveInfo = [];
 
+    for (let j = 0; j < transaction.outputs.length; j++)
+    {
+        var lockScript = transaction.outputs[j].lockScript.split(' ');
+        var receiver =
+        {
+          referencedOutputHash: transaction.hash,
+          referencedOutputIndex: j,
+          address: lockScript[1],
+          money: transaction.outputs[j].value
+        };
+        receiveInfo.push(receiver);
+        //console.log('UpdateReferenceOutputUser - receiveInfo', receiveInfo);
+    }
+    for (let j = 0; j < transaction.inputs.length; j++)
+    {
+        //var unlockScript = transactions[i].inputs[j].lockScript.split(' ');
+        var lockScriptSend = transaction.outputs[0].lockScript.split(' ');
+        var sender = {
+          referencedOutputHash: transaction.inputs[j].referencedOutputHash,
+          referencedOutputIndex: transaction.inputs[j].referencedOutputIndex,
+          address: lockScriptSend[1]
+        };
+
+        sendInfo.push(sender);
+        //console.log('UpdateReferenceOutputUser - sendInfo', sendInfo);
+    }
+    console.log('receiveInfo: ', receiveInfo);
+    console.log('sendInfo: ', sendInfo);
+
+  AddReferenceOutputReceiver(receiveInfo, sendInfo);
+  //RemoveReferenceOutputSender(sendInfo);
+
+}*/
+
+RemoveReferenceOutputSender = function(sendInfo)
+{
+  var referenceOutputPromise = Promise.promisifyAll(ReferenceOutput);
+console.log('RemoveReferenceOutputSender');
+
+  Promise.each(sendInfo, function(sender) {
+    //console.log('address; ', address);
+    return referenceOutputPromise.findOneAsync({'address': sender.address,
+          'referencedOutputHash': sender.referencedOutputHash,
+          'referencedOutputIndex': sender.referencedOutputIndex})
+    .then(function(doc) {
+      if (!doc) {
+        //console.log('NULL usersPromise.findOneAsync');
+      }
+      else
+      {
+        //console.log('NOT NULL usersPromise.findOneAsync: ', doc);
+        referenceOutputPromise.findByIdAndRemove(doc._id,function(err){
+          if(err)
+            console.log(err);
+            else{
+              console.log('RemoveReferenceOutputSender - Removed');
+              //AddReferenceOutputReceiver(receiveInfo);
+            }
+        });
+      }
+    })
+}).then(function(result) {
+    if (result === null) {
+    } else {
+
+    }
+}, function(err) {
+    console.log('err: ', err);
+});
+}
+
+AddReferenceOutputReceiver = function(receiveInfo, sendInfo)
+{
+  console.log('AddReferenceOutputReceiver', receiveInfo);
+  var referenceOutputPromise = Promise.promisifyAll(ReferenceOutput);
+  var user = Promise.promisifyAll(User);
+
+  Promise.each(receiveInfo, function(receiver) {
+    //console.log('address; ', address);
+    return user.findOneAsync({'address': receiver.address})
+    .then(function(doc) {
+      if (!doc) {
+        //console.log('NULL usersPromise.findOneAsync');
+      }
+      else
+      {
+        var newReference = new ReferenceOutput();
+        newReference.referencedOutputHash = receiver.referencedOutputHash;
+        newReference.referencedOutputIndex = receiver.referencedOutputIndex;
+        newReference.address = receiver.address;
+        newReference.money = receiver.money;
+        referenceOutputPromise.find({'referencedOutputHash': receiver.referencedOutputHash,
+              'referencedOutputIndex': receiver.referencedOutputIndex }, function(err,referenceList){
+                if (err)
+                {
+
+                }
+                else
+                {
+                  if (!referenceList || referenceList.length == 0) {
+                    newReference.save(function(err2){
+                      if(err2)
+                        console.log(err2);
+                    });
+                  }
+                  else
+                  {
+
+                  }
+                }
+
+        });
+        /*referenceOutputPromise.findAsync({'referencedOutputHash': receiver.referencedOutputHash,
+              'referencedOutputIndex': receiver.referencedOutputIndex})
+        .then(function(doc2) {
+          if (!doc2) {
+            newReference.save(function(err){
+              if(err)
+                console.log(err);
+            });
+          }
+          else
+          {
+
+          }
+        })*/
+
+      }
+    })
+}).then(function(result) {
+    if (result === null) {
+    } else {
+      console.log('added');
+      RemoveReferenceOutputSender(sendInfo);
+    }
+}, function(err) {
+    console.log('err: ', err);
+});
+}
+/*
 UpdateRealMoneyUser = function(transactions)
 {
   for(let i=0;i<transactions.length;i++)
@@ -485,7 +682,7 @@ UpdateRealMoneyUser = function(transactions)
                   if(err)
                     console.log(err);
                     else {
-                      //SendMail(user);
+                      SendMail(user);
                     }
                 });
               }
@@ -508,7 +705,7 @@ UpdateRealMoneyUser = function(transactions)
                     if(err)
                       console.log(err);
                       else {
-                        //SendMail(user);
+                        SendMail(user);
                       }
                   });
                 }
@@ -519,7 +716,7 @@ UpdateRealMoneyUser = function(transactions)
             if(err)
               console.log(err);
               else {
-                //SendMail(sender);
+                SendMail(sender);
               }
           });
 
@@ -538,7 +735,91 @@ UpdateRealMoneyUser = function(transactions)
             if(err)
               console.log(err);
               else {
-                //SendMail(user);
+                SendMail(user);
+              }
+            });
+          }
+        });
+      }
+    }
+  }
+} */
+
+UpdateRealMoneyUserWhenReceive = function(transactions)
+{
+  for(let i=0;i<transactions.length;i++)
+  {
+    var inputs = transactions[i].inputs;
+    var outputs = transactions[i].outputs;
+    if(inputs[0].unlockScript.indexOf("PUB") != -1)
+    {
+      User.findOne({publicKey: (inputs[0].unlockScript).split(" ")[1]}, function (err, sender)
+      {
+        if(!sender)
+        {
+          for(let j=0; j<outputs.length; j++)
+          {
+            User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
+            {
+              if(user){
+                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
+                  if(err)
+                    console.log(err);
+                    else {
+                      SendMail(user);
+                    }
+                });
+              }
+
+            });
+          }
+        }
+        else
+        {
+          var sum = 0;
+          for(let j=0; j<outputs.length; j++)
+          {
+            if(outputs[j].lockScript.split(" ")[1] != sender.address)
+            {
+              sum += outputs[j].value;
+              User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
+              {
+                if(user){
+                  User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
+                    if(err)
+                      console.log(err);
+                      else {
+                        SendMail(user);
+                      }
+                  });
+                }
+              });
+            }
+          }
+          User.findByIdAndUpdate(sender._id,{$set:{realMoney: sender.realMoney - sum}},{ new: true },function (err){
+            if(err)
+              console.log(err);
+              else {
+                SendMail(sender);
+              }
+          });
+
+      }
+      });
+    }
+    else
+    {
+      for(let j=0; j<outputs.length; j++)
+      {
+        User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
+        {
+          if(user)
+          {
+            User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
+            if(err)
+              console.log(err);
+              else {
+                SendMail(user);
               }
             });
           }
@@ -547,7 +828,13 @@ UpdateRealMoneyUser = function(transactions)
     }
   }
 }
-
+UpdateRealMoneyUser = function(transactions)
+{
+  var senders = [];
+  for(let i=0;i<transactions.length;i++)
+  {
+  }
+}
 SendMail = function (user) {
 
 

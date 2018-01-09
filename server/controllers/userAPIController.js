@@ -1,4 +1,5 @@
 var User = require('../models/user');
+var ReferenceOutput = require('../models/referenceOutput');
 var jwt = require('jwt-simple');
 var config = require('../config/database');
 var nodemailer = require('nodemailer');
@@ -178,15 +179,43 @@ exports.profile = function (req, res, next) {
             if (!user) {
                 return res.status(403).send({ success: false, msg: 'User not found.' });
             } else {
-                res.json({
-                    success: true, msg: 'Welcome to KCoin Application, ' + user.email + '!',
-                    email: user.email,
-                    role: user.role,
-                    token: token,
-                    address: user.address,
-                    realMoney: user.realMoney,
-                    availableMoney: user.realMoney - user.availableMoney
-                });
+              ReferenceOutput.find({ 'address': user.address }, function(err,referenceList){
+                if (err)
+                {
+                  res.json({success: false, msg: 'Get Info failed!'});
+                }
+                else
+                {
+                  if (!referenceList || referenceList.length == 0)
+                  {
+                    res.json({success: false, msg: 'Get Info failed!'});
+                  }
+                  else
+                  {
+                    var realMoney = 0;
+                    for (let i = 0; i < referenceList.length; i++)
+                    {
+                      realMoney += referenceList[i].money;
+                    }
+                    User.findByIdAndUpdate( user._id, { realMoney: realMoney }).exec(function (err, user) {
+                        if (err) {
+                            res.json({ success: false, msg: 'User not found.' });
+                        }
+                    });
+                    res.json({
+                        success: true, msg: 'Welcome to KCoin Application, ' + user.email + '!',
+                        email: user.email,
+                        role: user.role,
+                        token: token,
+                        address: user.address,
+                        realMoney: realMoney,
+                        availableMoney: user.realMoney - user.availableMoney
+                    });
+                  }
+                }
+
+              });
+
             }
         });
     } else {
@@ -360,14 +389,14 @@ createAddress =  function (res, user)
     'User-Agent':       'Super Agent/0.0.1',
     'Content-Type':     'application/x-www-form-urlencoded'
   }
- 
+
   // Configure the request
   options = {
     url: 'https://api.kcoin.club/generate-address',
     method: 'GET',
     headers: headers
   }
- 
+
   // Start the request
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
@@ -407,7 +436,7 @@ createAddress =  function (res, user)
           i++;
           apicall(option, newUser);
         }*/
- 
+
     });
     } else {
     }
@@ -419,14 +448,14 @@ createAddressWithdraw = function(res, user){
       'User-Agent':       'Super Agent/0.0.1',
       'Content-Type':     'application/x-www-form-urlencoded'
     }
-   
+
     // Configure the request
     options = {
       url: 'https://api.kcoin.club/generate-address',
       method: 'GET',
       headers: headers
     }
-   
+
     // Start the request
     request(options, function (error, response, body) {
       if (!error && response.statusCode == 200) {
@@ -466,7 +495,7 @@ createAddressWithdraw = function(res, user){
             i++;
             apicall(option, newUser);
           }*/
-   
+
       });
       } else {
       }
@@ -500,11 +529,11 @@ createAddressWithdraw = function(res, user){
               //  console.log('user.address: ',user.address );
                 User.findById(user._id, function(err, userFindById) {
                   if (err) throw err;
-   
+
                   if (!userFindById) {
                     //  console.log('User not found.');
                   } else {
-   
+
                     var user_instance = new User();
                     user_instance._id = userFindById._id;
                     user_instance.realMoney = userFindById.realMoney + outputs[k].value;
@@ -519,16 +548,16 @@ createAddressWithdraw = function(res, user){
                     });
                   }
                 });
-   
-   
+
+
               }
               else{
                 if (i == totalBlock - 1 && isSignup == false)
                 {
-   
+
                   User.findById(user._id, function(err, userFindById) {
                     if (err) throw err;
-   
+
                     if (!userFindById) {
                         console.log('User not found.');
                     } else {
@@ -537,7 +566,7 @@ createAddressWithdraw = function(res, user){
                   });
                 }
               }
-   
+
             }
           }
         }
@@ -546,18 +575,18 @@ createAddressWithdraw = function(res, user){
           isLimit = true;
       });
   }
-   
-   
+
+
   getTotalBlock =  function (res, user, isSignup)
   {
-   
+
   console.log('getTotalBlock - user.address', user.address);
     var headersTotal, optionsTotal;
     headersTotal = {
       'User-Agent':       'Super Agent/0.0.1',
       'Content-Type':     'application/x-www-form-urlencoded'
     }
-   
+
     optionsTotal = {
       url: 'https://api.kcoin.club/blocks',
       method: 'GET',
@@ -587,23 +616,23 @@ createAddressWithdraw = function(res, user){
           options.push(option);
           getRealMoney(option, user, isSignup, res, i, totalBlock);
         }
-   
+
       } else {
         console.log(error);
         callback(error);
       }
     });
     // Configure the request
-   
+
   }
-   
+
   getUnconfirmedMoney =  function (user){
     var headers, options;
     headers = {
       'User-Agent':       'Super Agent/0.0.1',
       'Content-Type':     'application/x-www-form-urlencoded'
     }
-   
+
     options = {
       url: 'https://api.kcoin.club/unconfirmed-transactions',
       method: 'GET',
@@ -613,7 +642,7 @@ createAddressWithdraw = function(res, user){
      return rp(options)
      .then(function(data){
        console.log('getUnconfirmedMoney: ', data);
-   
+
          var transactions = data;
          for (let j = 0; j < transactions.length; j ++)
          {
@@ -629,11 +658,11 @@ createAddressWithdraw = function(res, user){
                console.log('user.address: ',user.address );
                User.findById(user._id, function(err, userFindById) {
                  if (err) throw err;
-   
+
                  if (!userFindById) {
                      console.log('User not found.');
                  } else {
-   
+
                    var user_instance = new User();
                    user_instance._id = userFindById._id;
                    user_instance.availableMoney = userFindById.availableMoney + outputs[k].value;
@@ -648,16 +677,16 @@ createAddressWithdraw = function(res, user){
                    });
                  }
                });
-   
-   
+
+
              }
              else{
                if (i == totalBlock - 1 && isSignup == false)
                {
-   
+
                  User.findById(user._id, function(err, userFindById) {
                    if (err) throw err;
-   
+
                    if (!userFindById) {
                        console.log('User not found.');
                    } else {
@@ -666,7 +695,7 @@ createAddressWithdraw = function(res, user){
                  });
                }
              }
-   
+
            }
          }
      })
@@ -674,7 +703,7 @@ createAddressWithdraw = function(res, user){
          isLimit = true;
      });
   }*/
-   
+
 
 SendMessageGoogleAuthenticatorFirstTime = function (user, res, req) {
     var key = authenticator.generateKey();

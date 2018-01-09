@@ -4,7 +4,7 @@ var authenticator = require('authenticator');
 var User = require('../models/user');
 var Block = require('../models/block');
 var Transaction = require('../models/transaction');
-
+var ReferenceOutput = require('../models/referenceOutput');
 var jwt = require('jwt-simple');
 var config = require('../config/database');
 var nodemailer = require('nodemailer');
@@ -118,7 +118,7 @@ getToken = function (headers) {
     return null;
   }
 };
-
+/*
 getTotalValue = function (res, offset, limit) {
   // User.find(function(err,userList)
   User.findPerPage({}, limit, offset).then(function (userList) {
@@ -155,7 +155,231 @@ getTotalValue = function (res, offset, limit) {
     })
   });
 }
+*/
+getTotalValue = function (res, offset, limit) {
+  // User.find(function(err,userList)
+  User.find(function(err,userList){
+    if (err)
+    {
+      res.json({ success: false, msg: 'Get Total Value Failed!', error: err });
+    }
+    if (!userList || userList.length == 0) {
+      res.json({ success: false, msg: 'Total not found!' });
+    } else {
+      ReferenceOutput.find(function(err,referenceList){
+        if (err)
+        {
+          res.json({ success: false, msg: 'Get Total Value Failed!', error: err });
+        }
+        if (!referenceList || referenceList.length == 0) {
+          res.json({ success: false, msg: 'Total not found!' });
+        } else {
 
+          //
+
+          //
+          var totalUser = 0;
+          var totalRealMoney = 0;
+          var totalAvailMoney = 0;
+          var listTotalResult = [];
+          var arrTemp = [];
+      
+        for (let i = 0; i < referenceList.length; i++) {
+          var isSame = false;
+          if (arrTemp.length == 0)
+          {
+            arrTemp.push(referenceList[i]);
+          }
+          else
+          {
+            for (let j = 0; j < arrTemp.length; j++)
+            {
+              if (arrTemp[j].address == referenceList[i].address)
+              {
+                isSame = true;
+                break;
+              }
+            }
+            if (isSame ==false)
+            {
+              arrTemp.push(referenceList[i]);
+            }
+          }
+
+        }
+        totalUser = arrTemp.length;
+        for (let j = 0; j < arrTemp.length; j ++)
+        {
+          var realMoney = 0;
+          var availableMoney = 0;
+          var email ='';
+          for (let i = 0; i < referenceList.length; i++)
+          {
+            if (referenceList[i].address == arrTemp[j].address)
+            {
+              realMoney += referenceList[i].money;
+
+            }
+          }
+          for (let i = 0; i < userList.length; i++)
+          {
+            if (userList[i].address == arrTemp[j].address)
+            {
+              availableMoney = userList[i].availableMoney;
+              email = userList[i].email;
+              User.findByIdAndUpdate( userList[i]._id, { realMoney: realMoney }).exec(function (err, user) {
+                  if (err) {
+                      res.json({ success: false, msg: 'User not found.' });
+                  }
+              });
+              break;
+            }
+          }
+          var userInfo = {
+            email: email,
+            address: arrTemp[j].address,
+            realMoney: realMoney,
+            availableMoney: realMoney - availableMoney
+          };
+          totalRealMoney += realMoney;
+          totalAvailMoney += availableMoney;
+
+          listTotalResult.push(userInfo);
+        }
+        var from = offset;
+        var to = (offset + 1) * limit;
+        var listResultPaginated = [];
+        if (to > listTotalResult.length)
+          to = listTotalResult.length;
+        for (let index = from; index < to; index ++)
+        {
+          listResultPaginated.push(listTotalResult[index]);
+        }
+          res.json({success: true,
+            totalUser: totalUser,
+            totalRealMoney: totalRealMoney,
+            totalAvailableMoney: totalRealMoney - totalAvailMoney,
+            listTotalResult: listResultPaginated});
+        }
+        });
+    }
+    });
+
+}
+
+getTotalValueByAddress = function (res, offset, limit) {
+  // User.find(function(err,userList)
+  User.find(function(err,userList){
+    if (err)
+    {
+      res.json({ success: false, msg: 'Get Total Value Failed!', error: err });
+    }
+    if (!userList || userList.length == 0) {
+      res.json({ success: false, msg: 'Total not found!' });
+    } else {
+      ReferenceOutput.find(function(err,referenceList){
+        if (err)
+        {
+          res.json({ success: false, msg: 'Get Total Value Failed!', error: err });
+        }
+        if (!referenceList || referenceList.length == 0) {
+          res.json({ success: false, msg: 'Total not found!' });
+        } else {
+
+          //
+
+          //
+          var totalUser = 0;
+          var totalRealMoney = 0;
+          var totalAvailMoney = 0;
+          var listTotalResult = [];
+          var arrTemp = [];
+      
+        for (let i = 0; i < referenceList.length; i++) {
+          var isSame = false;
+          if (arrTemp.length == 0)
+          {
+            arrTemp.push(referenceList[i]);
+          }
+          else
+          {
+            for (let j = 0; j < arrTemp.length; j++)
+            {
+              if (arrTemp[j].address == referenceList[i].address)
+              {
+                isSame = true;
+                break;
+              }
+            }
+            if (isSame ==false)
+            {
+              arrTemp.push(referenceList[i]);
+            }
+          }
+
+        }
+        totalUser = arrTemp.length;
+        for (let j = 0; j < arrTemp.length; j ++)
+        {
+          var realMoney = 0;
+          var availableMoney = 0;
+          var email ='';
+          for (let i = 0; i < referenceList.length; i++)
+          {
+            if (referenceList[i].address == arrTemp[j].address)
+            {
+              realMoney += referenceList[i].money;
+
+            }
+          }
+          for (let i = 0; i < userList.length; i++)
+          {
+            if (userList[i].address == arrTemp[j].address)
+            {
+              availableMoney = userList[i].availableMoney;
+              email = userList[i].email;
+              User.findByIdAndUpdate( userList[i]._id, { realMoney: realMoney }).exec(function (err, user) {
+                  if (err) {
+                      res.json({ success: false, msg: 'User not found.' });
+                  }
+              });
+              break;
+            }
+          }
+          var userInfo = {
+            address: arrTemp[j].address,
+            realMoney: realMoney,
+            availableMoney: realMoney - availableMoney,
+            referenceUser: email
+          };
+          totalRealMoney += realMoney;
+          totalAvailMoney += availableMoney;
+
+          listTotalResult.push(userInfo);
+        }
+        var from = offset;
+        var to = (offset + 1) * limit;
+        var listResultPaginated = [];
+        if (to > listTotalResult.length)
+          to = listTotalResult.length;
+        for (let index = from; index < to; index ++)
+        {
+          listResultPaginated.push(listTotalResult[index]);
+        }
+
+
+            res.json({
+              total: totalUser,
+              success: true,
+              listTotalResult: listResultPaginated
+            });
+        }
+        });
+    }
+    });
+
+}
+/*
 getTotalValueByAddress = function (res, offset, limit) {
   // User.find(function(err,userList)
   User.findPerPage({}, limit, offset).then(function (userList) {
@@ -189,7 +413,7 @@ getTotalValueByAddress = function (res, offset, limit) {
     })
   });
 }
-
+*/
 getBlocks = function(res, limit, offset)
 {
   Block.find(function(err,blockList){
