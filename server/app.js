@@ -229,8 +229,8 @@ UpdateDataValues = function(option)
   .then(function(data){
     SaveBlock(data);
     SaveTransaction(data.transactions);
-    //UpdateReferenceOutputUser(data.transactions);
-    //UpdateRealMoneyUser(data.transactions);
+    UpdateReferenceOutputUser(data.transactions);
+    UpdateRealMoneyUser(data.transactions);
   })
   .catch(function (err) {
       console.log(err);
@@ -500,50 +500,36 @@ UpdateRealMoneyUser = function(transactions)
             });
           }
         }
-        else{
-        var isReceive = false;
-        var sum = 0;
-        for(let j=0; j<outputs.length; j++)
+        else
         {
-          if(outputs[j].lockScript.split(" ")[1] == sender.address)
+          var sum = 0;
+          for(let j=0; j<outputs.length; j++)
           {
-            isReceive = true;
-            User.findByIdAndUpdate(sender._id,{$set:{realMoney: outputs[j].value}},{ new: true },function (err){
-              if(err)
-                console.log(err);
-                else {
-                  SendMail(sender);
-                }
-            });
-          }
-          else
-          {
-            sum += outputs[j].value;
-            User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
+            if(outputs[j].lockScript.split(" ")[1] != sender.address)
             {
-              if(user){
-                User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
-                  if(err)
-                    console.log(err);
-                    else {
-                      SendMail(user);
-                    }
-                });
-              }
-
-            });
+              sum += outputs[j].value;
+              User.findOne({address: outputs[j].lockScript.split(" ")[1]},function(err, user)
+              {
+                if(user){
+                  User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
+                    if(err)
+                      console.log(err);
+                      else {
+                        SendMail(user);
+                      }
+                  });
+                }
+              });
+            }
           }
-        }
-        if(isReceive == false)
-        {
           User.findByIdAndUpdate(sender._id,{$set:{realMoney: sender.realMoney - sum}},{ new: true },function (err){
             if(err)
               console.log(err);
               else {
-                SendMail(user);
+                SendMail(sender);
               }
           });
-        }
+
       }
       });
     }
