@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Container, Header, Input, Button, Statistic } from 'semantic-ui-react'
 import * as actions from '../../actions'
-// import validator from 'validator'
+import validator from 'validator'
 import * as _ from 'lodash'
 // import RequirementIcon from 'react-icons/lib/md/info-outline'
 
@@ -34,8 +34,8 @@ class TransferContainer extends React.Component {
                 authorization: token,
             }
             const body = {
+                "sendMoney": validator.toInt(numberOfCoinsTransfer, 10),
                 "destination": receiverAddress,
-                "sendMoney": numberOfCoinsTransfer,
             }
             actions.transferMoney(body, headers)
         }
@@ -50,6 +50,8 @@ class TransferContainer extends React.Component {
 
         if (_.isEmpty(numberOfCoinsTransfer)) {
             errors.push({ field: 'numberOfCoinsTransfer' })
+        } else if (!validator.isNumeric(numberOfCoinsTransfer)) {
+            errors.push({ field: 'numberOfCoinsTransfer' })
         }
 
         this.setState({
@@ -60,10 +62,8 @@ class TransferContainer extends React.Component {
     }
 
     onHandleChange(event, fieldName) {
-        const { actions } = this.props
         const target = event.target
         const value = target.value
-        // actions.resetErrorMessage()
         this.setState({
             [fieldName]: value,
         })

@@ -205,6 +205,36 @@ export const transferMoneyFailed = (data) => ({
   data,
 })
 
+export const getHistoryData = (headers) => ({
+  type: 'GET_HISTORY_DATA',
+  headers,
+})
+
+export const getHistoryDataSuccessed = (data) => ({
+  type: 'GET_HISTORY_DATA_SUCCESS',
+  data,
+})
+
+export const getHistoryDataFailed = (data) => ({
+  type: 'GET_HISTORY_DATA_FAILED',
+  data,
+})
+
+export const deleteTransaction = (headers) => ({
+  type: 'DELETE_TRANSACTION',
+  headers,
+})
+
+export const deleteTransactionSuccessed = (data) => ({
+  type: 'DELETE_TRANSACTION_SUCCESS',
+  data,
+})
+
+export const deleteTransactionFailed = (data) => ({
+  type: 'DELETE_TRANSACTION_FAILED',
+  data,
+})
+
 export function signIn(body, headers, isRememberMe) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -444,8 +474,6 @@ export function getAdminAddressData(headers, body, offset, limit) {
 
 export function transferMoney(body, headers) {
   return function (dispatch) {
-    console.log(body)
-    console.log(headers)
     dispatch(transferMoneySubmit(body, headers))
     return fetch(Server.server() + 'api/transactions/sendMoney', {
       method: 'post',
@@ -455,11 +483,52 @@ export function transferMoney(body, headers) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
+          console.log(body.sendMoney)
           dispatch(transferMoneySuccessed(data))
 
         }
         else {
           dispatch(transferMoneyFailed(data))
+        }
+      })
+  }
+}
+
+export function getTransactionHistoryData(headers) {
+  return function (dispatch) {
+    dispatch(getHistoryData(headers))
+    return fetch(Server.server() + 'api/transactions/history', {
+      method: 'get',
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          console.log(headers)
+          dispatch(getHistoryDataSuccessed(data))
+        }
+        else {
+          dispatch(getHistoryDataFailed(data))
+        }
+      })
+  }
+}
+
+export function deleteInitializedTransaction(headers, verifyCode) {
+  return function (dispatch) {
+    dispatch(deleteTransaction(headers))
+    return fetch(Server.server() + 'api/transactions/delete/' + verifyCode, {
+      method: 'get',
+      headers: headers,
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
+          console.log(headers)
+          dispatch(deleteTransactionSuccessed(data))
+        }
+        else {
+          dispatch(deleteTransactionFailed(data))
         }
       })
   }

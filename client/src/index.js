@@ -15,6 +15,7 @@ import ResetPasswordByGoogleAuthContainer from './app/components/account/resetpa
 import VerifyEmailByGoogleAuthContainer from './app/components/account/verifyemailbygoogleauth.js'
 import ProfileContainer from './app/components/home/profile.js'
 import TransferContainer from './app/components/transaction/transfer.js'
+import HistoryContainer from './app/components/transaction/history.js'
 import StatisticContainer from './app/components/admin/statistics.js'
 import TransactionDataContainer from './app/components/admin/transactions.js'
 import AddressDataContainer from './app/components/admin/addresses.js'
@@ -37,6 +38,7 @@ ReactDOM.render((
                 <Switch>
                     <AppRoute exact={true} path="/" layout={MainLayout} component={ProfileContainer} />
                     <AppRoute path="/transaction/transfer" layout={MainLayout} component={TransferContainer} />
+                    <AppRoute path="/transaction/history" layout={MainLayout} component={HistoryContainer} />
                     <AppRoute path="/admin/statistics" layout={MainLayout} component={StatisticContainer} />
                     <AppRoute path="/admin/transactions" layout={MainLayout} component={TransactionDataContainer} />
                     <AppRoute path="/admin/addresses" layout={MainLayout} component={AddressDataContainer} />

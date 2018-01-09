@@ -1,7 +1,6 @@
 import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
-import * as _ from 'lodash'
 import { connect } from 'react-redux'
 import * as actions from '../../actions'
 import { Redirect } from 'react-router-dom'
