@@ -189,12 +189,12 @@
     justify-content: space-between;
   }
   
-  .tooltip {
-    @include tooltip(bottom);
-    margin-right: -12px !important;
-    padding: 0 !important;
-    width: 113px;
-  }
+  // .tooltip {
+  //   @include tooltip(bottom);
+  //   margin-right: -12px !important;
+  //   padding: 0 !important;
+  //   width: 113px;
+  // }
   
   .buttonsGroup {
     // background-color: $background-color1;

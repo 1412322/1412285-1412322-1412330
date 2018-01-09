@@ -15,15 +15,15 @@ class ProfileContainer extends React.Component {
         }
     }
 
-    componentWillMount() {
-        const { token } = this.state
-        const { actions } = this.props
-        const headers = {
-            authorization: token,
-            'Content-Type': 'application/json'
-        }
-        actions.getUserProfile(headers)
-    }
+    // componentWillMount() {
+    //     const { token } = this.state
+    //     const { actions } = this.props
+    //     const headers = {
+    //         authorization: token,
+    //         'Content-Type': 'application/json'
+    //     }
+    //     actions.getUserProfile(headers)
+    // }
 
     render() {
         const { userData } = this.props

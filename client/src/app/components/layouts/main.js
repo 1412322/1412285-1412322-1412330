@@ -22,12 +22,15 @@ class MainLayout extends React.Component {
 
   componentWillMount() {
     const { token } = this.state
-    const { actions } = this.props
-    const headers = {
-      authorization: token,
-      'Content-Type': 'application/json'
+    if (token && token !== 'undefined') {
+      const { token } = this.state
+      const { actions } = this.props
+      const headers = {
+        authorization: token,
+        'Content-Type': 'application/json'
+      }
+      actions.getUserProfile(headers)
     }
-    actions.getUserProfile(headers)
   }
 
   generateSibarItemClassName(url) {
@@ -168,13 +171,13 @@ class MainLayout extends React.Component {
                     pointing='top right'
                     className='dropdown'>
                     <Dropdown.Menu className='dropdown-menu'>
-                      <Dropdown.Item className='dropdown-item'>
+                      <Dropdown.Item className='dropdown-menu-item'>
                         Actual Balance: {userData.realMoney}
                       </Dropdown.Item>
-                      <Dropdown.Item className='dropdown-item'>
+                      <Dropdown.Item className='dropdown-menu-item'>
                         Available Balance: {userData.availableMoney}
                       </Dropdown.Item>
-                      <Dropdown.Item className='dropdown-item' onClick={() => this.props.actions.signOut()}>
+                      <Dropdown.Item className='dropdown-menu-item' onClick={() => this.props.actions.signOut()}>
                         Sign-out
                       </Dropdown.Item>
                     </Dropdown.Menu>

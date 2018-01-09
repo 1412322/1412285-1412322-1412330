@@ -5,7 +5,7 @@ import * as _ from 'lodash'
 import { connect } from 'react-redux'
 import * as actions from '../../actions'
 import { Redirect } from 'react-router-dom'
-import { Table, Container, Header, Dimmer, Loader } from 'semantic-ui-react'
+import { Table, Container, Header, Dimmer, Loader, Statistic } from 'semantic-ui-react'
 import ReactPaginate from 'react-paginate'
 
 class AddressDataContainer extends React.Component {
@@ -76,6 +76,10 @@ class AddressDataContainer extends React.Component {
                             <Header as='h2' textAlign='center' >Addresses Management</Header>
                         </div>
                         <div className='admin-container-body'>
+                            <Statistic horizontal={true}>
+                                <Statistic.Value>{data.total}</Statistic.Value>
+                                <Statistic.Label>Addresses</Statistic.Label>
+                            </Statistic>
                             <Table className='statistic-table' fixed={true}>
                                 <Table.Header className='table-header'>
                                     <Table.Row verticalAlign='middle'>
