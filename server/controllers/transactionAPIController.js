@@ -254,7 +254,7 @@ exports.history = function(req, res, next)
            }
          }
 
-         //Sort timestamp send
+         
 
          for(let i=0; i<listTimeStampSend.length;i++)
          {
