@@ -151,13 +151,19 @@ exports.history = function(req, res, next)
                  }
                  if(listTranUserSend[i].state == "initialized")
                  {
+                   var key = listTranUserSend[i].auth;
+                   var formattedKeyArrays = key.split(' ');
+                   var formattedKey = '';
+                   for (let i = 0; i < formattedKeyArrays.length; i++) {
+                       formattedKey += formattedKeyArrays[i].toUpperCase();
+                   }
                    listTimeStampSend.push(result.listBlock[j].timestamp);
                    dataTranSend.push({
                      hash: listTranUserSend[i].hash,
                      time: result.listBlock[j].timestamp,
                      outputs: outputs,
                      state: listTranUserSend[i].state,
-                     auth: listTranUserSend[i].auth
+                     auth: formattedKey
                    });
                  }
                  else{
