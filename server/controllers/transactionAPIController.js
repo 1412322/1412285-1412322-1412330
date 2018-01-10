@@ -254,7 +254,7 @@ exports.history = function(req, res, next)
            }
          }
 
-         
+
 
          for(let i=0; i<listTimeStampSend.length;i++)
          {
@@ -337,9 +337,10 @@ exports.send_money = function (req, res, next) {
 
           if (!user) {
               return res.status(403).send({ success: false, msg: 'User not found.' });
-          } else {
-              sendToTransactionKcoin(user.privateKey, user.publicKey, user.address, res, req);
-
+          }
+          else
+          {
+              sendToTransactionKcoin(user, user.privateKey, user.publicKey, user.address, res, req);
           }
       });
   } else {
@@ -348,121 +349,259 @@ exports.send_money = function (req, res, next) {
 
 }
 
-sendToTransactionKcoin = function(privateKey, publicKey, address, res, req)
+sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req)
 {
   const HASH_ALGORITHM = 'sha256';
-  //let destinations = req.body.destinations;
-  var sendMoney = req.body.sendMoney;
-  let destinations = [
-    address,
-    req.body.destination
-  ];
-  let key = {
-    privateKey: privateKey,
-    publicKey: publicKey,
-    address: address
-  };
-  console.log('sendMoney: ', sendMoney);
-  console.log('destinations: ', destinations);
-  console.log('key: ', key);
-  ReferenceOutput.find({ 'address': address }, function(err,referenceList){
-    if (err)
+  if(req.body.destination.length == 64)
+  {
+    if(address == req.body.destination)
     {
-      res.json({ success: false, msg: 'Get Reference Output Failed!', error: err });
+      return res.json({ success: false, msg: 'Cannot send money to yourself.' });
     }
-    if (!referenceList) {
-      res.json({ success: false, msg: 'Reference Output Not Found!' });
-    } else {
-      var money  = 0;
-      let referenceOutputs = [];
-      console.log('referenceList.length: ', referenceList.length);
-      for (let i = 0; i < referenceList.length; i++)
-      {
-        money += referenceList[i].money;
-        console.log('referenceList[i].money: ', referenceList[i].money);
-        console.log('money: ', money);
-        var referenceOutput =
-        {
-          referencedOutputHash: referenceList[i].referencedOutputHash,
-          referencedOutputIndex: referenceList[i].referencedOutputIndex
-        };
-        referenceOutputs.push(referenceOutput);
-        if (money >= sendMoney)
-        {
-          break;
-        }
-      }
-      if (money < sendMoney)
-      {
-        res.json({ success: false, msg: 'Do not have enough money!' });
-      }
-      else//đủ tiền
-      {
-        let bountyTransaction = {
-          version: 1,
-          inputs: [],
-          outputs: []
-        };
-        let keys = [];
-        referenceOutputs.forEach(referenceOutput => {
-          bountyTransaction.inputs.push({
-            referencedOutputHash: referenceOutput.referencedOutputHash,
-            referencedOutputIndex: referenceOutput.referencedOutputIndex,
-            unlockScript: ''
-          });
-          keys.push(key);
-        });
-        bountyTransaction.outputs.push({
-          value: money - sendMoney,
-          lockScript: 'ADD ' + destinations[0]
-        });
-        bountyTransaction.outputs.push({
-          value: sendMoney,
-          lockScript: 'ADD ' + destinations[1]
-        });
-        sign(bountyTransaction, keys);
-        console.log(JSON.stringify(bountyTransaction));
-        var header, option;
-        header = {
-          'User-Agent':       'Super Agent/0.0.1',
-          'Content-Type':     'application/json'
-        }
+    else
+    {
 
-        option = {
-          url: 'https://api.kcoin.club/transactions',
-          method: 'POST',
-          headers: header,
-          body: JSON.stringify(bountyTransaction)
+      Transaction.find({state: 'unconfirmed'}, function(err, unTrans){
+        if(err){
+          return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
         }
-
-        console.log(option);
-        request(option, function (error, response, body) {
-          if (!error)
+        else {
+          if(unTrans.length == 0)
           {
-            console.log("Response:" + response);
-            res.json({ success: true, response: response});
+            console.log("!unTran");
+            var sendMoney = req.body.sendMoney;
+            let destinations = [
+              address,
+              req.body.destination
+            ];
+            let key = {
+              privateKey: privateKey,
+              publicKey: publicKey,
+              address: address
+            };
+            console.log('sendMoney: ', sendMoney);
+            console.log('destinations: ', destinations);
+            console.log('key: ', key);
+            ReferenceOutput.find({ address: address }, function(err,referenceList){
+              if (err)
+              {
+                return res.json({ success: false, msg: 'Get Reference Output Failed!', error: err });
+              }
+              if (!referenceList) {
+                return res.json({ success: false, msg: 'Reference Output Not Found!' });
+              }
+              else
+              {
+                var money  = 0;
+                let referenceOutputs = [];
+                console.log('referenceList.length: ', referenceList.length);
+                console.log('referenceList ', referenceList);
+                for (let i = 0; i < referenceList.length; i++)
+                {
+                  money += referenceList[i].money;
+                  console.log('referenceList[i].money: ', referenceList[i].money);
+                  console.log('money: ', money);
+                  var referenceOutput =
+                  {
+                    referencedOutputHash: referenceList[i].referencedOutputHash,
+                    referencedOutputIndex: referenceList[i].referencedOutputIndex
+                  };
+                  referenceOutputs.push(referenceOutput);
+                  if (money >= sendMoney)
+                  {
+                    break;
+                  }
+                }
+                console.log("Money: " + money);
+                console.log("Money send: " + sendMoney);
+                if (money < sendMoney)
+                {
+                  res.json({ success: false, msg: 'Do not have enough money to send!' });
+                }
+                else
+                {
+
+                  let bountyTransaction = {
+                    version: 1,
+                    inputs: [],
+                    outputs: []
+                  };
+                  let keys = [];
+                  referenceOutputs.forEach(referenceOutput => {
+                    bountyTransaction.inputs.push({
+                      referencedOutputHash: referenceOutput.referencedOutputHash,
+                      referencedOutputIndex: referenceOutput.referencedOutputIndex,
+                      unlockScript: ''
+                    });
+                    keys.push(key);
+                  });
+                  bountyTransaction.outputs.push({
+                    value: money - sendMoney,
+                    lockScript: 'ADD ' + destinations[0]
+                  });
+                  bountyTransaction.outputs.push({
+                    value: sendMoney,
+                    lockScript: 'ADD ' + destinations[1]
+                  });
+                  sign(bountyTransaction, keys);
+                  console.log(JSON.stringify(bountyTransaction));
+                  //console.log(option);
+                  var newTran = new Transaction();
+                  newTran.hash = user._id;
+                  newTran.inputs=bountyTransaction.inputs;
+                  newTran.outputs=bountyTransaction.outputs;
+                  newTran.state="initialized";
+                  newTran.auth = user.keyGoogleAuthenticator;
+                  newTran.save(function(err){
+                    if(err)
+                      return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
+                    else{
+                      User.findByIdAndUpdate(user._id,{$set:{availableMoney: sendMoney}},{ new: true },function (err){
+                        if(err)
+                        return res.json({ success: false, msg: 'Cannot update availableMoney.'});
+                        else {
+                          SendMessageGoogleAuthenticator(user, req.body.sendMoney, req.body.destination, res, req);
+                        }
+                      });
+                    }
+                  });
+                }
+              }
+            });
           }
-          else {
-            console.log("Error:" + error);
-            res.json({ success: false, msg: error});
+          else
+          {
+            console.log("unTran");
+            ReferenceOutput.find({address: address}, function(err, listRefeUser){
+              var check = false;
+              var listReferUntran=[];
+              var listAvailRefer = [];
+              for(let i=0; i<unTrans.length;i++)
+              {
+                for(let j=0;j<unTrans[i].inputs.length;j++)
+                {
+                  listReferUntran.push({
+                    publicKey: unTrans[i].inputs[j].unlockScript.split(" ")[1],
+                    referencedOutputHash: unTrans[i].inputs[j].referencedOutputHash,
+                    referencedOutputIndex: unTrans[i].inputs[j].referencedOutputIndex
+                  });
+                }
+              }
+
+              for(let i=0;i<listRefeUser.length;i++)
+              {
+                for(let j=0; j<listReferUntran.length;j++)
+                {
+                  if(listRefeUser[i].referencedOutputHash != listReferUntran[j].referencedOutputHash
+                  && listRefeUser[i].referencedOutputIndex != listReferUntran[j].referencedOutputIndex
+                && publicKey != listReferUntran[j].publicKey)
+                  check = true;
+                }
+                if(check)
+                {
+                  listAvailRefer.push(listRefeUser[i]);
+                  check = false;
+                }
+              }
+
+              /////////////////////////
+              var sendMoney = req.body.sendMoney;
+              let destinations = [
+                address,
+                req.body.destination
+              ];
+              let key = {
+                privateKey: privateKey,
+                publicKey: publicKey,
+                address: address
+              };
+              console.log('sendMoney: ', sendMoney);
+              console.log('destinations: ', destinations);
+              console.log('key: ', key);
+                  var money  = 0;
+                  let referenceOutputs = [];
+                  console.log('referenceList.length: ', listAvailRefer.length);
+                  for (let i = 0; i < listAvailRefer.length; i++)
+                  {
+                    money += listAvailRefer[i].money;
+                    console.log('referenceList[i].money: ', listAvailRefer[i].money);
+                    console.log('money: ', money);
+                    var referenceOutput =
+                    {
+                      referencedOutputHash: listAvailRefer[i].referencedOutputHash,
+                      referencedOutputIndex: listAvailRefer[i].referencedOutputIndex
+                    };
+                    referenceOutputs.push(referenceOutput);
+                    if (money >= sendMoney)
+                    {
+                      break;
+                    }
+                  }
+                  if (money < sendMoney)
+                  {
+                    return res.json({ success: false, msg: 'Do not have enough money to send!' });
+                  }
+                  else
+                  {
+
+                    let bountyTransaction = {
+                      version: 1,
+                      inputs: [],
+                      outputs: []
+                    };
+                    let keys = [];
+                    referenceOutputs.forEach(referenceOutput => {
+                      bountyTransaction.inputs.push({
+                        referencedOutputHash: referenceOutput.referencedOutputHash,
+                        referencedOutputIndex: referenceOutput.referencedOutputIndex,
+                        unlockScript: ''
+                      });
+                      keys.push(key);
+                    });
+                    bountyTransaction.outputs.push({
+                      value: money - sendMoney,
+                      lockScript: 'ADD ' + destinations[0]
+                    });
+                    bountyTransaction.outputs.push({
+                      value: sendMoney,
+                      lockScript: 'ADD ' + destinations[1]
+                    });
+                    sign(bountyTransaction, keys);
+                    console.log(JSON.stringify(bountyTransaction));
+                    //console.log(option);
+                    var newTran = new Transaction();
+                    newTran.hash = user._id;
+                    newTran.inputs=bountyTransaction.inputs;
+                    newTran.outputs=bountyTransaction.outputs;
+                    newTran.state="initialized";
+                    newTran.auth = user.keyGoogleAuthenticator;
+                    newTran.save(function(err){
+                      if(err)
+                        return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
+                      else{
+                        User.findByIdAndUpdate(user._id,{$set:{availableMoney: sendMoney}},{ new: true },function (err){
+                          if(err)
+                          return res.json({ success: false, msg: 'Cannot update availableMoney.'});
+                          else {
+                            SendMessageGoogleAuthenticator(user, req.body.sendMoney, req.body.destination, res, req);
+                          }
+                        });
+                      }
+                    });
+                  }
+
+              ////////////////////////
+            });
           }
-        });
-      }//đủ tiền
+        }
+      });
+
+
     }
-    });
-  /*let referenceOutputsHashes = [
-    'd6fd4a290c22190d6c414f51c96a7eb800c1705e83d3931861f562935c1f831c'
-  ];*/
-  //let referenceOutputsHashes = [];
-
-
-
-
-
-
-
-
-// Write to file then POST https://api.kcoin.club/transactions
+  }
+  else {
+    res.json({ success: false, msg: 'Wrong address!' });
+  }
 
 
 }
@@ -699,9 +838,6 @@ exports.verify_google_authenticator = function (req, res, next) {
             });
           }
         });
-    }
-    else {
-      res.json({ success: false, msg: 'No token provided.' });
     }
 }
 

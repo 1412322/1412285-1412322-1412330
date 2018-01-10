@@ -815,7 +815,7 @@ UpdateRealMoneyUserWhenReceive = function(transactions)
         {
           if(user)
           {
-            User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value, availableMoney:user.realMoney + outputs[j].value}},{ new: true },function (err){
+            User.findByIdAndUpdate(user._id,{$set:{realMoney: user.realMoney + outputs[j].value}},{ new: true },function (err){
             if(err)
               console.log(err);
               else {
