@@ -344,7 +344,7 @@
         flex-direction: column;
         align-items: center;
         .statistic-table {
-            border: 1px solid $border-color !important;
+            border: 0 !important;
             border-collapse: collapse;
             color: $text-color4 !important;
             thead {
@@ -355,10 +355,10 @@
                   color: $text-color4 !important;
                   border-bottom: 0 !important;
                   color: #5a5a5a;
-                  border-left: 1px solid $border-color;
+                  // border-left: 1px solid $border-color;
                   padding-left: 14px !important;
                   &:first-child {
-                    border-left: 0;
+                    // border-left: 0;
                     padding-left: 50px !important;
                   }
                   img {
@@ -411,7 +411,7 @@
                 }
                 td {
                   border-top: 0 !important;
-                  border-left: 1px solid $border-color;
+                  // border-left: 1px solid $border-color;
                   padding: 14px !important;
                   .address-block {
                     white-space: nowrap; 
@@ -427,14 +427,14 @@
                   }
                   &:first-child {
                     display: flex;
-                    border-left: 0;
+                    // border-left: 0;
                     .order {
                       color: $primary-color;
                       margin: 0 20px 0 8px;
                     }
                   }
                   &:last-child {
-                    border-right: 1px solid $border-color;
+                    // border-right: 1px solid $border-color;
                   }
                 }
               }
@@ -491,7 +491,7 @@
   }
   .disabled {
     background-color: transparent;
-    border: 1px solid $border-color;
+    // border: 1px solid $border-color;
     cursor: unset;
     &:hover {
       a {

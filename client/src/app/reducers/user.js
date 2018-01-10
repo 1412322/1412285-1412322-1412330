@@ -17,14 +17,16 @@ const user = (state = initialState, action) => {
                 isFetching: true,
             })
         case 'GET_PROFILE_SUCCESS':
+        console.log(action.data)
             return Object.assign({}, state, {
                 isFetching: false,
                 userData: action.data,
             })
         case 'GET_PROFILE_FAILED':
+        console.log(action.data)
             return Object.assign({}, state, {
                 isFetching: false,
-                errorMessage: action.data.msg,
+                userData: undefined,
             })
         case 'CHECK_ROLE':
             return Object.assign({}, state, {
@@ -65,7 +67,6 @@ const user = (state = initialState, action) => {
                 isFetching: true,
             })
         case 'GET_ADDRESS_DATA_SUCCESS':
-            console.log(action.data)
             return Object.assign({}, state, {
                 addressData: action.data,
                 pageCount: Math.ceil(action.data.total / action.limit),
