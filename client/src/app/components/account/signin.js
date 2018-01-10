@@ -120,7 +120,7 @@ class LoginContainer extends React.Component {
         const { errorMessage, successMessage, isFetching } = this.props
         return (
             token && token !== 'undefined'
-                ? <Redirect to="/" />
+                ? <Redirect to={sessionStorage.getItem('previous')} />
                 : (<div className='account-container'>
                     <div className='dialog'>
                         <Form className='form' onSubmit={(e) => this.onSubmitForm(e)}>

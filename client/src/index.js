@@ -16,6 +16,7 @@ import VerifyEmailByGoogleAuthContainer from './app/components/account/verifyema
 import ProfileContainer from './app/components/home/profile.js'
 import TransferContainer from './app/components/transaction/transfer.js'
 import HistoryContainer from './app/components/transaction/history.js'
+import VerifyContainer from './app/components/transaction/verify.js'
 import StatisticContainer from './app/components/admin/statistics.js'
 import TransactionDataContainer from './app/components/admin/transactions.js'
 import AddressDataContainer from './app/components/admin/addresses.js'
@@ -39,6 +40,7 @@ ReactDOM.render((
                     <AppRoute exact={true} path="/" layout={MainLayout} component={ProfileContainer} />
                     <AppRoute path="/transaction/transfer" layout={MainLayout} component={TransferContainer} />
                     <AppRoute path="/transaction/history" layout={MainLayout} component={HistoryContainer} />
+                    <AppRoute path="/transactions/verify/:key" layout={MainLayout} component={VerifyContainer} />
                     <AppRoute path="/admin/statistics" layout={MainLayout} component={StatisticContainer} />
                     <AppRoute path="/admin/transactions" layout={MainLayout} component={TransactionDataContainer} />
                     <AppRoute path="/admin/addresses" layout={MainLayout} component={AddressDataContainer} />

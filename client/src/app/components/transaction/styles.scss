@@ -176,12 +176,22 @@
           width: 100%;
           text-align: center;
         }
-        .submit-btn {
+        .accept-btn {
+          @include button($success-color, $text-color2);
+          font-size: 16px !important;
+          margin-bottom: 25px !important;
+          height: 35px;
+          width: 80px;
+          text-transform: initial;
+        }
+        .cancel-btn {
           @include button($primary-color, $text-color2);
           font-size: 16px !important;
           margin-bottom: 25px !important;
-          height: 55px;
-          width: 120px;
+          margin-right: 10px !important;
+          height: 35px;
+          width: 80px;
+          text-transform: initial;
         }
         .messageWrapperLeft {
           align-items: center;

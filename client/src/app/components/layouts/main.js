@@ -22,6 +22,7 @@ class MainLayout extends React.Component {
 
   componentWillMount() {
     const { token } = this.state
+    sessionStorage.setItem('previous', this.props.children.props.location.pathname)
     if (token && token !== 'undefined') {
       const { token } = this.state
       const { actions } = this.props

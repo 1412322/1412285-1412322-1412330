@@ -235,6 +235,22 @@ export const deleteTransactionFailed = (data) => ({
   data,
 })
 
+export const verifyTransferSubmit = (headers, body) => ({
+  type: 'VERIFY_TRANSFER',
+  headers,
+  body,
+})
+
+export const verifyTransferSuccessed = (data) => ({
+  type: 'VERIFY_TRANSFER_SUCCESS',
+  data,
+})
+
+export const verifyTransferFailed = (data) => ({
+  type: 'VERIFY_TRANSFER_FAILED',
+  data,
+})
+
 export function signIn(body, headers, isRememberMe) {
   return function (dispatch) {
     dispatch(signInSubmit(body, headers))
@@ -391,7 +407,6 @@ export function verifyEmailByGoogleAuth(body, headers, key) {
 
 export function getVerifyQRCode(headers, key) {
   return function (dispatch) {
-    console.log('key', key)
     dispatch(getQRCode(headers))
     return fetch(Server.server() + 'api/users/qrCode/' + key, {
       method: 'post',
@@ -399,13 +414,10 @@ export function getVerifyQRCode(headers, key) {
     })
       .then(res => res.json())
       .then((data) => {
-                  console.log('sex', data)
         if (data.success === true) {
-          console.log('sad',data)
           dispatch(getQRCodeSuccessed(data))
         }
         else {
-                    console.log('sad', data)
           dispatch(getQRCodeFailed(data))
         }
       })
@@ -525,6 +537,27 @@ export function deleteInitializedTransaction(headers, verifyCode) {
       .then((data) => {
         if (data.success === true) {
           console.log(headers)
+          dispatch(deleteTransactionSuccessed(data))
+        }
+        else {
+          dispatch(deleteTransactionFailed(data))
+        }
+      })
+  }
+}
+
+export function verifyTransfer(headers, body, key) {
+  return function (dispatch) {
+    dispatch(verifyTransferSubmit(headers, body))
+    console.log(body)
+    return fetch(Server.server() + 'api/transactions/verify/' + key, {
+      method: 'post',
+      headers: headers,
+      body: JSON.stringify(body),
+    })
+      .then(res => res.json())
+      .then((data) => {
+        if (data.success === true) {
           dispatch(deleteTransactionSuccessed(data))
         }
         else {

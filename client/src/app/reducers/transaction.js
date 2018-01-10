@@ -2,6 +2,9 @@ const initialState = {
     isFetching: false,
     historyData: undefined,
     isDeleted: false,
+    isSubmit: false,
+    successMessage: undefined,
+    errorMessage: undefined,
 };
 
 const transaction = (state = initialState, action) => {
@@ -41,13 +44,27 @@ const transaction = (state = initialState, action) => {
                 isDeleted: true,
             })
         case 'DELETE_TRANSACTION_SUCCESS':
-            console.log(action.data)
             return Object.assign({}, state, {
                 isDeleted: false,
             })
         case 'DELETE_TRANSACTION_FAILED':
             return Object.assign({}, state, {
                 isDeleted: false,
+            })
+        case 'VERIFY_TRANSFER':
+            return Object.assign({}, state, {
+                isSubmit: true,
+            })
+        case 'VERIFY_TRANSFER_SUCCESS':
+            window.location.href = '/transaction/transfer'
+            return Object.assign({}, state, {
+                isSubmit: false,
+                successMessage: action.data.msg,
+            })
+        case 'VERIFY_TRANSFER_FAILED':
+            return Object.assign({}, state, {
+                isSubmit: false,
+                errorMessage: action.data.msg,
             })
         default:
             return state

@@ -11,7 +11,7 @@ class ProfileContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            token: sessionStorage.getItem('token'),
+            // token: sessionStorage.getItem('token'),
         }
     }
 
