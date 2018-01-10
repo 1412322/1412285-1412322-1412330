@@ -495,7 +495,10 @@ sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req
                   if(listRefeUser[i].referencedOutputHash != listReferUntran[j].referencedOutputHash
                   && listRefeUser[i].referencedOutputIndex != listReferUntran[j].referencedOutputIndex
                 && publicKey != listReferUntran[j].publicKey)
-                  check = true;
+        				{
+        					check = true;
+        					break;
+        				}
                 }
                 if(check)
                 {
@@ -505,6 +508,11 @@ sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req
               }
 
               /////////////////////////
+			  if(listAvailRefer.length==0)
+          {
+            return res.json({ success: false, msg: 'Cannot create transaction! You need to wait for your last transaction confirmed' });
+        }
+        else{
               var sendMoney = req.body.sendMoney;
               let destinations = [
                 address,
@@ -589,7 +597,7 @@ sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req
                       }
                     });
                   }
-
+                }
               ////////////////////////
             });
           }
