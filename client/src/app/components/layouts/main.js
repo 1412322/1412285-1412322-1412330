@@ -141,7 +141,7 @@ class MainLayout extends React.Component {
     return (
       !token || token === 'undefined'
         ? <Redirect to="/signin" />
-        : (!userData
+      : (!userData
           ? (<Dimmer active={true} inverted={true}>
             <Loader />
           </Dimmer>)
