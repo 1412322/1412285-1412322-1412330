@@ -16,17 +16,19 @@ const transaction = (state = initialState, action) => {
         case 'SEND_MONEY_SUCCESS':
             console.log('asdas', action.data)
             return Object.assign({}, state, {
-                isFetching: false,
+                isSubmit: false,
+                errorMessage: undefined,
                 successMessage: action.data.msg,
             })
         case 'SEND_MONEY_FAILED':
             return Object.assign({}, state, {
-                isFetching: false,
+                isSubmit: false,
+                successMessage: undefined,
                 errorMessage: action.data.msg,
             })
         case 'GET_HISTORY_DATA':
             return Object.assign({}, state, {
-                isFetching: true,
+                isSubmit: true,
             })
         case 'GET_HISTORY_DATA_SUCCESS':
             console.log(action.data)
@@ -35,6 +37,7 @@ const transaction = (state = initialState, action) => {
                 historyData: action.data,
             })
         case 'GET_HISTORY_DATA_FAILED':
+            console.log(action.data)
             return Object.assign({}, state, {
                 isFetching: false,
                 historyData: action.data,
@@ -56,14 +59,16 @@ const transaction = (state = initialState, action) => {
                 isSubmit: true,
             })
         case 'VERIFY_TRANSFER_SUCCESS':
-            // window.location.href = '/transaction/transfer'
+            window.location.href = '/transaction/transfer'
             return Object.assign({}, state, {
                 isSubmit: false,
+                errorMessage: undefined,
                 successMessage: action.data.msg,
             })
         case 'VERIFY_TRANSFER_FAILED':
             return Object.assign({}, state, {
                 isSubmit: false,
+                successMessage: undefined,
                 errorMessage: action.data.msg,
             })
         default:

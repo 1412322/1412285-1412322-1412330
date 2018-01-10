@@ -34,8 +34,8 @@
     .transferContainerBody {
       align-content: center;
       background-color: $background-color1;
-      border-radius: 3px;
-      box-shadow: 0 10px 25px 0 rgba(232, 173, 173, 0.32);
+      // border-radius: 3px;
+      // box-shadow: 0 10px 25px 0 rgba(232, 173, 173, 0.32);
       display: flex;
       flex-direction: column;
       margin-bottom: 50px;
@@ -180,18 +180,16 @@
           @include button($success-color, $text-color2);
           font-size: 16px !important;
           margin-bottom: 25px !important;
-          height: 35px;
-          width: 80px;
-          text-transform: initial;
+          height: 55px;
+          width: 120px;
         }
         .cancel-btn {
           @include button($primary-color, $text-color2);
           font-size: 16px !important;
           margin-bottom: 25px !important;
           margin-right: 10px !important;
-          height: 35px;
-          width: 80px;
-          text-transform: initial;
+          height: 55px;
+          width: 120px;
         }
         .messageWrapperLeft {
           align-items: center;

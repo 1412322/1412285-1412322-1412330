@@ -56,6 +56,7 @@ class MainLayout extends React.Component {
 
   textSideBarContainer() {
     const { isSideBarShowing } = this.state
+    const { userData } = this.props
     return (
       <Sidebar
         as={Menu}
@@ -106,30 +107,32 @@ class MainLayout extends React.Component {
             </Link>
           </Card.Content>
         </Card>
-        <Card className='side-bar-item-block'>
-          <Card.Content className='side-bar-item-content'>
-            <Card.Header className='side-bar-item-header'>
-              Management
+        {userData.role === 'admin'
+          && (<Card className='side-bar-item-block'>
+            <Card.Content className='side-bar-item-content'>
+              <Card.Header className='side-bar-item-header'>
+                Management
             </Card.Header>
-          </Card.Content>
-          <Card.Content className='side-bar-item-content'>
-            <Link to='/admin/statistics'>
-              <Menu.Item className={this.generateSibarItemClassName('/admin/statistics')}>
-                Statistics
+            </Card.Content>
+            <Card.Content className='side-bar-item-content'>
+              <Link to='/admin/statistics'>
+                <Menu.Item className={this.generateSibarItemClassName('/admin/statistics')}>
+                  Statistics
               </Menu.Item>
-            </Link>
-            <Link to='/admin/transactions'>
-              <Menu.Item className={this.generateSibarItemClassName('/admin/transactions')}>
-                Transactions
+              </Link>
+              <Link to='/admin/transactions'>
+                <Menu.Item className={this.generateSibarItemClassName('/admin/transactions')}>
+                  Transactions
               </Menu.Item>
-            </Link>
-            <Link to='/admin/addresses'>
-              <Menu.Item className={this.generateSibarItemClassName('/admin/addresses')}>
-                Addresses
+              </Link>
+              <Link to='/admin/addresses'>
+                <Menu.Item className={this.generateSibarItemClassName('/admin/addresses')}>
+                  Addresses
               </Menu.Item>
-            </Link>
-          </Card.Content>
-        </Card>
+              </Link>
+            </Card.Content>
+          </Card>)
+        }
       </Sidebar>
     )
   }
@@ -141,7 +144,7 @@ class MainLayout extends React.Component {
     return (
       !token || token === 'undefined'
         ? <Redirect to="/signin" />
-      : (!userData
+        : (!userData
           ? (<Dimmer active={true} inverted={true}>
             <Loader />
           </Dimmer>)

@@ -75,7 +75,7 @@ class TransferContainer extends React.Component {
 
     render() {
         const { receiverAddress, numberOfCoinsTransfer, errors } = this.state
-        const { errorMessage, successMessage, isFetching, userData } = this.props
+        const { errorMessage, successMessage, isSubmit, userData } = this.props
         return (
             <Container className='transferContainer'>
                 <div className='transferContainerHeader'>
@@ -127,7 +127,7 @@ class TransferContainer extends React.Component {
                             }>
                             {successMessage}
                         </span>
-                        <Button loading={isFetching} type='submit' className='accept-btn' onClick={(e) => this.onSubmitForm(e)} >Transfer</Button>
+                        <Button loading={isSubmit} type='submit' className='accept-btn' onClick={(e) => this.onSubmitForm(e)} >Transfer</Button>
                     </div>
 
                 </div>
@@ -143,7 +143,7 @@ const mapStateToProps = (state) => {
     return {
         errorMessage: state.transaction.errorMessage,
         successMessage: state.transaction.successMessage,
-        isFetching: state.transaction.isFetching,
+        isSubmit: state.transaction.isSubmit,
         userData: state.user.userData,
     }
 }

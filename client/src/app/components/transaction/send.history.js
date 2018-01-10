@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { Table, Tab, Loader, Button } from 'semantic-ui-react'
 import * as actions from '../../actions'
 // import validator from 'validator'
-import * as _ from 'lodash'
 import Moment from 'react-moment'
 
 class SendHistoryContainer extends React.Component {
@@ -76,21 +75,6 @@ class SendHistoryContainer extends React.Component {
         const { isFetching } = this.props
         return (
             <React.Fragment>
-                {/* <Modal className='popup-message' size='tiny' open={open} onClose={this.close}>
-                    <Modal.Header className='message-header'>
-                        Please enter Verify Code from Google Authenticator
-                    </Modal.Header>
-                    <Modal.Content className='message-body'>
-                        <Input
-                            className='normal-field'
-                            fluid={true}
-                            onChange={(e) => this.onHandleChange(e, 'googleKey')}
-                            value={googleKey} />
-                    </Modal.Content>
-                    <Modal.Actions className='message-footer'>
-                        <Button disabled={!googleKey} className='submit-btn' content='Submit' onClick={this.onDeleteTransaction} />
-                    </Modal.Actions>
-                </Modal> */}
                 <Tab.Pane attached={false} className='channelContent'>
                     <Table className='statistic-table'>
                         <Table.Header className='table-header'>
@@ -105,7 +89,7 @@ class SendHistoryContainer extends React.Component {
                         <Table.Body>
                             {isFetching || !data
                                 ? (<Table.Row>
-                                    <Table.HeaderCell colSpan='4'>
+                                    <Table.HeaderCell colSpan='5'>
                                         <Loader active={true} inline='centered' />
                                     </Table.HeaderCell>
                                 </Table.Row>)
@@ -132,23 +116,6 @@ class SendHistoryContainer extends React.Component {
                                 ))
                             }
                         </Table.Body>
-                        {/* <Table.Footer fullWidth={true}>
-                        <Table.Row>
-                            <Table.HeaderCell colSpan='4'>
-                                <ReactPaginate previousLabel={"Previous"}
-                                    nextLabel={"Next"}
-                                    breakLabel={<a href="">...</a>}
-                                    breakClassName={"break-me"}
-                                    pageCount={this.props.pageCount}
-                                    marginPagesDisplayed={2}
-                                    pageRangeDisplayed={5}
-                                    onPageChange={this.handlePageClick}
-                                    containerClassName={"pagination"}
-                                    subContainerClassName={"pages pagination"}
-                                    activeClassName={"active"} />
-                            </Table.HeaderCell>
-                        </Table.Row>
-                    </Table.Footer> */}
                     </Table>
                 </Tab.Pane>
             </React.Fragment>

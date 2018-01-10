@@ -2,14 +2,12 @@ import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Container, Header, Menu, Tab, Image } from 'semantic-ui-react'
+import { Container, Header, Menu, Tab } from 'semantic-ui-react'
 import * as actions from '../../actions'
 import SendHistory from './send.history.js'
 import ReceiveHistory from './receive.history.js'
 // import validator from 'validator'
 import * as _ from 'lodash'
-// import RequirementIcon from 'react-icons/lib/md/info-outline'
-import TabIcon01 from 'react-icons/lib/md/arrow-forward'
 
 class HistoryContainer extends React.Component {
 

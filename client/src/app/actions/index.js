@@ -136,20 +136,20 @@ export const getQRCodeFailed = (data) => ({
 })
 
 export const getStatisticData = (headers, body) => ({
-  type: 'CHECK_ROLE',
+  type: 'GET_STATISTIC_DATA',
   headers,
   body,
 })
 
 export const getStatisticDataSuccessed = (data, offset, limit) => ({
-  type: 'CHECK_ROLE_SUCCESS',
+  type: 'GET_STATISTIC_DATA_SUCCESS',
   data,
   offset,
   limit,
 })
 
 export const getStatisticDataFailed = (data) => ({
-  type: 'CHECK_ROLE_FAILED',
+  type: 'GET_STATISTIC_DATA_FAILED',
   data,
 })
 
@@ -520,6 +520,7 @@ export function getTransactionHistoryData(headers) {
           dispatch(getHistoryDataSuccessed(data))
         }
         else {
+          console.log(headers)
           dispatch(getHistoryDataFailed(data))
         }
       })

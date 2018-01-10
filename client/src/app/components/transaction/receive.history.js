@@ -4,8 +4,6 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Table, Tab, Loader } from 'semantic-ui-react'
 import * as actions from '../../actions'
-// import validator from 'validator'
-import * as _ from 'lodash'
 import Moment from 'react-moment'
 
 class ReceiveHistoryContainer extends React.Component {
@@ -53,7 +51,7 @@ class ReceiveHistoryContainer extends React.Component {
                     <Table.Body>
                         {isFetching || !data
                             ? (<Table.Row>
-                                <Table.HeaderCell colSpan='4'>
+                                <Table.HeaderCell colSpan='5'>
                                     <Loader active={true} inline='centered' />
                                 </Table.HeaderCell>
                             </Table.Row>)
