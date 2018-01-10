@@ -360,249 +360,262 @@ sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req
     }
     else
     {
-
-      Transaction.find({state: 'unconfirmed'}, function(err, unTrans){
+      Transaction.find({state: "initialized", hash: user._id}, function(err, inTrans){
         if(err){
-          return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
+          return res.json({ success: false, msg: "initialized"+err});
         }
         else {
-          if(unTrans.length == 0)
+          if(inTrans.length != 0)
           {
-            console.log("!unTran");
-            var sendMoney = req.body.sendMoney;
-            let destinations = [
-              address,
-              req.body.destination
-            ];
-            let key = {
-              privateKey: privateKey,
-              publicKey: publicKey,
-              address: address
-            };
-            console.log('sendMoney: ', sendMoney);
-            console.log('destinations: ', destinations);
-            console.log('key: ', key);
-            ReferenceOutput.find({ address: address }, function(err,referenceList){
-              if (err)
-              {
-                return res.json({ success: false, msg: 'Get Reference Output Failed!', error: err });
-              }
-              if (!referenceList) {
-                return res.json({ success: false, msg: 'Reference Output Not Found!' });
-              }
-              else
-              {
-                var money  = 0;
-                let referenceOutputs = [];
-                console.log('referenceList.length: ', referenceList.length);
-                console.log('referenceList ', referenceList);
-                for (let i = 0; i < referenceList.length; i++)
-                {
-                  money += referenceList[i].money;
-                  console.log('referenceList[i].money: ', referenceList[i].money);
-                  console.log('money: ', money);
-                  var referenceOutput =
-                  {
-                    referencedOutputHash: referenceList[i].referencedOutputHash,
-                    referencedOutputIndex: referenceList[i].referencedOutputIndex
-                  };
-                  referenceOutputs.push(referenceOutput);
-                  if (money >= sendMoney)
-                  {
-                    break;
-                  }
-                }
-                console.log("Money: " + money);
-                console.log("Money send: " + sendMoney);
-                if (money < sendMoney)
-                {
-                  res.json({ success: false, msg: 'Do not have enough money to send!' });
-                }
-                else
-                {
-
-                  let bountyTransaction = {
-                    version: 1,
-                    inputs: [],
-                    outputs: []
-                  };
-                  let keys = [];
-                  referenceOutputs.forEach(referenceOutput => {
-                    bountyTransaction.inputs.push({
-                      referencedOutputHash: referenceOutput.referencedOutputHash,
-                      referencedOutputIndex: referenceOutput.referencedOutputIndex,
-                      unlockScript: ''
-                    });
-                    keys.push(key);
-                  });
-                  bountyTransaction.outputs.push({
-                    value: money - sendMoney,
-                    lockScript: 'ADD ' + destinations[0]
-                  });
-                  bountyTransaction.outputs.push({
-                    value: sendMoney,
-                    lockScript: 'ADD ' + destinations[1]
-                  });
-                  sign(bountyTransaction, keys);
-                  console.log(JSON.stringify(bountyTransaction));
-                  //console.log(option);
-                  var newTran = new Transaction();
-                  newTran.hash = user._id;
-                  newTran.inputs=bountyTransaction.inputs;
-                  newTran.outputs=bountyTransaction.outputs;
-                  newTran.state="initialized";
-                  newTran.auth = user.keyGoogleAuthenticator;
-                  newTran.save(function(err){
-                    if(err)
-                      return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
-                    else{
-                      User.findByIdAndUpdate(user._id,{$set:{availableMoney: sendMoney}},{ new: true },function (err){
-                        if(err)
-                        return res.json({ success: false, msg: 'Cannot update availableMoney.'});
-                        else {
-                          SendMessageGoogleAuthenticator(user, req.body.sendMoney, req.body.destination, res, req);
-                        }
-                      });
-                    }
-                  });
-                }
-              }
-            });
+            return res.json({ success: false, msg: "Cannot create transaction! You need to verify your last transaction"});
           }
-          else
-          {
-            console.log("unTran");
-            ReferenceOutput.find({address: address}, function(err, listRefeUser){
-              var check = false;
-              var listReferUntran=[];
-              var listAvailRefer = [];
-              for(let i=0; i<unTrans.length;i++)
-              {
-                for(let j=0;j<unTrans[i].inputs.length;j++)
-                {
-                  listReferUntran.push({
-                    publicKey: unTrans[i].inputs[j].unlockScript.split(" ")[1],
-                    referencedOutputHash: unTrans[i].inputs[j].referencedOutputHash,
-                    referencedOutputIndex: unTrans[i].inputs[j].referencedOutputIndex
-                  });
-                }
+          else{
+            Transaction.find({state: 'unconfirmed'}, function(err, unTrans){
+              if(err){
+                return res.json({ success: false, msg: err});
               }
-
-              for(let i=0;i<listRefeUser.length;i++)
-              {
-                for(let j=0; j<listReferUntran.length;j++)
+              else {
+                if(unTrans.length == 0)
                 {
-                  if(listRefeUser[i].referencedOutputHash != listReferUntran[j].referencedOutputHash
-                  && listRefeUser[i].referencedOutputIndex != listReferUntran[j].referencedOutputIndex
-                && publicKey != listReferUntran[j].publicKey)
-        				{
-        					check = true;
-        					break;
-        				}
-                }
-                if(check)
-                {
-                  listAvailRefer.push(listRefeUser[i]);
-                  check = false;
-                }
-              }
-
-              /////////////////////////
-			  if(listAvailRefer.length==0)
-          {
-            return res.json({ success: false, msg: 'Cannot create transaction! You need to wait for your last transaction confirmed' });
-        }
-        else{
-              var sendMoney = req.body.sendMoney;
-              let destinations = [
-                address,
-                req.body.destination
-              ];
-              let key = {
-                privateKey: privateKey,
-                publicKey: publicKey,
-                address: address
-              };
-              console.log('sendMoney: ', sendMoney);
-              console.log('destinations: ', destinations);
-              console.log('key: ', key);
-                  var money  = 0;
-                  let referenceOutputs = [];
-                  console.log('referenceList.length: ', listAvailRefer.length);
-                  for (let i = 0; i < listAvailRefer.length; i++)
-                  {
-                    money += listAvailRefer[i].money;
-                    console.log('referenceList[i].money: ', listAvailRefer[i].money);
-                    console.log('money: ', money);
-                    var referenceOutput =
+                  console.log("!unTran");
+                  var sendMoney = req.body.sendMoney;
+                  let destinations = [
+                    address,
+                    req.body.destination
+                  ];
+                  let key = {
+                    privateKey: privateKey,
+                    publicKey: publicKey,
+                    address: address
+                  };
+                  console.log('sendMoney: ', sendMoney);
+                  console.log('destinations: ', destinations);
+                  console.log('key: ', key);
+                  ReferenceOutput.find({ address: address }, function(err,referenceList){
+                    if (err)
                     {
-                      referencedOutputHash: listAvailRefer[i].referencedOutputHash,
-                      referencedOutputIndex: listAvailRefer[i].referencedOutputIndex
-                    };
-                    referenceOutputs.push(referenceOutput);
-                    if (money >= sendMoney)
-                    {
-                      break;
+                      return res.json({ success: false, msg: 'Get Reference Output Failed!', error: err });
                     }
-                  }
-                  if (money < sendMoney)
-                  {
-                    return res.json({ success: false, msg: 'Do not have enough money to send!' });
-                  }
-                  else
-                  {
+                    if (!referenceList) {
+                      return res.json({ success: false, msg: 'Reference Output Not Found!' });
+                    }
+                    else
+                    {
+                      var money  = 0;
+                      let referenceOutputs = [];
+                      console.log('referenceList.length: ', referenceList.length);
+                      console.log('referenceList ', referenceList);
+                      for (let i = 0; i < referenceList.length; i++)
+                      {
+                        money += referenceList[i].money;
+                        console.log('referenceList[i].money: ', referenceList[i].money);
+                        console.log('money: ', money);
+                        var referenceOutput =
+                        {
+                          referencedOutputHash: referenceList[i].referencedOutputHash,
+                          referencedOutputIndex: referenceList[i].referencedOutputIndex
+                        };
+                        referenceOutputs.push(referenceOutput);
+                        if (money >= sendMoney)
+                        {
+                          break;
+                        }
+                      }
+                      console.log("Money: " + money);
+                      console.log("Money send: " + sendMoney);
+                      if (money < sendMoney)
+                      {
+                        res.json({ success: false, msg: 'Do not have enough money to send!' });
+                      }
+                      else
+                      {
 
-                    let bountyTransaction = {
-                      version: 1,
-                      inputs: [],
-                      outputs: []
-                    };
-                    let keys = [];
-                    referenceOutputs.forEach(referenceOutput => {
-                      bountyTransaction.inputs.push({
-                        referencedOutputHash: referenceOutput.referencedOutputHash,
-                        referencedOutputIndex: referenceOutput.referencedOutputIndex,
-                        unlockScript: ''
-                      });
-                      keys.push(key);
-                    });
-                    bountyTransaction.outputs.push({
-                      value: money - sendMoney,
-                      lockScript: 'ADD ' + destinations[0]
-                    });
-                    bountyTransaction.outputs.push({
-                      value: sendMoney,
-                      lockScript: 'ADD ' + destinations[1]
-                    });
-                    sign(bountyTransaction, keys);
-                    console.log(JSON.stringify(bountyTransaction));
-                    //console.log(option);
-                    var newTran = new Transaction();
-                    newTran.hash = user._id;
-                    newTran.inputs=bountyTransaction.inputs;
-                    newTran.outputs=bountyTransaction.outputs;
-                    newTran.state="initialized";
-                    newTran.auth = user.keyGoogleAuthenticator;
-                    newTran.save(function(err){
-                      if(err)
-                        return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
-                      else{
-                        User.findByIdAndUpdate(user._id,{$set:{availableMoney: sendMoney}},{ new: true },function (err){
+                        let bountyTransaction = {
+                          version: 1,
+                          inputs: [],
+                          outputs: []
+                        };
+                        let keys = [];
+                        referenceOutputs.forEach(referenceOutput => {
+                          bountyTransaction.inputs.push({
+                            referencedOutputHash: referenceOutput.referencedOutputHash,
+                            referencedOutputIndex: referenceOutput.referencedOutputIndex,
+                            unlockScript: ''
+                          });
+                          keys.push(key);
+                        });
+                        bountyTransaction.outputs.push({
+                          value: money - sendMoney,
+                          lockScript: 'ADD ' + destinations[0]
+                        });
+                        bountyTransaction.outputs.push({
+                          value: sendMoney,
+                          lockScript: 'ADD ' + destinations[1]
+                        });
+                        sign(bountyTransaction, keys);
+                        console.log(JSON.stringify(bountyTransaction));
+                        //console.log(option);
+                        var newTran = new Transaction();
+                        newTran.hash = user._id;
+                        newTran.inputs=bountyTransaction.inputs;
+                        newTran.outputs=bountyTransaction.outputs;
+                        newTran.state="initialized";
+                        newTran.auth = user.keyGoogleAuthenticator;
+                        newTran.save(function(err){
                           if(err)
-                          return res.json({ success: false, msg: 'Cannot update availableMoney.'});
-                          else {
-                            SendMessageGoogleAuthenticator(user, req.body.sendMoney, req.body.destination, res, req);
+                            return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
+                          else{
+                            User.findByIdAndUpdate(user._id,{$set:{availableMoney: sendMoney}},{ new: true },function (err){
+                              if(err)
+                              return res.json({ success: false, msg: 'Cannot update availableMoney.'});
+                              else {
+                                SendMessageGoogleAuthenticator(user, req.body.sendMoney, req.body.destination, res, req);
+                              }
+                            });
                           }
                         });
                       }
-                    });
-                  }
+                    }
+                  });
                 }
-              ////////////////////////
+                else
+                {
+                  console.log("unTran");
+                  ReferenceOutput.find({address: address}, function(err, listRefeUser){
+                    var check = false;
+                    var listReferUntran=[];
+                    var listAvailRefer = [];
+                    for(let i=0; i<unTrans.length;i++)
+                    {
+                      for(let j=0;j<unTrans[i].inputs.length;j++)
+                      {
+                        listReferUntran.push({
+                          publicKey: unTrans[i].inputs[j].unlockScript.split(" ")[1],
+                          referencedOutputHash: unTrans[i].inputs[j].referencedOutputHash,
+                          referencedOutputIndex: unTrans[i].inputs[j].referencedOutputIndex
+                        });
+                      }
+                    }
+
+                    for(let i=0;i<listRefeUser.length;i++)
+                    {
+                      for(let j=0; j<listReferUntran.length;j++)
+                      {
+                        if(listRefeUser[i].referencedOutputHash != listReferUntran[j].referencedOutputHash
+                        && listRefeUser[i].referencedOutputIndex != listReferUntran[j].referencedOutputIndex
+                      && publicKey != listReferUntran[j].publicKey)
+              				{
+              					check = true;
+              					break;
+              				}
+                      }
+                      if(check)
+                      {
+                        listAvailRefer.push(listRefeUser[i]);
+                        check = false;
+                      }
+                    }
+
+                    /////////////////////////
+      			  if(listAvailRefer.length==0)
+                {
+                  return res.json({ success: false, msg: 'Cannot create transaction! You need to wait for your last transaction confirmed' });
+              }
+              else{
+                    var sendMoney = req.body.sendMoney;
+                    let destinations = [
+                      address,
+                      req.body.destination
+                    ];
+                    let key = {
+                      privateKey: privateKey,
+                      publicKey: publicKey,
+                      address: address
+                    };
+                    console.log('sendMoney: ', sendMoney);
+                    console.log('destinations: ', destinations);
+                    console.log('key: ', key);
+                        var money  = 0;
+                        let referenceOutputs = [];
+                        console.log('referenceList.length: ', listAvailRefer.length);
+                        for (let i = 0; i < listAvailRefer.length; i++)
+                        {
+                          money += listAvailRefer[i].money;
+                          console.log('referenceList[i].money: ', listAvailRefer[i].money);
+                          console.log('money: ', money);
+                          var referenceOutput =
+                          {
+                            referencedOutputHash: listAvailRefer[i].referencedOutputHash,
+                            referencedOutputIndex: listAvailRefer[i].referencedOutputIndex
+                          };
+                          referenceOutputs.push(referenceOutput);
+                          if (money >= sendMoney)
+                          {
+                            break;
+                          }
+                        }
+                        if (money < sendMoney)
+                        {
+                          return res.json({ success: false, msg: 'Do not have enough money to send!' });
+                        }
+                        else
+                        {
+
+                          let bountyTransaction = {
+                            version: 1,
+                            inputs: [],
+                            outputs: []
+                          };
+                          let keys = [];
+                          referenceOutputs.forEach(referenceOutput => {
+                            bountyTransaction.inputs.push({
+                              referencedOutputHash: referenceOutput.referencedOutputHash,
+                              referencedOutputIndex: referenceOutput.referencedOutputIndex,
+                              unlockScript: ''
+                            });
+                            keys.push(key);
+                          });
+                          bountyTransaction.outputs.push({
+                            value: money - sendMoney,
+                            lockScript: 'ADD ' + destinations[0]
+                          });
+                          bountyTransaction.outputs.push({
+                            value: sendMoney,
+                            lockScript: 'ADD ' + destinations[1]
+                          });
+                          sign(bountyTransaction, keys);
+                          console.log(JSON.stringify(bountyTransaction));
+                          //console.log(option);
+                          var newTran = new Transaction();
+                          newTran.hash = user._id;
+                          newTran.inputs=bountyTransaction.inputs;
+                          newTran.outputs=bountyTransaction.outputs;
+                          newTran.state="initialized";
+                          newTran.auth = user.keyGoogleAuthenticator;
+                          newTran.save(function(err){
+                            if(err)
+                              return res.json({ success: false, msg: 'Cannot save create transaction.'+ err});
+                            else{
+                              User.findByIdAndUpdate(user._id,{$set:{availableMoney: sendMoney}},{ new: true },function (err){
+                                if(err)
+                                return res.json({ success: false, msg: 'Cannot update availableMoney.'});
+                                else {
+                                  SendMessageGoogleAuthenticator(user, req.body.sendMoney, req.body.destination, res, req);
+                                }
+                              });
+                            }
+                          });
+                        }
+                      }
+                    ////////////////////////
+                  });
+                }
+              }
             });
           }
         }
       });
+      /**/
 
 
     }
