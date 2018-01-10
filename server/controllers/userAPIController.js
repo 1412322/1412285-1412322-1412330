@@ -43,7 +43,7 @@ exports.signup = function (req, res, next) {
 
 }
 
-exports.verify_google_authenticator = function (req, res, next) {
+exports.verify_google_authenticator_register = function (req, res, next) {
     var keyGoogleAuthenticatorFormatted = req.params.key;
     var verifyToken = req.body.verifyToken;
     var keyGoogleAuthenticator = '';
@@ -722,7 +722,7 @@ SendMessageGoogleAuthenticatorFirstTime = function (user, res, req) {
         }
         else {
             var imgSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + uriVerify;
-            SendVerifyMail(req, res, formattedKey, user, imgSrc);
+            SendVerifyMailRegister(req, res, formattedKey, user, imgSrc);
             /*res.json({ success: true,
               msg: 'A verify key has been sent to Your Google Authenticator',
               keyGoogleAuthenticator: formattedKey,
@@ -731,7 +731,7 @@ SendMessageGoogleAuthenticatorFirstTime = function (user, res, req) {
     });
 }
 
-SendVerifyMail = function (req, res, key, user, imgSrc) {
+SendVerifyMailRegister = function (req, res, key, user, imgSrc) {
 
 
     var host = req.get('host');

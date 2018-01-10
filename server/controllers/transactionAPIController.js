@@ -416,14 +416,14 @@ sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req
                           referencedOutputIndex: referenceList[i].referencedOutputIndex
                         };
                         referenceOutputs.push(referenceOutput);
-                        if (money >= sendMoney)
+                        if (money > sendMoney)
                         {
                           break;
                         }
                       }
                       console.log("Money: " + money);
                       console.log("Money send: " + sendMoney);
-                      if (money < sendMoney)
+                      if (money <= sendMoney)
                       {
                         res.json({ success: false, msg: 'Do not have enough money to send!' });
                       }
@@ -549,12 +549,12 @@ sendToTransactionKcoin = function(user, privateKey, publicKey, address, res, req
                             referencedOutputIndex: listAvailRefer[i].referencedOutputIndex
                           };
                           referenceOutputs.push(referenceOutput);
-                          if (money >= sendMoney)
+                          if (money > sendMoney)
                           {
                             break;
                           }
                         }
-                        if (money < sendMoney)
+                        if (money <= sendMoney)
                         {
                           return res.json({ success: false, msg: 'Do not have enough money to send!' });
                         }
@@ -714,14 +714,14 @@ exports.verify_google_authenticator = function (req, res, next) {
               }
               else
               {
-                Transaction.findOne({
+                Transaction.find({
                     auth: keyGoogleAuthenticator
-                }, function (err, tran) {
+                }, function (err, trans) {
                     if (err) {
                         res.json({ success: false, msg: err });
                     }
 
-                    if (!tran) {
+                    if (!trans || trans.length == 0) {
                         //console.log('User not found.', req.body.email);
                         res.json({ success: false, msg: 'Transaction not found.' });
                     } else {
@@ -740,20 +740,20 @@ exports.verify_google_authenticator = function (req, res, next) {
                                     inputs: [],
                                     outputs: []
                                   };
-
-                                  for(let i=0;i<tran.inputs.length;i++)
+                                  var lengthTran = trans.length;
+                                  for(let i=0;i<trans[lengthTran - 1].inputs.length;i++)
                                   {
                                     bountyTransaction.inputs.push({
-                                      referencedOutputHash: tran.inputs[i].referencedOutputHash,
-                                      referencedOutputIndex: tran.inputs[i].referencedOutputIndex,
-                                      unlockScript: tran.inputs[i].unlockScript
+                                      referencedOutputHash: trans[lengthTran - 1].inputs[i].referencedOutputHash,
+                                      referencedOutputIndex: trans[lengthTran - 1].inputs[i].referencedOutputIndex,
+                                      unlockScript: trans[lengthTran - 1].inputs[i].unlockScript
                                     });
                                   }
-                                  for(let i=0;i<tran.outputs.length;i++)
+                                  for(let i=0;i<trans[lengthTran - 1].outputs.length;i++)
                                   {
                                     bountyTransaction.outputs.push({
-                                      value: tran.outputs[i].value,
-                                      lockScript: tran.outputs[i].lockScript
+                                      value: trans[lengthTran - 1].outputs[i].value,
+                                      lockScript: trans[lengthTran - 1].outputs[i].lockScript
                                     });
                                   }
 
@@ -771,26 +771,26 @@ exports.verify_google_authenticator = function (req, res, next) {
                                     if (response.statusCode == 200)
                                     {
                                       console.log("Reaspon:" + JSON.stringify(response));
-                                      Transaction.findByIdAndUpdate(tran._id,{$set:{state:"unconfirmed"}},{ new: true },function (err)
+                                      Transaction.findByIdAndUpdate(trans[lengthTran - 1]._id,{$set:{state:"unconfirmed"}},{ new: true },function (err)
                                       {
                                         if(err)
                                           return res.json({ success: false, msg: 'Cannot update state transaction.'});
                                       });
                                       console.log("Respone transaction: " + response.body);
                                       var receiveTran = JSON.parse(response.body);
-                                      Transaction.findByIdAndUpdate(tran._id,{$set:{hash: receiveTran.hash}},{ new: true },function (err){
+                                      Transaction.findByIdAndUpdate(trans[lengthTran - 1]._id,{$set:{hash: receiveTran.hash}},{ new: true },function (err){
                                         if(err)
                                           res.json({ success: false, msg: "Cannot update hash transaction." });
                                       });
 
-                                      for(let j=0;j<tran.inputs.length; j++)
+                                      for(let j=0;j<trans[lengthTran - 1].inputs.length; j++)
                                       {
-                                        if(tran.inputs[j].unlockScript.indexOf("PUB") != -1)
+                                        if(trans[lengthTran - 1].inputs[j].unlockScript.indexOf("PUB") != -1)
                                         {
-                                          User.findOne({publicKey: (tran.inputs[j].unlockScript).split(" ")[1]}, function (err, user)
+                                          User.findOne({publicKey: (trans[lengthTran - 1].inputs[j].unlockScript).split(" ")[1]}, function (err, user)
                                           {
                                             if(user){
-                                              ReferenceOutput.findOneAndRemove({referencedOutputHash:tran.inputs[j].referencedOutputHash, address: user.address},function(err){
+                                              ReferenceOutput.findOneAndRemove({referencedOutputHash:trans[lengthTran - 1].inputs[j].referencedOutputHash, address: user.address},function(err){
                                                 if(err)
                                                   res.json({ success: false, msg: "Cannot delete old ReferenceOutput." });
                                               });
@@ -823,18 +823,18 @@ exports.verify_google_authenticator = function (req, res, next) {
                                     }
                                     else {
                                       console.log("Error:" + error);
-                                      res.json({ success: false, msg: response});
+                                      res.json({ success: false, msg: response.body});
                                     }
                                   });
                               }
                               else
                               {
-                                Transaction.findByIdAndRemove(tran._id, function(err){
+                                Transaction.findByIdAndRemove(trans[lengthTran - 1]._id, function(err){
                                   if(err){
                                     res.json({ success: false, msg: err });
                                   }
                                   else {
-                                    User.findByIdAndUpdate(user._id, {$set:{availableMoney: user.availableMoney - tran.outputs[1].value}},{ new: true },function (err){
+                                    User.findByIdAndUpdate(user._id, {$set:{availableMoney: user.availableMoney - trans[lengthTran - 1].outputs[1].value}},{ new: true },function (err){
                                       if(err)
                                         res.json({ success: false, msg: err });
                                     });

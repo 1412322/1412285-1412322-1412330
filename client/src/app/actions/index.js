@@ -144,7 +144,7 @@ export const getStatisticData = (headers, body) => ({
 export const getStatisticDataSuccessed = (data, offset, limit) => ({
   type: 'CHECK_ROLE_SUCCESS',
   data,
-  offset, 
+  offset,
   limit,
 })
 
@@ -162,7 +162,7 @@ export const getTransactionData = (headers, body) => ({
 export const getTransactionDataSuccessed = (data, offset, limit) => ({
   type: 'GET_TRANSACTION_DATA_SUCCESS',
   data,
-  offset, 
+  offset,
   limit,
 })
 
@@ -180,7 +180,7 @@ export const getAddressData = (headers, body) => ({
 export const getAddressDataSuccessed = (data, offset, limit) => ({
   type: 'GET_ADDRESS_DATA_SUCCESS',
   data,
-  offset, 
+  offset,
   limit,
 })
 
@@ -558,9 +558,11 @@ export function verifyTransfer(headers, body, key) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
+                    console.log(data)
           dispatch(verifyTransferSuccessed(data))
         }
         else {
+          console.log(data)
           dispatch(verifyTransferFailed(data))
         }
       })

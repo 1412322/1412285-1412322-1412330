@@ -449,7 +449,7 @@ SaveTransactionPromised = function(transactions)
                         sendMoney += doc.outputs[j].value;
                       }
                     }
-                    User.findByIdAndUpdate(user._id,{$set:{availableMoney: user.availableMoney-sendMoney}},{ new: true },function (err){
+                    User.findByIdAndUpdate(user._id,{$set:{availableMoney: 0}},{ new: true },function (err){
                       if(err)
                       {
                         //console.log(err);
@@ -505,10 +505,31 @@ UpdateReferenceOutputUser = function(transactions){
           newReference.referencedOutputIndex = j;
           newReference.address = transactions[i].outputs[j].lockScript.split(" ")[1];
           newReference.money = transactions[i].outputs[j].value;
-          newReference.save(function(err){
+          ReferenceOutput.find({'referencedOutputHash': newReference.referencedOutputHash,
+                'referencedOutputIndex': newReference.referencedOutputIndex }, function(err,referenceList){
+                  if (err)
+                  {
+
+                  }
+                  else
+                  {
+                    if (!referenceList || referenceList.length == 0) {
+                      newReference.save(function(err2){
+                        if(err2)
+                          console.log(err2);
+                      });
+                    }
+                    else
+                    {
+
+                    }
+                  }
+
+          });
+          /*newReference.save(function(err){
             if(err)
               console.log(err);
-          });
+          });*/
         }
       });
 

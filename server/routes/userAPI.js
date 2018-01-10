@@ -5,7 +5,7 @@ var User = require ('../models/user');
 /* GET student list */
 
 router.post('/signup',  userAPIController.signup);
-router.post('/verify/:key',userAPIController.verify_google_authenticator);
+router.post('/verify/:key',userAPIController.verify_google_authenticator_register);
 router.post('/signin',  userAPIController.signin);
 router.get('/profile',  userAPIController.profile);
 router.post('/qrCode/:key',  userAPIController.get_qr_code);

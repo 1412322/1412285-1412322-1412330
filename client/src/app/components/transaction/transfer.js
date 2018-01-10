@@ -82,16 +82,7 @@ class TransferContainer extends React.Component {
                     <Header as='h2' textAlign='center' >Coins Transfer</Header>
                 </div>
                 <div className='transferContainerBody'>
-                    <div className='containerHeader'>
-                        <Statistic size='mini'>
-                            <Statistic.Label>Actual Balance</Statistic.Label>
-                            <Statistic.Value>{userData.realMoney}</Statistic.Value>
-                        </Statistic>
-                        <Statistic size='mini'>
-                            <Statistic.Label>Available Balance</Statistic.Label>
-                            <Statistic.Value>{userData.availableMoney}</Statistic.Value>
-                        </Statistic>
-                    </div>
+
                     <div className='containerBody'>
                         <Input
                             className={
