@@ -11,7 +11,7 @@ const transaction = (state = initialState, action) => {
     switch (action.type) {
         case 'SEND_MONEY':
             return Object.assign({}, state, {
-                isFetching: true,
+                isSubmit: true,
             })
         case 'SEND_MONEY_SUCCESS':
             console.log('asdas', action.data)
@@ -28,7 +28,7 @@ const transaction = (state = initialState, action) => {
             })
         case 'GET_HISTORY_DATA':
             return Object.assign({}, state, {
-                isSubmit: true,
+                isFetching: true,
             })
         case 'GET_HISTORY_DATA_SUCCESS':
             console.log(action.data)

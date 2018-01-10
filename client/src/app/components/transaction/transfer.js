@@ -75,7 +75,7 @@ class TransferContainer extends React.Component {
 
     render() {
         const { receiverAddress, numberOfCoinsTransfer, errors } = this.state
-        const { errorMessage, successMessage, isSubmit, userData } = this.props
+        const { errorMessage, successMessage, isSubmit } = this.props
         return (
             <Container className='transferContainer'>
                 <div className='transferContainerHeader'>

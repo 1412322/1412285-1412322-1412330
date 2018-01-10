@@ -110,7 +110,7 @@ class SendHistoryContainer extends React.Component {
                                             )}
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <Button disabled={!data.state === 'confirmed'} className='delete-btn' onClick={() => this.onDeleteTransaction(data.auth)}>Delete</Button>
+                                            <Button disabled={!(data.state === 'initialized')} className='delete-btn' onClick={() => this.onDeleteTransaction(data.auth)}>Delete</Button>
                                         </Table.Cell>
                                     </Table.Row>
                                 ))

@@ -247,7 +247,7 @@ getTotalValue = function (res, offset, limit) {
           listTotalResult.push(userInfo);
         }
         var from = offset;
-        var to = (offset + 1) * limit;
+        var to = offset + limit;
         var listResultPaginated = [];
         if (to > listTotalResult.length)
           to = listTotalResult.length;
@@ -358,7 +358,7 @@ getTotalValueByAddress = function (res, offset, limit) {
           listTotalResult.push(userInfo);
         }
         var from = offset;
-        var to = (offset + 1) * limit;
+        var to = offset + limit;
         var listResultPaginated = [];
         if (to > listTotalResult.length)
           to = listTotalResult.length;
@@ -621,7 +621,7 @@ getBlocks = function(res, limit, offset)
 
               }
               var from = offset;
-              var to = (offset + 1) * limit;
+              var to = offset + limit;
               if (to > listResult.length)
                 to = listResult.length;
               for (let index = from; index < to; index ++)
