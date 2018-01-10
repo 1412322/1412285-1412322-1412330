@@ -56,7 +56,7 @@ const transaction = (state = initialState, action) => {
                 isSubmit: true,
             })
         case 'VERIFY_TRANSFER_SUCCESS':
-            window.location.href = '/transaction/transfer'
+            // window.location.href = '/transaction/transfer'
             return Object.assign({}, state, {
                 isSubmit: false,
                 successMessage: action.data.msg,

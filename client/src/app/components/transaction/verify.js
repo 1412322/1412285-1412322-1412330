@@ -2,9 +2,8 @@ import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Container, Header, Input, Button, Statistic } from 'semantic-ui-react'
+import { Container, Header, Input, Button } from 'semantic-ui-react'
 import * as actions from '../../actions'
-import validator from 'validator'
 import * as _ from 'lodash'
 // import RequirementIcon from 'react-icons/lib/md/info-outline'
 
@@ -20,6 +19,10 @@ class VerifyContainer extends React.Component {
                 field: '',
             }],
         }
+    }
+
+    componentWillMount() {
+        sessionStorage.setItem('previous', this.props.location.pathname)
     }
 
     onSubmitForm(e, verifyValue) {

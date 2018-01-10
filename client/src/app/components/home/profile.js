@@ -15,6 +15,10 @@ class ProfileContainer extends React.Component {
         }
     }
 
+    componentWillMount() {
+        sessionStorage.setItem('previous', this.props.location.pathname)
+    }
+
     // componentWillMount() {
     //     const { token } = this.state
     //     const { actions } = this.props

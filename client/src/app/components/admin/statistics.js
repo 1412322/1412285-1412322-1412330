@@ -20,7 +20,7 @@ class StatisticContainer extends React.Component {
     }
 
     componentWillMount() {
-        console.log(this.state.offset)
+        sessionStorage.setItem('previous', this.props.location.pathname)
         this.loadDataFromServer(this.state.offset)
     }
 

@@ -20,6 +20,10 @@ class HistoryContainer extends React.Component {
         }
     }
 
+    componentWillMount() {
+        sessionStorage.setItem('previous', this.props.location.pathname)
+    }
+
     onHandleChangeTab = (e, data) => {
         // const { actions } = this.props
         // actions.switchChannel(data.activeIndex)

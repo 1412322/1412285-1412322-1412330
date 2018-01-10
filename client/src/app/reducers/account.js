@@ -13,7 +13,7 @@ const account = (state = initialState, action) => {
                 isFetching: true,
             })
         case 'SIGN_IN_SUCCESS':
-            window.location.href = '/profile'
+            window.location.href = sessionStorage.getItem('previous')
             return Object.assign({}, state, {
                 isFetching: false,
                 errorMessage: null,
@@ -96,6 +96,7 @@ const account = (state = initialState, action) => {
         case 'SIGN_OUT':
             sessionStorage.removeItem('email')
             sessionStorage.removeItem('token')
+            sessionStorage.removeItem('previous')
             window.location.href = '/signin'
             return Object.assign({}, state, {
                 isFetching: true,

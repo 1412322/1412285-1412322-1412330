@@ -558,10 +558,10 @@ export function verifyTransfer(headers, body, key) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-          dispatch(deleteTransactionSuccessed(data))
+          dispatch(verifyTransferSuccessed(data))
         }
         else {
-          dispatch(deleteTransactionFailed(data))
+          dispatch(verifyTransferFailed(data))
         }
       })
   }
