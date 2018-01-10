@@ -73,7 +73,7 @@ class SendHistoryContainer extends React.Component {
 
     render() {
         const { data } = this.state
-        const { isFetching } = this.props
+        const { isFetching, isDeleted } = this.props
         return (
             <React.Fragment>
                 {/* <Modal className='popup-message' size='tiny' open={open} onClose={this.close}>
@@ -126,7 +126,7 @@ class SendHistoryContainer extends React.Component {
                                             )}
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <Button disabled={!data.state === 'confirmed'} className='delete-btn' onClick={() => this.onDeleteTransaction(data.auth)}>Delete</Button>
+                                            <Button loading={isDeleted} disabled={data.state === 'confirmed'} className='delete-btn' onClick={() => this.onDeleteTransaction(data.auth)}>Delete</Button>
                                         </Table.Cell>
                                     </Table.Row>
                                 ))
@@ -159,6 +159,7 @@ class SendHistoryContainer extends React.Component {
 const mapStateToProps = (state) => ({
     historyData: state.transaction.historyData,
     isFetching: state.transaction.isFetching,
+    isDeleted: state.transaction.isDeleted,
     userData: state.user.userData,
 })
 

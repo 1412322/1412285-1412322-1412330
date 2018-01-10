@@ -44,10 +44,12 @@ const transaction = (state = initialState, action) => {
                 isDeleted: true,
             })
         case 'DELETE_TRANSACTION_SUCCESS':
+        console.log('success')
             return Object.assign({}, state, {
                 isDeleted: false,
             })
         case 'DELETE_TRANSACTION_FAILED':
+        console.log('fail')
             return Object.assign({}, state, {
                 isDeleted: false,
             })
