@@ -66,7 +66,7 @@ exports.delete_initialized_transaction = function(req, res, next)
     return res.status(403).send({ success: false, msg: 'No token provided.' });
   }
 }
-
+/*
 exports.history = function(req, res, next)
 {
   var token = getToken(req.headers);
@@ -324,8 +324,33 @@ exports.history = function(req, res, next)
 
 });
 }
-}
+}*/
 
+exports.history = function(req, res, next)
+{
+  Block.find(function(err,blockList){
+    if (err)
+    {
+      res.json({ success: false, msg: 'Find Block failed!', err: err});
+    }
+    else
+    {
+      if (blockList.length == 0 || !blockList)
+      {
+        res.json({ success: false, msg: 'Block is empty!'});
+      }
+      else
+      {
+        var listTranSend = [];
+        var listTranReceive = [];
+        for (let i = 0; i < blockList.length; i++)
+        {
+
+        }
+      }
+    }
+  });
+}
 exports.send_money = function (req, res, next) {
   var token = getToken(req.headers);
   if (token) {

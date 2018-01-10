@@ -179,16 +179,24 @@ exports.profile = function (req, res, next) {
             if (!user) {
                 return res.status(403).send({ success: false, msg: 'User not found.' });
             } else {
-              ReferenceOutput.find({ 'address': user.address }, function(err,referenceList){
-                if (err)
+              ReferenceOutput.find({ 'address': user.address }, function(err2,referenceList){
+                if (err2)
                 {
-                  res.json({success: false, msg: 'Get Info failed!'});
+                  res.json({success: false, msg: err2});
                 }
                 else
                 {
                   if (!referenceList || referenceList.length == 0)
                   {
-                    res.json({success: false, msg: 'Get Info failed!'});
+                    res.json({
+                        success: true, msg: 'Welcome to KCoin Application, ' + user.email + '!',
+                        email: user.email,
+                        role: user.role,
+                        token: token,
+                        address: user.address,
+                        realMoney: user.realMoney,
+                        availableMoney: user.realMoney - user.availableMoney
+                    });
                   }
                   else
                   {
