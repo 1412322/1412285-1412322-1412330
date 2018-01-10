@@ -51,7 +51,7 @@ exports.delete_initialized_transaction = function(req, res, next)
         }
         else
         {
-          Transaction.findOneAndRemove({auth: keyGoogleAuthenticator}, function(err){
+          Transaction.findOneAndRemove({auth: keyGoogleAuthenticator, state: 'initialized'}, function(err){
             if(err){
               res.json({ success: false, msg: err });
             }
@@ -66,290 +66,215 @@ exports.delete_initialized_transaction = function(req, res, next)
     return res.status(403).send({ success: false, msg: 'No token provided.' });
   }
 }
-/*
+
+
 exports.history = function(req, res, next)
 {
   var token = getToken(req.headers);
-  if (token)
-  {
-    var decoded = jwt.decode(token, config.secret);
-    User.findOne({
-        email: decoded.email
-    }, function (err, user)
-    {
+  if (token) {
+      var decoded = jwt.decode(token, config.secret);
+      User.findOne({
+          email: decoded.email
+      }, function (err, user) {
+          if (err) throw err;
 
-      if (err) throw err;
-
-      if (!user) {
-        return res.status(403).send({ success: false, msg: 'User not found.' });
-      }
-      else
-      {
-      var dataTranSend = [];
-      var dataTranReceive = [];
-
-      async.parallel({
-      listBlock: function (callback){
-        Block.find({}).sort({}).exec(callback);},
-      listTran: function (callback){
-        Transaction.find({}).sort({}).exec(callback);},
-      listUser: function (callback){
-        User.find({}).sort({}).exec(callback);}
-       }, function (err,result)
-       {
-         var listTranUserSend = [];
-         var listTranUserReceive=[];
-         var listTimeStampSend = [];
-         var listTimeStampReceive = [];
-         for(let i=0; i<result.listTran.length; i++)
-         {
-            if(result.listTran[i].inputs[0].unlockScript.indexOf("PUB") != -1)
-            {
-              if(result.listTran[i].inputs[0].unlockScript.split(" ")[1] == user.publicKey)
+          if (!user) {
+              return res.status(403).send({ success: false, msg: 'User not found.' });
+          } else {
+            Transaction.find(function(err,tranList){
+              if (err)
               {
-                listTranUserSend.push(result.listTran[i]);
+                res.json({ success: false, msg: 'Find Transaction failed!', err: err});
               }
               else
               {
-                for(let j=0;j<result.listTran[i].outputs.length;j++)
+                if (tranList.length == 0 || !tranList)
                 {
-                  if(result.listTran[i].outputs[j].lockScript.split(" ")[1] == user.address)
-                  {
-                    listTranUserReceive.push(result.listTran[i]);
-                  }
+                  res.json({ success: false, msg: 'Transaction is empty!'});
+                }
+                else
+                {
+                  Block.find(function(err,blockList){
+                    if (err)
+                    {
+                      res.json({ success: false, msg: 'Find Block failed!', err: err});
+                    }
+                    else
+                    {
+                      if (blockList.length == 0 || !blockList)
+                      {
+                        res.json({ success: false, msg: 'Block is empty!'});
+                      }
+                      else
+                      {
+                        var listTranSend = [];
+                        var listTranReceive = [];
+                        for (let i = 0; i < blockList.length; i++)
+                        {
+                          var timestamp = blockList[i].timestamp;
+                          var transactions = blockList[i].transactions;
+                          for (let j = 0; j < transactions.length; j++)
+                          {
+                            for (let k = 0; k < tranList.length; k ++)
+                            {
+                              if (transactions[j] == tranList[k].hash)
+                              {
+                                var sender = tranList[k].outputs[0].lockScript.split(' ');
+                                if (sender[1] == user.address)//user là người gửi
+                                {
+                                  var outputs = [];
+                                  for (let l = 0; l < tranList[k].outputs.length; l++)
+                                  {
+                                    var lockScript = tranList[k].outputs[l].lockScript.split(' ');
+                                    outputs.push({
+                                      address: lockScript[1],
+                                      money: tranList[k].outputs[l].value,
+                                      index: l
+                                    });
+                                  }
+                                  var senderInfo =
+                                  {
+                                    hash: tranList[k].hash,
+                                    time: timestamp,
+                                    state: tranList[k].state,
+                                    outputs: outputs
+                                  };
+                                  listTranSend.push(senderInfo);
+                                }
+                                else//ko phải người gửi
+                                {
+                                  for (let l = 0; l < tranList[k].outputs.length; l++)
+                                  {
+                                    var lockScript = tranList[k].outputs[l].lockScript.split(' ');
+                                    if (lockScript[1] == user.address)//người nhận
+                                    {
+                                      var sender = tranList[k].outputs[0].lockScript.split(' ');
+                                      var receiverInfo =
+                                      {
+                                        hash: tranList[k].hash,
+                                        time: timestamp,
+                                        sender: sender[1],
+                                        index: l,
+                                        money: tranList[k].outputs[l].value
+                                      };
+                                      listTranReceive.push(receiverInfo);
+                                    }
+                                  }
+                                }
+                              }//đã confirm thì có trong block và hash
+
+                            }
+                          }
+                        }
+
+                        for (let i = 0; i < tranList.length; i++)
+                        {
+                          if (tranList[i].state == 'initialized')//khởi tạo
+                          {
+                            if (tranList[i].hash == user._id)//người gửi là bạn, đang khởi tạo
+                            {
+                              var outputs = [];
+                              for (let l = 0; l < tranList[i].outputs.length; l++)
+                              {
+                                var lockScript = tranList[i].outputs[l].lockScript.split(' ');
+                                outputs.push({
+                                  address: lockScript[1],
+                                  money: tranList[i].outputs[l].value,
+                                  index: l
+                                });
+                              }
+                              var senderInfo =
+                              {
+                                hash: tranList[i].hash,
+                                time: null,
+                                state: tranList[i].state,
+                                outputs: outputs
+                              };
+                              listTranSend.push(senderInfo);
+                            }
+                          }
+                          if (tranList[i].state == 'unconfirmed')
+                          {
+                            var sender = tranList[i].outputs[0].lockScript.split(' ');
+                            if (sender[1] == user.address)//người gửi là bạn, đang khởi tạo
+                            {
+                              var outputs = [];
+                              for (let l = 0; l < tranList[i].outputs.length; l++)
+                              {
+                                var lockScript = tranList[i].outputs[l].lockScript.split(' ');
+                                outputs.push({
+                                  address: lockScript[1],
+                                  money: tranList[i].outputs[l].value,
+                                  index: l
+                                });
+                              }
+                              var senderInfo =
+                              {
+                                hash: tranList[i].hash,
+                                time: null,
+                                state: tranList[i].state,
+                                outputs: outputs
+                              };
+                              listTranSend.push(senderInfo);
+                            }
+                          }
+
+                        }
+                        //sort ngày
+                        for(let i = 0; i < listTranSend.length - 1; i++)
+                        {
+                          for(let j = i + 1; j < listTranSend.length; j++)
+                          {
+                            var timeNull = false;
+                            if (listTranSend[i].time != null && listTranSend[j].time != null)
+                            {
+                              var datei = new Date(listTranSend[i].time * 1000);
+                              var datej = new Date(listTranSend[j].time * 1000);
+
+                              if(datej.getTime() > datei.getTime())
+                              {
+                                var t = listTranSend[i];
+                                listTranSend[i]=listTranSend[j];
+                                listTranSend[j]=t;
+                              }
+                            }
+
+
+                          }
+                        }
+
+                        for(let i = 0; i < listTranReceive.length; i++)
+                        {
+                          for(let j = i + 1; j < listTranReceive.length - 1; j++)
+                          {
+                            var datei = new Date(listTranReceive[i].time * 1000);
+                            var datej = new Date(listTranReceive[j].time * 1000);
+                            if(datej.getTime() > datei.getTime())
+                            {
+                              var t = listTranReceive[i];
+                              listTranReceive[i] = listTranReceive[j];
+                              listTranReceive[j] = t;
+                            }
+
+                          }
+                        }
+                        res.json({ success: true,
+                        listTranSend: listTranSend,
+                        listTranReceive: listTranReceive
+                      });
+                      }
+                    }
+                  });
                 }
               }
-            }
-            else
-            {
-              for(let j=0;j<result.listTran[i].outputs.length;j++)
-              {
-                if(result.listTran[i].outputs[j].lockScript.split(" ")[1] == user.address)
-                {
-                  listTranUserReceive.push(result.listTran[i]);
-                }
-              }
-            }
-         }
-
-         for(let i=0; i< listTranUserSend.length; i++)
-         {
-           for(let j=0; j<result.listBlock.length; j++)
-           {
-             for(let k=0; k<result.listBlock[j].transactions.length;k++)
-             {
-               if(result.listBlock[j].transactions[k] == listTranUserSend[i].hash)
-               {
-                 var outputs = [];
-                 for(let t=0;t<listTranUserSend[i].outputs.length; t++)
-                 {
-                   outputs.push({
-                     address: listTranUserSend[i].outputs[t].lockScript.split(" ")[1],
-                     money: listTranUserSend[i].outputs[t].value,
-                     index: t
-                   });
-                 }
-                 if(listTranUserSend[i].state == "initialized")
-                 {
-                   var key = listTranUserSend[i].auth;
-                   var formattedKeyArrays = key.split(' ');
-                   var formattedKey = '';
-                   for (let i = 0; i < formattedKeyArrays.length; i++) {
-                       formattedKey += formattedKeyArrays[i].toUpperCase();
-                   }
-                   listTimeStampSend.push(result.listBlock[j].timestamp);
-                   dataTranSend.push({
-                     hash: listTranUserSend[i].hash,
-                     time: result.listBlock[j].timestamp,
-                     outputs: outputs,
-                     state: listTranUserSend[i].state,
-                     auth: formattedKey
-                   });
-                 }
-                 else{
-                   listTimeStampSend.push(result.listBlock[j].timestamp);
-                   dataTranSend.push({
-                     hash: listTranUserSend[i].hash,
-                     time: result.listBlock[j].timestamp,
-                     outputs: outputs,
-                     state: listTranUserSend[i].state
-                   });
-                 }
-
-                 break;
-               }
-             }
-           }
-         }
-
-         for(let i=0; i< listTranUserReceive.length; i++)
-         {
-             var money = 0;
-             var index = 0;
-             for(let j=0;j<listTranUserReceive[i].outputs.length;j++)
-             {
-               if(listTranUserReceive[i].outputs[j].lockScript.split(" ")[1] == user.address)
-               {
-                 money = listTranUserReceive[i].outputs[j].value;
-                 index = j;
-                 break;
-               }
-             }
-             var time = 0;
-             for(let j=0; j<result.listBlock.length;j++)
-             {
-               for(let k=0; k<result.listBlock[j].transactions.length;k++)
-               {
-                 if(result.listBlock[j].transactions[k] == listTranUserReceive[i].hash)
-                 {
-                   listTimeStampReceive.push(result.listBlock[j].timestamp);
-                   time = result.listBlock[j].timestamp;
-                 }
-               }
-             }
-             var sender = null;
-           if(listTranUserReceive[i].inputs[0].unlockScript.indexOf("PUB") != -1)
-           {
-
-             for(let j=0; j<result.listUser.length; j++)
-             {
-
-               if(result.listUser[j].publicKey == listTranUserReceive[i].inputs[0].unlockScript.split(" ")[1])
-               {
-                 sender = result.listUser[j];
-                 break;
-               }
-             }
-             if(sender == null)
-             {
-               dataTranReceive.push({
-                 hash: listTranUserReceive[i].hash,
-                 time:time,
-                 sender:'unknown',
-                 index: index,
-                 money:money
-               });
-             }
-             else
-             {
-               dataTranReceive.push({
-                 hash: listTranUserReceive[i].hash,
-                 time:time,
-                 sender:sender.address,
-                 index: index,
-                 money:money
-               });
-             }
-
-           }
-           else
-           {
-             dataTranReceive.push({
-               hash: listTranUserReceive[i].hash,
-               time:time,
-               sender:'Blockchain',
-               index: index,
-               money:money
-             });
-           }
-         }
+            });
+          }
+      });
+  } else {
+      return res.status(403).send({ success: false, msg: 'No token provided.' });
+  }
 
 
-
-         for(let i=0; i<listTimeStampSend.length;i++)
-         {
-           for(let j=i+1; j<listTimeStampSend.length-1;j++)
-           {
-             var datei = new Date(listTimeStampSend[i] * 1000);
-             var datej = new Date(listTimeStampSend[j] * 1000);
-             if(datej.getTime() > datei.getTime())
-             {
-               var t = listTimeStampSend[i];
-               listTimeStampSend[i]=listTimeStampSend[j];
-               listTimeStampSend[j]=t;
-             }
-
-           }
-         }
-
-         for(let i=0; i<listTimeStampReceive.length;i++)
-         {
-           for(let j=i+1; j<listTimeStampReceive.length-1;j++)
-           {
-             var datei = new Date(listTimeStampReceive[i] * 1000);
-             var datej = new Date(listTimeStampReceive[j] * 1000);
-             if(datej.getTime() > datei.getTime())
-             {
-               var t = listTimeStampReceive[i];
-               listTimeStampReceive[i]=listTimeStampReceive[j];
-               listTimeStampReceive[j]=t;
-             }
-
-           }
-         }
-
-         var dataSortSend = [];
-         var dataSortReceive = [];
-
-         for(let i=0; i<listTimeStampSend.length;i++)
-         {
-           for(let j=0; j<dataTranSend.length;j++)
-           {
-             if(dataTranSend[j].time == listTimeStampSend[i])
-             {
-               dataSortSend.push(dataTranSend[j]);
-               break;
-             }
-           }
-         }
-
-         for(let i=0; i<listTimeStampReceive.length;i++)
-         {
-           for(let j=0; j<dataTranReceive.length;j++)
-           {
-             if(dataTranReceive[j].time == listTimeStampReceive[i])
-             {
-               dataSortReceive.push(dataTranReceive[j]);
-               break;
-             }
-           }
-         }
-         res.json({
-           success: true,
-           listTranSend: dataSortSend,
-           listTranReceive: dataSortReceive
-         });
-       });
-     }
-
-});
-}
-}*/
-
-exports.history = function(req, res, next)
-{
-  Block.find(function(err,blockList){
-    if (err)
-    {
-      res.json({ success: false, msg: 'Find Block failed!', err: err});
-    }
-    else
-    {
-      if (blockList.length == 0 || !blockList)
-      {
-        res.json({ success: false, msg: 'Block is empty!'});
-      }
-      else
-      {
-        var listTranSend = [];
-        var listTranReceive = [];
-        for (let i = 0; i < blockList.length; i++)
-        {
-
-        }
-      }
-    }
-  });
 }
 exports.send_money = function (req, res, next) {
   var token = getToken(req.headers);
@@ -854,6 +779,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                               }
                               else
                               {
+                                var lengthTran = trans.length;
                                 Transaction.findByIdAndRemove(trans[lengthTran - 1]._id, function(err){
                                   if(err){
                                     res.json({ success: false, msg: err });
