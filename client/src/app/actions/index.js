@@ -530,14 +530,21 @@ export function getTransactionHistoryData(headers) {
 export function deleteInitializedTransaction(headers, verifyCode) {
   return function (dispatch) {
     dispatch(deleteTransaction(headers))
-    return fetch(Server.server() + 'api/transactions/delete/' + verifyCode, {
+    var formattedKeyArrays = verifyCode.split(' ');
+    var formattedKey = '';
+    for (let i = 0; i < formattedKeyArrays.length; i++) {
+        formattedKey += formattedKeyArrays[i].toUpperCase();
+    }
+    return fetch(Server.server() + 'api/transactions/delete/' + formattedKey, {
       method: 'get',
       headers: headers,
     })
       .then(res => res.json())
       .then((data) => {
+        console.log(verifyCode)
+        console.log(data)
         if (data.success === true) {
-          console.log(headers)
+          console.log(data)
           dispatch(deleteTransactionSuccessed(data))
         }
         else {

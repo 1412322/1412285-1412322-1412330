@@ -51,11 +51,15 @@ exports.delete_initialized_transaction = function(req, res, next)
         }
         else
         {
-          Transaction.findOneAndRemove({auth: keyGoogleAuthenticator, state: 'initialized'}, function(err){
+          Transaction.findOneAndRemove({auth: keyGoogleAuthenticator, state: 'initialized'}, function(err, tran){
             if(err){
               res.json({ success: false, msg: err });
             }
               else {
+                User.findByIdAndUpdate(user._id, {$set:{availableMoney: user.availableMoney - tran.outputs[1].value}},{ new: true },function (err2){
+                  if(err2)
+                    res.json({ success: false, msg: 'Update Available Money Failed!' });
+                });
                 res.json({ success: true, msg: 'Delete initialized transaction successfully.' });
               }
           });
@@ -109,6 +113,65 @@ exports.history = function(req, res, next)
                       {
                         var listTranSend = [];
                         var listTranReceive = [];
+
+                        for (let i = 0; i < tranList.length; i++)
+                        {
+                          if (tranList[i].state == 'initialized')//khởi tạo
+                          {
+                            if (tranList[i].hash == user._id)//người gửi là bạn, đang khởi tạo
+                            {
+                              var outputs = [];
+                              for (let l = 0; l < tranList[i].outputs.length; l++)
+                              {
+                                var lockScript = tranList[i].outputs[l].lockScript.split(' ');
+                                outputs.push({
+                                  address: lockScript[1],
+                                  money: tranList[i].outputs[l].value,
+                                  index: l,
+                                  auth: tranList[i].auth
+                                });
+                              }
+                              var senderInfo =
+                              {
+                                hash: tranList[i].hash,
+                                time: null,
+                                state: tranList[i].state,
+                                outputs: outputs,
+                                auth: tranList[i].auth
+                              };
+                              listTranSend.push(senderInfo);
+                            }
+                          }
+                          if (tranList[i].state == 'unconfirmed')
+                          {
+                            var sender = tranList[i].outputs[0].lockScript.split(' ');
+                            if (sender[1] == user.address)//người gửi là bạn, đang khởi tạo
+                            {
+                              var outputs = [];
+                              for (let l = 0; l < tranList[i].outputs.length; l++)
+                              {
+                                var lockScript = tranList[i].outputs[l].lockScript.split(' ');
+                                outputs.push({
+                                  address: lockScript[1],
+                                  money: tranList[i].outputs[l].value,
+                                  index: l,
+                                  auth: tranList[i].auth
+                                });
+                              }
+                              var senderInfo =
+                              {
+                                hash: tranList[i].hash,
+                                time: null,
+                                state: tranList[i].state,
+                                outputs: outputs,
+                                auth: tranList[i].auth
+                              };
+                              listTranSend.push(senderInfo);
+                            }
+                          }
+
+                        }
+
                         for (let i = 0; i < blockList.length; i++)
                         {
                           var timestamp = blockList[i].timestamp;
@@ -129,7 +192,8 @@ exports.history = function(req, res, next)
                                     outputs.push({
                                       address: lockScript[1],
                                       money: tranList[k].outputs[l].value,
-                                      index: l
+                                      index: l,
+                                      auth: tranList[k].auth
                                     });
                                   }
                                   var senderInfo =
@@ -137,7 +201,8 @@ exports.history = function(req, res, next)
                                     hash: tranList[k].hash,
                                     time: timestamp,
                                     state: tranList[k].state,
-                                    outputs: outputs
+                                    outputs: outputs,
+                                    auth: tranList[k].auth
                                   };
                                   listTranSend.push(senderInfo);
                                 }
@@ -155,7 +220,8 @@ exports.history = function(req, res, next)
                                         time: timestamp,
                                         sender: sender[1],
                                         index: l,
-                                        money: tranList[k].outputs[l].value
+                                        money: tranList[k].outputs[l].value,
+                                        auth: tranList[k].auth
                                       };
                                       listTranReceive.push(receiverInfo);
                                     }
@@ -167,59 +233,7 @@ exports.history = function(req, res, next)
                           }
                         }
 
-                        for (let i = 0; i < tranList.length; i++)
-                        {
-                          if (tranList[i].state == 'initialized')//khởi tạo
-                          {
-                            if (tranList[i].hash == user._id)//người gửi là bạn, đang khởi tạo
-                            {
-                              var outputs = [];
-                              for (let l = 0; l < tranList[i].outputs.length; l++)
-                              {
-                                var lockScript = tranList[i].outputs[l].lockScript.split(' ');
-                                outputs.push({
-                                  address: lockScript[1],
-                                  money: tranList[i].outputs[l].value,
-                                  index: l
-                                });
-                              }
-                              var senderInfo =
-                              {
-                                hash: tranList[i].hash,
-                                time: null,
-                                state: tranList[i].state,
-                                outputs: outputs
-                              };
-                              listTranSend.push(senderInfo);
-                            }
-                          }
-                          if (tranList[i].state == 'unconfirmed')
-                          {
-                            var sender = tranList[i].outputs[0].lockScript.split(' ');
-                            if (sender[1] == user.address)//người gửi là bạn, đang khởi tạo
-                            {
-                              var outputs = [];
-                              for (let l = 0; l < tranList[i].outputs.length; l++)
-                              {
-                                var lockScript = tranList[i].outputs[l].lockScript.split(' ');
-                                outputs.push({
-                                  address: lockScript[1],
-                                  money: tranList[i].outputs[l].value,
-                                  index: l
-                                });
-                              }
-                              var senderInfo =
-                              {
-                                hash: tranList[i].hash,
-                                time: null,
-                                state: tranList[i].state,
-                                outputs: outputs
-                              };
-                              listTranSend.push(senderInfo);
-                            }
-                          }
 
-                        }
                         //sort ngày
                         for(let i = 0; i < listTranSend.length - 1; i++)
                         {
@@ -787,7 +801,7 @@ exports.verify_google_authenticator = function (req, res, next) {
                                   else {
                                     User.findByIdAndUpdate(user._id, {$set:{availableMoney: user.availableMoney - trans[lengthTran - 1].outputs[1].value}},{ new: true },function (err){
                                       if(err)
-                                        res.json({ success: false, msg: err });
+                                        res.json({ success: false, msg: 'Update Available Money Failed!' });
                                     });
                                     res.json({ success: false, msg: 'Transaction has been deleted.' });
                                   }
