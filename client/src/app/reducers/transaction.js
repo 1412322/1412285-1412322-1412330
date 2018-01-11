@@ -5,6 +5,7 @@ const initialState = {
     isSubmit: false,
     successMessage: undefined,
     errorMessage: undefined,
+    isDeletedSuccessfully: undefined,
 };
 
 const transaction = (state = initialState, action) => {
@@ -49,10 +50,12 @@ const transaction = (state = initialState, action) => {
         case 'DELETE_TRANSACTION_SUCCESS':
             return Object.assign({}, state, {
                 isDeleted: false,
+                isDeletedSuccessfully: true,
             })
         case 'DELETE_TRANSACTION_FAILED':
             return Object.assign({}, state, {
                 isDeleted: false,
+                isDeletedSuccessfully: false,
             })
         case 'VERIFY_TRANSFER':
             return Object.assign({}, state, {

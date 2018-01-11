@@ -541,10 +541,7 @@ export function deleteInitializedTransaction(headers, verifyCode) {
     })
       .then(res => res.json())
       .then((data) => {
-        console.log(verifyCode)
-        console.log(data)
         if (data.success === true) {
-          console.log(data)
           dispatch(deleteTransactionSuccessed(data))
         }
         else {
@@ -557,7 +554,6 @@ export function deleteInitializedTransaction(headers, verifyCode) {
 export function verifyTransfer(headers, body, key) {
   return function (dispatch) {
     dispatch(verifyTransferSubmit(headers, body))
-    console.log(body)
     return fetch(Server.server() + 'api/transactions/verify/' + key, {
       method: 'post',
       headers: headers,
@@ -566,11 +562,9 @@ export function verifyTransfer(headers, body, key) {
       .then(res => res.json())
       .then((data) => {
         if (data.success === true) {
-                    console.log(data)
           dispatch(verifyTransferSuccessed(data))
         }
         else {
-          console.log(data)
           dispatch(verifyTransferFailed(data))
         }
       })

@@ -2,7 +2,7 @@ import React from 'react'
 import './styles.scss'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Table, Tab, Loader, Button } from 'semantic-ui-react'
+import { Table, Tab, Loader, Button, Dimmer } from 'semantic-ui-react'
 import * as actions from '../../actions'
 // import validator from 'validator'
 import Moment from 'react-moment'
@@ -62,19 +62,26 @@ class SendHistoryContainer extends React.Component {
     // }
 
     onDeleteTransaction(key) {
-        const { actions, userData } = this.props
+        const { actions, userData, isDeletedSuccessfully } = this.props
         const headers = {
             authorization: userData.token,
             'Content-Type': 'application/json'
         }
         actions.deleteInitializedTransaction(headers, key)
+        .then(() => {
+            actions.getTransactionHistoryData(headers)
+        })
+        // actions.getTransactionHistoryData(headers)
     }
 
     render() {
         const { data } = this.state
-        const { isFetching } = this.props
+        const { isFetching, isDeleted } = this.props
         return (
             <React.Fragment>
+                <Dimmer active={isDeleted} inverted={true}>
+                    <Loader />
+                </Dimmer>
                 <Tab.Pane attached={false} className='channelContent'>
                     <Table className='statistic-table'>
                         <Table.Header className='table-header'>
@@ -126,6 +133,8 @@ class SendHistoryContainer extends React.Component {
 const mapStateToProps = (state) => ({
     historyData: state.transaction.historyData,
     isFetching: state.transaction.isFetching,
+    isDeleted: state.transaction.isDeleted,
+    isDeletedSuccessfully: state.transaction.isDeletedSuccessfully,
     userData: state.user.userData,
 })
 
